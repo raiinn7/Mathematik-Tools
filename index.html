@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mathe Tools</title>
+<style>
+  :root { --bg:#f4f6fb; --fg:#1d2433; --muted:#6b7488; --card:#fff; --line:#dde2ee; --accent:#3b6df0; --off:#eef0f6; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#12151d; --fg:#e8ebf3; --muted:#98a1b5; --card:#1b2030; --line:#2b3248; --accent:#6d93ff; --off:#171b27; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font-family:system-ui,-apple-system,"Segoe UI",sans-serif; }
+  main { max-width:900px; margin:0 auto; padding:32px 16px 48px; }
+  h1 { margin:0 0 4px; font-size:2rem; }
+  p.sub { margin:0 0 24px; color:var(--muted); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:12px; }
+  .card { display:block; padding:14px 16px; background:var(--card); border:1px solid var(--line); border-radius:12px; text-decoration:none; color:inherit; }
+  a.card:hover { border-color:var(--accent); box-shadow:0 2px 10px rgba(59,109,240,.18); }
+  .lu { font-size:.8rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--accent); }
+  .name { margin:2px 0; font-size:1.05rem; font-weight:600; }
+  .tool { font-size:.9rem; color:var(--muted); }
+  .off { background:var(--off); opacity:.65; }
+  .off .lu { color:var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Mathe Tools</h1>
+  <p class="sub">Übungstrainer nach Lernumgebung. Klicke auf eine Karte, um zu üben.</p>
+  <div class="grid" id="grid"></div>
+</main>
+<script>
+// Neuen Trainer freischalten: bei der passenden Lernumgebung  tool: 'Name'  eintragen.
+var LU = [
+  { k:'A', n:'Funktionen',                  d:'lu-a-funktionen' },
+  { k:'B', n:'Grössen',                     d:'lu-b-groessen',   tool:'Masseinheiten Trainer' },
+  { k:'C', n:'Brüche',                      d:'lu-c-brueche',    tool:'Brüche Trainer' },
+  { k:'D', n:'Zahlen',                      d:'lu-d-zahlen',     tool:'Zahlen runden Trainer' },
+  { k:'E', n:'Dezimalzahlen',               d:'lu-e-dezimalzahlen', tool:'Komma Trainer' },
+  { k:'F', n:'Konstruktionen',              d:'lu-f-konstruktionen' },
+  { k:'G', n:'Koordinaten',                 d:'lu-g-koordinaten' },
+  { k:'H', n:'Terme',                       d:'lu-h-terme' },
+  { k:'J', n:'Terme umformen',              d:'lu-j-terme-umformen' },
+  { k:'K', n:'Diagramme',                   d:'lu-k-diagramme' },
+  { k:'L', n:'Zufall',                      d:'lu-l-zufall' },
+  { k:'M', n:'Zweidimensional',             d:'lu-m-zweidimensional' },
+  { k:'N', n:'Dreidimensional',             d:'lu-n-dreidimensional' },
+  { k:'O', n:'Strecken, Flächen, Volumen',  d:'lu-o-strecken-flaechen-volumen' },
+  { k:'P', n:'Einführung Gleichung',        d:'lu-p-einfuehrung-gleichung' },
+  { k:'Q', n:'Gleichungen bearbeiten',      d:'lu-q-gleichungen-bearbeiten' },
+  { k:'R', n:'Prozente',                    d:'lu-r-prozente' }
+];
+var grid = document.getElementById('grid');
+LU.forEach(function (x) {
+  var el = document.createElement(x.tool ? 'a' : 'div');
+  el.className = 'card' + (x.tool ? '' : ' off');
+  if (x.tool) el.href = x.d + '/';
+  el.innerHTML = '<div class="lu">LU ' + x.k + '</div><div class="name">' + x.n +
+    '</div><div class="tool">' + (x.tool ? x.tool : 'folgt') + '</div>';
+  grid.appendChild(el);
+});
+</script>
+</body>
+</html>
