@@ -1,0 +1,1282 @@
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Brüche Trainer</title><style>body{font-family:Arial,sans-serif;background:#eef4f8;color:#1b2733;margin:0;padding:20px}.container{color:#1b2733}.container{max-width:1100px;margin:auto;background:#fff;padding:25px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.1)}.top{display:flex;gap:20px;align-items:flex-start}.main{flex:1}.ach{position:relative;width:320px;background:#f8f9fa;padding:12px;border-radius:12px}.cookies{position:absolute;top:10px;right:12px;font-size:18px;background:#fff;border-radius:14px;padding:3px 12px;box-shadow:0 1px 3px rgba(0,0,0,.18)}.ach li.gap{margin-top:12px}.ach ul{padding-left:20px}.achwrap{display:grid}.achwrap>ul{grid-area:1/1}#achSizer{visibility:hidden;pointer-events:none}#recordBox{display:none}#recordBox h3{margin-top:22px}.sub{color:#555;margin:-6px 0 14px}.task{font-size:30px;font-weight:bold;text-align:center;margin:30px 0}.progress{height:26px;background:#ddd;border-radius:20px;overflow:hidden;position:relative}.loss{position:absolute;top:0;height:100%;background:#e53935;display:none}.fill{height:100%;background:#4caf50;width:0}.answer{font-size:24px;padding:10px;width:220px}.btn{padding:10px 16px}.answer,.check{vertical-align:middle}.check{font-size:20px;font-weight:bold;padding:11px 26px;margin-left:0.5cm;cursor:pointer}.footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}.btn.small{font-size:12px;padding:4px 10px}.popup{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center}.box{background:white;padding:25px;border-radius:15px;text-align:center;max-width:500px}.racebar{display:none;background:#ff9800;color:#fff;font-size:28px;font-weight:bold;text-align:center;padding:10px;border-radius:12px;margin:10px 0}.racebar.low{background:#d32f2f}.gameov{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:20}.gamebox{background:#fff;border-radius:16px;padding:19px 24px;text-align:center;max-width:96vw;max-height:96vh;overflow:auto}.gamebox h2{margin:0 0 8px}.gamebox canvas{border-radius:10px;max-width:100%;touch-action:none;cursor:pointer}.gamehint{font-size:13px;color:#555;margin:6px 0}#gameResult{min-height:24px;font-size:18px;margin:6px 0}.gamebtns{display:flex;gap:10px;justify-content:center}@media(max-width:900px){.top{flex-direction:column;align-items:stretch}.ach{width:auto}}</style><style id="themeCss"></style></head><body><div class="container"><div class="top"><div class="main"><h1 id="topicTitle"></h1><div class="sub" id="topicSubtitle"></div><div id="storeWarn" style="display:none;background:#fff3cd;border:1px solid #e0b100;border-radius:8px;padding:8px 12px;margin:0 0 12px;font-size:14px">⚠️ Dein Browser speichert den Lernstand nicht automatisch. Sichere ihn mit «💾 Speichern» als Datei und lade ihn später mit «📂 Laden».</div>Name: <input id="name"><span id="optRow" style="display:none;margin-left:18px">Kategorie: <select id="topicOpt" style="font-size:15px;padding:4px"></select></span><p id="level"></p><div class="progress"><div id="fill" class="fill"></div><div id="loss" class="loss"></div></div><p>Richtig gelöst: <span id="correct">0</span></p><div id="raceBar" class="racebar">⏱️ Noch <span id="raceTime">60</span> s &nbsp;|&nbsp; Richtig: <span id="raceCount">0</span></div><div id="task" class="task"></div><input id="answer" class="answer"><button class="btn check" onclick="checkAnswer()">Prüfen</button><div id="feedback"></div></div><div class="ach"><div class="cookies" title="Cookies">🍪 <b id="cookieShow">0</b></div><h3>🏆 Achievements</h3><div class="achwrap"><ul id="achSizer" aria-hidden="true"></ul><ul id="achievements"></ul></div><div id="recordBox"><h3>🏅 Rekorde</h3><ul id="recordList"></ul></div></div></div><div class="footer"><select id="lvlSel" class="btn small" onchange="lvlSelChange()"></select><button id="gameBtn" class="btn small" onclick="openGame()"></button><button id="raceBtn" class="btn small" onclick="startRace()">⏱️ Zeitrennen</button><button class="btn small" onclick="saveProgress()">💾 Speichern</button><button class="btn small" onclick="loadFile.click()">📂 Laden</button><input type="file" id="loadFile" accept=".json" hidden></div></div><div id="popup" class="popup"><div class="box"><h2 id="popupTitle"></h2><p id="popupText"></p><button onclick="closePopup()">Weiter</button></div></div><div id="gameOverlay" class="gameov"><div class="gamebox"><h2 id="gameTitle"></h2><div id="gameRoot"></div><div class="gamehint">Leertaste (oder Klick / Tippen) = fliegen · Esc = beenden</div><div id="gameResult"></div><div class="gamebtns"><button id="gameAgain" class="btn" onclick="gameAgainClick(this)"></button><button class="btn" onclick="closeGame(this)">Schliessen</button></div></div></div>
+
+<!-- ╔══════════════════════════════════════════════════════════════════════╗
+     ║  1) THEMEN-BLOCK  –  hier steht ALLES, was zum Thema gehört          ║
+     ║  (Aufgaben, Schwierigkeit pro Level, Antwortprüfung, Hilfestellung)  ║
+     ╚══════════════════════════════════════════════════════════════════════╝ -->
+<script>
+/* =========================================================================
+   THEMA: Brüche Trainer – Brüche am Kuchen- und Quadratdiagramm ablesen und in Dezimalzahlen umwandeln
+
+   Aufbau wie beim Komma- und Masseinheiten-Trainer: Nur dieser Block gehört zum Thema.
+   Die ENGINE weiter unten (Oberfläche, Levels/XP, Cookies, Achievements, Zeitrennen, Speichern/Laden)
+   ist für alle Trainer gleich.
+
+   NEUE KATEGORIE HINZUFÜGEN (Lernstände bleiben erhalten):
+     1. In CATS einen Eintrag ergänzen (Name, Symbol) und eine Funktion  taskXyz(l)  schreiben,
+        die ein Objekt {text, html, answer, cat:'xyz', level:l, …} liefert.
+     2. In makeTask() die Zeile für 'xyz' ergänzen, in check() und help() je einen Zweig.
+     3. NICHT ändern: TOPIC.id ('brueche'), den Namen bestehender Kategorien (cat-Schlüssel) und die Levelzahl-Reihenfolge.
+   Neue Kategorien starten für alle bei Level 1; alles Bisherige bleibt gespeichert.
+
+   SCHNITTSTELLE – das liefert TOPIC:
+     id, title, subtitle, levels {name,icon,…}, raceLevel, raceOption, medals, css
+     options     Auswahlliste über der Aufgabe: {choices:[{v,label}], default}
+     makeTask(l, opt) -> {text, html?, answer, interactive?, noInput?, …}   'html' (optional) wird statt 'text' angezeigt;
+                 'interactive' + 'noInput': Aufgabe zum Anklicken, TOPIC.mount(element, task) macht sie bedienbar, die Antwortzeile entfällt
+     check(raw, task) -> true/false
+     help(task)  -> HTML-Text (erscheint ab dem 2. Fehlversuch)
+   ========================================================================= */
+const TOPIC=(function(){
+
+  const CATS={
+    kuchen :{name:'Kuchen- und Quadratdiagramm',icon:'🍰'},
+    dezimal:{name:'Bruch → Dezimalzahl',icon:'🔢'},
+    kuerzen:{name:'Brüche kürzen',icon:'✂️'},
+    erweitern:{name:'Brüche erweitern',icon:'✖️'},
+    addieren:{name:'Brüche addieren',icon:'➕'},
+    subtrahieren:{name:'Brüche subtrahieren',icon:'➖'},
+    multdiv:{name:'Multiplizieren & Dividieren',icon:'➗'}
+    /* hier später weitere Kategorien */
+  };
+  const CAT_KEYS=Object.keys(CATS);
+
+  const LEVELS=[
+    {name:'Anfänger',       icon:'👶'},
+    {name:'Fortgeschritten',icon:'🛹'},
+    {name:'Profi',          icon:'😎'},
+    {name:'Experte',        icon:'🚀'},
+    {name:'Meister',        icon:'👑'}
+  ];
+
+  /* ---------- Hilfsfunktionen ---------- */
+  function ri(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+  function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+  function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){let j=ri(0,i);[a[i],a[j]]=[a[j],a[i]];}return a;}
+  function gcd(a,b){while(b){let t=a%b;a=b;b=t;}return a;}
+
+  /* Bruch als gestapelter Bruch (HTML), gemischte Zahl mit ganzer Zahl davor */
+  function frac(n,d){return '<span class="frac"><span class="fn">'+n+'</span><span class="fd">'+d+'</span></span>';}
+  function mixed(w,n,d){return '<span class="whole">'+w+'</span>'+frac(n,d);}
+  function txt(w,n,d){return (w?w+' ':'')+n+'/'+d;}
+  const N=function(x){return '<span class="cn">'+x+'</span>';};   /* Nenner: rot */
+  const Z=function(x){return '<span class="cz">'+x+'</span>';};   /* Zähler: grün */
+
+  /* ---------- Kategorie 1: Kuchendiagramm ----------
+     Level 1: 1 Kuchen, nur Stammbrüche (Zähler 1) bis 1/6, ablesen
+     Level 2: nur ablesen, Nenner bis 10, beliebiger Zähler (z. B. 3/8), Stücke verstreut gefärbt
+     Level 3: wie Level 2; dazu "Färbe 3/8": je zur Hälfte ablesen und einfärben
+     Level 4: ablesen, einfärben und selbst einteilen + einfärben (1 Kuchen, Nenner bis 10)
+     Level 5: wie Level 4, aber 2–3 Kuchen nebeneinander (auch unechte Brüche wie 7/4) */
+  /* Form der aktuellen Aufgabe: 'pie' (Kuchen) oder 'square' (Quadrat); pro Aufgabe zu 50 % zufällig */
+  let curShape='pie';
+  function gridFor(n){   /* Quadrat in n gleich grosse Felder: Zeilen × Spalten (Primzahlen: Streifen) */
+    let r=1;for(let i=1;i*i<=n;i++)if(n%i===0)r=i;
+    return {r:r,c:n/r};
+  }
+  function squareSvg(n,shaded,size,pi,click){
+    const g=gridFor(n),cw=(size-6)/g.c,ch=(size-6)/g.r;
+    let s='<svg class="pie sqr'+(click?' click':'')+'" width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'" role="img" aria-label="Quadratdiagramm">';
+    for(let i=0;i<n;i++){
+      const x=3+(i%g.c)*cw,y=3+Math.floor(i/g.c)*ch;
+      s+='<rect x="'+x.toFixed(2)+'" y="'+y.toFixed(2)+'" width="'+cw.toFixed(2)+'" height="'+ch.toFixed(2)+'" fill="'+(shaded[i]?'#f59e0b':'#ffffff')+'" stroke="#334155" stroke-width="2"'+(click?' data-p="'+pi+'" data-i="'+i+'"':'')+'/>';
+    }
+    return s+'</svg>';
+  }
+  /* Wortwahl für Quadrate (Kuchen → Quadrat) */
+  function sq(str){
+    if(curShape!=='square')return str;
+    return str.replace(/mehr als einen Kuchen/g,'mehr als ein Quadrat').replace(/Ein ganzer Kuchen/g,'Ein ganzes Quadrat').replace(/jeden Kuchen/g,'jedes Quadrat').replace(/Jeder Kuchen/g,'Jedes Quadrat').replace(/jeder Kuchen/g,'jedes Quadrat')
+      .replace(/Der Kuchen/g,'Das Quadrat').replace(/den Kuchen/g,'das Quadrat').replace(/Beide Kuchen/g,'Beide Quadrate').replace(/alle Kuchen/g,'alle Quadrate').replace(/Kuchen/g,'Quadrat');
+  }
+  function pieSvg(n,shaded,size,pi,click){
+    if(curShape==='square')return squareSvg(n,shaded,size,pi,click);
+    const R=size/2-3,c=size/2;
+    let s='<svg class="pie'+(click?' click':'')+'" width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'" role="img" aria-label="Kuchendiagramm">';
+    if(n===1){
+      s+='<circle cx="'+c+'" cy="'+c+'" r="'+R+'" fill="'+(shaded[0]?'#f59e0b':'#ffffff')+'" stroke="#334155" stroke-width="2"'+(click?' data-p="'+pi+'" data-i="0"':'')+'/>';
+    }else for(let i=0;i<n;i++){
+      const a0=-Math.PI/2+2*Math.PI*i/n,a1=-Math.PI/2+2*Math.PI*(i+1)/n;
+      const x0=c+R*Math.cos(a0),y0=c+R*Math.sin(a0),x1=c+R*Math.cos(a1),y1=c+R*Math.sin(a1);
+      s+='<path d="M'+c+' '+c+' L'+x0.toFixed(2)+' '+y0.toFixed(2)+' A'+R+' '+R+' 0 0 1 '+x1.toFixed(2)+' '+y1.toFixed(2)+' Z" fill="'+(shaded[i]?'#f59e0b':'#ffffff')+'" stroke="#334155" stroke-width="2" stroke-linejoin="round"'+(click?' data-p="'+pi+'" data-i="'+i+'"':'')+'/>';
+    }
+    return s+'</svg>';
+  }
+  function shading(n,k,scattered){
+    let sh=new Array(n).fill(false);
+    if(scattered){shuffle([...Array(n).keys()]).slice(0,k).forEach(i=>{sh[i]=true;});}
+    else{let off=ri(0,n-1);for(let i=0;i<k;i++)sh[(off+i)%n]=true;}
+    return sh;
+  }
+  function piesHtml(list,size){   /* feste Bilder: list = [{n,k,scattered,full}] */
+    return '<div class="pies">'+list.map(p=>pieSvg(p.n,p.full?new Array(p.n).fill(true):shading(p.n,p.k,p.scattered),size,0,false)).join('')+'</div>';
+  }
+  const HINT_READ_1='Antwort als Bruch, zum Beispiel 1/4';
+  const HINT_READ_2='Antwort als Bruch, zum Beispiel 3/8 (ist alles gefärbt, zum Beispiel 8/8 oder 1)';
+  const HINT_READ_3='Antwort als Bruch (7/4) oder als gemischte Zahl (1 3/4)';
+  const HINT_COLOUR='Klicke auf die Stücke, die du färben willst. Ein zweiter Klick macht das Stück wieder weiss.';
+  const HINT_DRAW='Mit − und + wählst du, in wie viele gleich grosse Stücke jeder Kuchen geteilt wird. Dann klickst du die Stücke an, die du färben willst.';
+
+  function pickMode(l){
+    if(l<=1)return 'read';
+    if(l===2)return pick(['read','colour']);
+    if(l===3)return pick(['read','colour','draw','draw']);
+    return pick(['read','read','colour','draw','draw']);
+  }
+  function qFrac(num,den){return '<span class="qf">'+frac(num,den)+'</span>';}
+
+  function taskKuchen(l){
+    curShape=Math.random()<0.5?'pie':'square';
+    let t={cat:'kuchen',level:l,mode:pickMode(l),shape:curShape};
+    if(t.mode==='read'){
+      let q='<div class="q">Welcher Bruchteil ist gefärbt?</div>';
+      if(l===0){
+        let n=ri(2,8);
+        t.kind='single';t.n=n;t.k=1;t.num=1;t.den=n;
+        t.html=q+piesHtml([{n:n,k:1,scattered:false}],180)+'<div class="hint">'+HINT_READ_1+'</div>';
+      }else if(l<=3){
+        let n=ri(2,10),k=ri(1,n);   /* auch der ganze Kuchen (n/n) ist möglich */
+        t.kind='single';t.n=n;t.k=k;t.num=k;t.den=n;
+        t.html=q+piesHtml([{n:n,k:k,scattered:l>=1}],180)+'<div class="hint">'+HINT_READ_2+'</div>';
+      }else if(Math.random()<0.5){
+        let n=pick([2,3,4,5,6,8,10]),f=ri(1,2),k=ri(1,n-1);
+        let list=[];for(let i=0;i<f;i++)list.push({n:n,full:true});list.push({n:n,k:k,scattered:true});
+        t.kind='mixed';t.n=n;t.k=k;t.f=f;t.num=f*n+k;t.den=n;
+        t.html=q+piesHtml(list,list.length>2?130:150)+'<div class="hint">'+HINT_READ_3+'</div>';
+      }else{
+        let n=pick([3,4,5,6,8,10]),a=ri(1,n-1),b=ri(1,n-1);
+        t.kind='sum';t.n=n;t.a=a;t.b=b;t.num=a+b;t.den=n;
+        t.html=q+piesHtml([{n:n,k:a,scattered:true},{n:n,k:b,scattered:true}],150)+'<div class="hint">Beide Kuchen gehören zusammen. '+HINT_READ_3+'</div>';
+      }
+      t.text='Welcher Bruchteil ist gefärbt?';
+    }else{
+      /* Aufgaben zum Anklicken: einfärben (Kuchen schon geteilt) oder selbst einteilen + einfärben */
+      let multi=(l===4);
+      let n,pies,num;
+      if(multi){pies=ri(2,3);n=ri(2,8);num=ri((pies-1)*n+1,pies*n);}
+      else{pies=1;n=ri(2,10);num=ri(1,n);}
+      t.interactive=true;t.noInput=true;t.pies=pies;t.n=n;t.num=num;t.den=n;
+      t.size=pies===1?190:(pies===2?150:125);
+      let startN=(t.mode==='draw')?1:n;
+      t.state={n:startN,sh:[...Array(pies)].map(()=>new Array(startN).fill(false))};
+      let q=(t.mode==='colour')
+        ?'<div class="q">Färbe '+qFrac(num,n)+(pies>1?' (alle Kuchen zusammen)':'')+'</div>'
+        :'<div class="q">Zeichne '+qFrac(num,n)+(pies>1?' (alle Kuchen zusammen)':'')+'</div>';
+      let ctl=(t.mode==='draw')?'<div class="ctl">Jeder Kuchen in <button type="button" class="pm" data-d="-1" aria-label="weniger Stücke">−</button> <span class="cnt">1</span> <button type="button" class="pm" data-d="1" aria-label="mehr Stücke">+</button> Stücke teilen</div>':'';
+      t.html=q+'<div class="pies"></div>'+ctl+'<div class="hint">'+(t.mode==='draw'?HINT_DRAW:HINT_COLOUR)+'</div>';
+      t.text=(t.mode==='colour'?'Färbe ':'Zeichne ')+num+'/'+n;
+    }
+    t.html=sq(t.html);
+    t.answer=t.num+'/'+t.den;
+    return t;
+  }
+
+  /* Anklickbare Kuchen: Klick auf ein Stück färbt es bzw. macht es wieder weiss; − / + teilt den Kuchen neu ein */
+  function mount(el,t){
+    curShape=t.shape||'pie';
+    let st=t.state,box=el.querySelector('.pies'),cnt=el.querySelector('.cnt');
+    function redraw(){
+      box.innerHTML=st.sh.map((sh,pi)=>pieSvg(st.n,sh,t.size,pi,true)).join('');
+      if(cnt)cnt.textContent=st.n;
+    }
+    box.addEventListener('click',function(e){
+      let p=e.target.closest('[data-i]');if(!p)return;
+      let pi=+p.getAttribute('data-p'),i=+p.getAttribute('data-i');
+      st.sh[pi][i]=!st.sh[pi][i];redraw();
+    });
+    el.querySelectorAll('.pm').forEach(function(b){
+      b.addEventListener('click',function(){
+        let n=Math.max(1,Math.min(12,st.n+(+b.getAttribute('data-d'))));
+        if(n!==st.n){st.n=n;st.sh=st.sh.map(()=>new Array(n).fill(false));redraw();}
+        b.blur();
+      });
+    });
+    redraw();
+  }
+
+  /* Eingabe lesen: "3/4", "7/4", "1 3/4" oder "2"; Ergebnis {num,den} oder null */
+  function parseFraction(raw){
+    let s=String(raw).trim().replace(/\s+/g,' ').replace(/\s*\/\s*/g,'/');
+    let m;
+    if((m=/^(\d+)$/.exec(s)))return {num:+m[1],den:1};
+    if((m=/^(\d+)\/(\d+)$/.exec(s))&&+m[2]>0)return {num:+m[1],den:+m[2]};
+    if((m=/^(\d+) (\d+)\/(\d+)$/.exec(s))&&+m[3]>0)return {num:(+m[1])*(+m[3])+(+m[2]),den:+m[3]};
+    return null;
+  }
+
+  function helpPieTask(t){   /* Hilfe für Einfärben / Selbst einteilen */
+    let multi=t.pies>1,draw=(t.mode==='draw'),n2;
+    do{n2=pick(multi?[2,3,4,5,6,8]:[3,4,5,6,8,10]);}while(n2===t.den);
+    let k2=ri(1,n2-1),h='<b>Hilfsbeispiel:</b>';
+    if(!multi){
+      h+=piesHtml([{n:n2,k:k2,scattered:false}],120)
+        +'<div class="helpline">'+(draw?'1. Der Nenner '+N(n2)+' sagt: Teile den Kuchen in '+N(n2)+' gleich grosse Stücke.<br>2. ':'')
+        +'Der Zähler '+Z(k2)+' sagt: Färbe '+Z(k2)+' Stücke.<br>Bruch: <span class="hc">'+frac(Z(k2),N(n2))+'</span></div>';
+    }else{
+      h+=piesHtml([{n:n2,full:true},{n:n2,k:k2,scattered:false}],100)
+        +'<div class="helpline">'+(draw?'1. Der Nenner '+N(n2)+' sagt: Teile jeden Kuchen in '+N(n2)+' gleich grosse Stücke.<br>2. ':'')
+        +'Ist der Zähler grösser als der Nenner, brauchst du mehr als einen Kuchen. Ein ganzer Kuchen hat '+n2+' Stücke, dazu kommen '+k2+': '+n2+' + '+k2+' = '+Z(n2+k2)+' gefärbte Stücke.<br>'
+        +'Bruch: <span class="hc">'+frac(Z(n2+k2),N(n2))+'</span></div>';
+    }
+    return h;
+  }
+
+  function helpKuchen(t){
+    curShape=t.shape||'pie';
+    return sq(helpKuchenInner(t));
+  }
+  function helpKuchenInner(t){
+    if(t.interactive)return helpPieTask(t);
+    let n=t.n,h='';
+    if(t.kind==='single'){
+      let k2;do{k2=ri(1,n-1);}while(n>2&&k2===t.k);
+      h='<b>Hilfsbeispiel:</b>'+piesHtml([{n:n,k:k2,scattered:t.level>=1}],120)
+        +'<div class="helpline">Der Kuchen ist in '+N(n)+' gleich grosse Stücke geteilt: Das ist der <b>Nenner</b> '+N(n)+'.<br>'
+        +Z(k2)+' Stücke sind gefärbt: Das ist der <b>Zähler</b> '+Z(k2)+'.<br>Bruch: <span class="hc">'+frac(Z(k2),N(n))+'</span></div>';
+    }else if(t.kind==='mixed'){
+      let k2;do{k2=ri(1,n-1);}while(n>2&&k2===t.k);
+      h='<b>Hilfsbeispiel:</b>'+piesHtml([{n:n,full:true},{n:n,k:k2,scattered:true}],110)
+        +'<div class="helpline">Der Nenner ist die Anzahl gleich grosser Stücke pro Kuchen: '+N(n)+'.<br>'
+        +'Ein ganzer Kuchen hat '+n+' gefärbte Stücke, dazu kommen '+Z(k2)+' Stücke: '+n+' + '+k2+' = '+(n+k2)+'.<br>'
+        +'Unechter Bruch: <span class="hc">'+frac(Z(n+k2),N(n))+'</span> &nbsp;oder gemischte Zahl: <span class="hc">'+mixed(1,Z(k2),N(n))+'</span></div>';
+    }else{
+      let a2=ri(1,n-1),b2=ri(1,n-1);
+      h='<b>Hilfsbeispiel:</b>'+piesHtml([{n:n,k:a2,scattered:true},{n:n,k:b2,scattered:true}],110)
+        +'<div class="helpline">Beide Kuchen sind in '+N(n)+' Stücke geteilt: Nenner '+N(n)+'.<br>'
+        +'Zähle alle gefärbten Stücke zusammen: '+a2+' + '+b2+' = '+Z(a2+b2)+'.<br>'
+        +'Bruch: <span class="hc">'+frac(Z(a2+b2),N(n))+'</span></div>';
+    }
+    return h;
+  }
+
+  /* ---------- Kategorie 2: Bruch → Dezimalzahl ----------
+     Level 1: nur Zehntel (1/10 bis 9/10)
+     Level 2: Zehntel und Stammbrüche 1/2, 1/4, 1/5, 1/8
+     Level 3: Nenner 2, 4, 5, 8, 10 mit beliebigem Zähler bis zum ganzen (z. B. 3/4, 4/4, 8/8)
+     Level 4: unechte Brüche bis 3 Ganze (z. B. 12/4, 17/8)
+     Ab Level 3: die Hälfte der Aufgaben umgekehrt (Dezimalzahl gegeben, Bruch eintippen)
+     Level 5: nur die wichtigen Brüche 1/20, 1/25, 1/50 (nur Zähler 1) und Hundertstel mit beliebigem Zähler (z. B. 37/100) */
+  const DEN=[[10],[10,2,4,5,8],[2,4,5,8,10],[2,4,5,8,10],[20,25,50,100,100]];
+
+  function pow10for(d){   /* kleinste Zehnerpotenz 10^m, die durch d teilbar ist (d hat nur die Teiler 2 und 5) */
+    let m=0,p=1;while(p%d!==0){p*=10;m++;if(m>12)return null;}
+    return {m:m,p:p};
+  }
+  function decimalString(totalNum,d){
+    let q=pow10for(d);
+    let scaled=(BigInt(totalNum)*BigInt(q.p))/BigInt(d);
+    let s=scaled.toString();
+    if(q.m>0){while(s.length<=q.m)s='0'+s;s=s.slice(0,-q.m)+'.'+s.slice(-q.m);}
+    return normalize(s);
+  }
+  function normalize(s){
+    let p=s.split('.');
+    let i=(p[0]||'').replace(/^0+/,'')||'0';
+    let d=(p[1]||'').replace(/0+$/,'');
+    return d?i+'.'+d:i;
+  }
+  function normalizeInput(raw){
+    let s=String(raw).replace(/[\s'’]/g,'').replace(',','.');
+    if(!/^\d*\.?\d*$/.test(s)||!/\d/.test(s))return null;
+    return normalize(s);
+  }
+
+  function dezForm(l){   /* Form der Aufgabe: proper | mixed | improper */
+    if(l<=2)return 'proper';
+    if(l===3)return 'improper';
+    return 'proper';
+  }
+  function dezNumbers(l,d,form,avoidK){
+    let k,w=0;
+    for(let tries=0;tries<500;tries++){
+      if(l===0)k=ri(1,9);                                   /* Zehntel */
+      else if(l===1)k=(d===10)?ri(1,9):1;                   /* Zehntel oder Stammbruch */
+      else if(l===2)k=ri(1,d);                              /* bis zum ganzen Bruch (d/d) */
+      else if(l===4)k=(d===100)?ri(1,99):1;                  /* 1/20, 1/25, 1/50 und beliebige Hundertstel */
+      else if(form==='proper')k=ri(1,d-1);
+      else if(form==='mixed'){k=ri(1,d-1);w=ri(1,5);}
+      else k=ri(d+1,3*d);                                   /* bis 3 Ganze, z. B. 12/4 */
+      if(k!==avoidK)break;
+    }
+    return {k:k,w:w};
+  }
+  /* Umkehraufgaben (Dezimalzahl gegeben, Bruch gesucht): nie ganze Zahlen, nie über 1 */
+  function revNumbers(l,d,avoidK){
+    let k,improper=false;   /* Umkehraufgaben: nie über 1 */
+    for(let tries=0;tries<500;tries++){
+      k=improper?ri(d+1,3*d):((l>=4&&d!==100)?1:ri(1,d-1));
+      if(k%d===0)continue;
+      if(k!==avoidK)break;
+    }
+    if(avoidK!==undefined&&k===avoidK&&d>2)k=ri(2,d-1);   /* Beispiel in der Hilfe soll nicht die Aufgabe sein */
+    return {k:k,improper:improper};
+  }
+  function taskDezRev(l){
+    let d=pick(DEN[l]),x=revNumbers(l,d);
+    let t={cat:'dezimal',level:l,rev:true,d:d,k:x.k,w:0,form:x.improper?'improper':'proper',num:x.k,den:d};
+    let dz=decimalString(x.k,d).replace('.',',');
+    t.answer=x.k+'/'+d;
+    t.text=dz+' = ?';
+    t.html='<div class="q">Schreibe als Bruch</div><div class="eq"><span class="decnum">'+dz+'</span> <span class="eqs">=</span> <span class="eqs">?</span></div><div class="hint">Antwort als Bruch, zum Beispiel 3/4'+(x.improper?' (oder als gemischte Zahl, zum Beispiel 2 3/4)':'')+'. Du musst nicht kürzen.</div>';
+    return t;
+  }
+  function taskDezimal(l){
+    if(l>=2&&Math.random()<0.5)return taskDezRev(l);   /* ab Level 3: Hälfte der Aufgaben umgekehrt */
+    let d=pick(DEN[l]);
+    let form=dezForm(l);
+    let x=dezNumbers(l,d,form);
+    let total=form==='improper'?x.k:x.w*d+x.k;
+    let t={cat:'dezimal',level:l,d:d,k:x.k,w:x.w,form:form};
+    t.answer=decimalString(total,d);
+    t.text=(form==='mixed'?x.w+' '+x.k+'/'+d:x.k+'/'+d)+' = ?';
+    t.html='<div class="q">Schreibe als Dezimalzahl</div><div class="eq">'+(form==='mixed'?mixed(x.w,x.k,d):frac(x.k,d))+' <span class="eqs">=</span> <span class="eqs">?</span></div>';
+    return t;
+  }
+  function helpDezRev(t){
+    let d=t.d,x=revNumbers(t.level,d,t.k);
+    let total=x.k;
+    let ds=decimalString(total,d),q=pow10for(d).m;
+    let digits=ds.split('.')[1]||'';
+    let m=digits.length||1,P=Math.pow(10,m);
+    let top=Math.round(parseFloat(ds)*P);
+    let g=gcd(top,P),tn=top/g,td=P/g;
+    let h='<b>Hilfsbeispiel:</b><div class="helpcalc">'+ds.replace('.',',')+' = '+frac(top,P)+(g>1?' = '+frac(tn+'·'+g,td+'·'+g)+' = '+frac(tn,td):'')+'</div>'
+      +'<div class="helpline">Zähle die Stellen nach dem Komma: '+m+' Stelle'+(m>1?'n':'')+' heisst Nenner '+P+'.<br>Der Zähler ist die Zahl ohne Komma: '+top+'.'+(g>1?'<br>Dann kürzt du (zum Beispiel mit '+g+') so weit wie möglich.':'')+'</div>';
+    return h;
+  }
+  function helpDezimal(t){
+    if(t.rev)return helpDezRev(t);
+    let d=t.d,q=pow10for(d),f=q.p/d;
+    let x=dezNumbers((t.level===1&&d!==10)||(t.level===4&&d!==100)?2:t.level,d,t.form,t.k);   /* Beispiel soll nicht die Aufgabe selbst sein */
+    let k2=x.k,w2=x.w;
+    let total2=t.form==='improper'?k2:w2*d+k2;
+    let res=decimalString(total2,d);
+    let h='<b>Hilfsbeispiel:</b>';
+    let line;
+    if(f===1){   /* Nenner ist schon 10, 100 oder 1000 */
+      let dec=decimalString(t.form==='improper'?k2:k2,d);
+      if(t.form==='mixed')line=mixed(w2,k2,d)+' = '+w2+' + '+frac(k2,d)+' = '+res;
+      else if(t.form==='improper')line=frac(k2,d)+' = '+res;
+      else line=frac(k2,d)+' = '+res;
+      h+='<div class="helpcalc">'+line+'</div>'
+        +'<div class="helpline">Der Nenner '+N(d)+' hat '+q.m+' Null'+(q.m>1?'en':'')+': Die Dezimalzahl hat <b>'+q.m+' Stelle'+(q.m>1?'n':'')+' nach dem Komma</b>.<br>Schreibe den Zähler und setze das Komma so, dass '+q.m+' Stelle'+(q.m>1?'n':'')+' dahinter stehen (fehlende Stellen mit 0 auffüllen).</div>';
+    }else{
+      let step=function(kk,dd){return frac(kk,dd)+' = '+frac(kk+'·'+f,dd+'·'+f)+' = '+frac(kk*f,q.p);};
+      if(t.form==='mixed')line=mixed(w2,k2,d)+' = '+w2+' + '+frac(k2,d)+' = '+w2+' + '+frac(k2*f,q.p)+' = '+res;
+      else if(t.form==='improper')line=frac(k2,d)+' = '+frac(k2+'·'+f,d+'·'+f)+' = '+frac(k2*f,q.p)+' = '+res;
+      else line=frac(k2,d)+' = '+frac(k2+'·'+f,d+'·'+f)+' = '+frac(k2*f,q.p)+' = '+res;
+      h+='<div class="helpcalc">'+line+'</div>'
+        +'<div class="helpline"><b>Erweitern:</b> Mache den Nenner zu '+q.p+'. Dazu rechnest du '+d+' · '+f+' = '+q.p+', also erweiterst du Zähler und Nenner mit '+f+'.<br>'
+        +'Dann liest du die Dezimalzahl ab: '+q.m+' Stelle'+(q.m>1?'n':'')+' nach dem Komma.'
+        +(t.form==='improper'?'<br>Unechter Bruch: Du kannst auch zuerst in eine gemischte Zahl umwandeln (Zähler : Nenner = ganze Zahl Rest …).':'')
+        +'</div>';
+    }
+    return h;
+  }
+
+  /* ---------- Kategorie 3: Brüche kürzen ----------
+     Level 1: Nenner bis 15, Zähler bis 3
+     Level 2: Nenner bis 20, Zähler bis 5
+     Level 3: Nenner bis 50, Zähler bis 10
+     Level 4: Nenner bis 100, Zähler bis 50
+     Level 5: Nenner und Zähler bis 100 (immer Zähler < Nenner)
+     Jede Aufgabe ist kürzbar; richtig ist nur der vollständig gekürzte Bruch. */
+  const KUERZ=[[15,3],[20,5],[50,10],[100,50],[100,100]];   /* [max. Nenner, max. Zähler] */
+  function kuerzNumbers(l,avoid){
+    let maxD=KUERZ[l][0],maxN=KUERZ[l][1],n,d;
+    for(let tries=0;tries<5000;tries++){
+      n=ri(2,maxN);d=ri(3,maxD);
+      if(n>=d)continue;                      /* immer echte Brüche: Zähler kleiner als Nenner */
+      let g=gcd(n,d);
+      if(g<2||d/g<2&&n/g<2)continue;
+      if(d/g===1)continue;                   /* Ergebnis soll ein Bruch bleiben */
+      if(avoid&&n===avoid.n&&d===avoid.d)continue;
+      return {n:n,d:d,g:g};
+    }
+    return {n:2,d:4,g:2};
+  }
+  function taskKuerzen(l){
+    let x=kuerzNumbers(l);
+    let t={cat:'kuerzen',level:l,num:x.n,den:x.d,g:x.g};
+    t.answer=(x.n/x.g)+'/'+(x.d/x.g);
+    t.text='Kürze '+x.n+'/'+x.d;
+    t.html='<div class="q">Kürze so weit wie möglich</div><div class="eq">'+frac(x.n,x.d)+' <span class="eqs">=</span> <span class="eqs">?</span></div><div class="hint">Antwort als Bruch, zum Beispiel 3/4</div>';
+    return t;
+  }
+  function helpKuerzen(t){
+    let x=kuerzNumbers(t.level,{n:t.num,d:t.den});
+    let a=x.n/x.g,b=x.d/x.g;
+    let h='<b>Hilfsbeispiel:</b><div class="helpcalc">'+frac(Z(x.n),N(x.d))+' = '+frac(Z(x.n)+' : '+x.g,N(x.d)+' : '+x.g)+' = '+frac(Z(a),N(b))+'</div>'
+      +'<div class="helpline">Suche eine Zahl, durch die <b>Zähler und Nenner</b> teilbar sind: hier die '+x.g+'.<br>Teile Zähler und Nenner durch '+x.g+'.<br>'
+      +'Prüfe zum Schluss, ob du noch weiter kürzen kannst. Der Bruch ist fertig gekürzt, wenn es keine Zahl mehr gibt, die in beide passt.<br>'
+      +'<span class="legend">Tipp: Gerade Zahlen kannst du durch 2 teilen. Endet eine Zahl auf 0 oder 5, geht die 5. Ist die Quersumme durch 3 teilbar, geht die 3.</span></div>';
+    return h;
+  }
+
+  /* ---------- Kategorie 4: Brüche erweitern ----------
+     Aufgabentypen: num   a/b = ?/d   (neuer Zähler)
+                    back  ?/b = c/d   (ursprünglicher Zähler)
+                    den   a/b = c/?   (neuer Nenner)
+                    backden a/? = c/d (ursprünglicher Nenner)
+                    factor a/b = c/d  (Mit welcher Zahl erweitert?)
+                    full  "Erweitere a/b mit f"  (ganzer Bruch als Antwort)
+     Level 1: Erweiterungszahl 2 oder 3, Nenner 2–5, Typen num/back
+     Level 2: Erweiterungszahl 2–5, Nenner 2–8, Typen num/back
+     Level 3: Erweiterungszahl 2–6, Nenner 2–10, dazu Typ den
+     Level 4: Erweiterungszahl 2–10, Nenner 2–12, dazu backden/factor
+     Level 5: Erweiterungszahl 2–12, Nenner 2–15, alle Typen inkl. full; oft auf Hundertstel (z. B. 3/20 = ?/100) */
+  const ERW=[
+    {f:[2,3],   b:[2,5],  types:['num','back']},
+    {f:[2,5],   b:[2,8],  types:['num','back']},
+    {f:[2,6],   b:[2,10], types:['num','back','den']},
+    {f:[2,10],  b:[2,12], types:['num','back','den','backden','factor']},
+    {f:[2,12],  b:[2,15], types:['num','back','den','backden','factor','full']}
+  ];
+  const NENNER_NAME={2:'Halbe',3:'Drittel',4:'Viertel',5:'Fünftel',6:'Sechstel',7:'Siebtel',8:'Achtel',9:'Neuntel',10:'Zehntel',11:'Elftel',12:'Zwölftel',100:'Hundertstel'};
+  function erwNumbers(l,type,avoid){
+    const S=ERW[l];
+    for(let tries=0;tries<2000;tries++){
+      let b=ri(S.b[0],S.b[1]),f=ri(S.f[0],S.f[1]);
+      if(l===4&&Math.random()<0.35){   /* Level 5: oft auf Hundertstel */
+        let bs=[2,4,5,10,20,25,50];b=pick(bs);f=100/b;
+      }
+      if(b<2)continue;
+      let a=ri(1,b-1);
+      if(l===4&&b*f>100)continue;
+      if(gcd(a,b)!==1&&l<3)continue;   /* bis Level 3 schon gekürzte Ausgangsbrüche */
+      let x={a:a,b:b,f:f,c:a*f,d:b*f};
+      if(avoid&&x.a===avoid.a&&x.b===avoid.b&&x.f===avoid.f&&type===avoid.type)continue;
+      return x;
+    }
+    return {a:1,b:2,f:2,c:2,d:4};
+  }
+  function qm(){return '<span class="qmark">?</span>';}
+  function erwEq(x,type){
+    let L=frac(x.a,x.b),R=frac(x.c,x.d);
+    if(type==='num'||type==='full')return L+' <span class="eqs">=</span> '+(type==='num'?frac(qm(),x.d):'?');
+    if(type==='back')return frac(qm(),x.b)+' <span class="eqs">=</span> '+R;
+    if(type==='den')return L+' <span class="eqs">=</span> '+frac(x.c,qm());
+    if(type==='backden')return frac(x.a,qm())+' <span class="eqs">=</span> '+R;
+    return L+' <span class="eqs">=</span> '+R;   /* factor */
+  }
+  function taskErweitern(l){
+    let type=pick(ERW[l].types);
+    let x=erwNumbers(l,type);
+    let t={cat:'erweitern',level:l,etype:type,a:x.a,b:x.b,f:x.f,c:x.c,d:x.d};
+    let nm=NENNER_NAME[x.d];
+    let q,hint='Antwort: eine Zahl';
+    if(type==='num'){
+      q='Erweitere auf '+(nm?nm:'den Nenner '+x.d)+'. Welche Zahl fehlt im Zähler?';t.answer=String(x.c);
+      t.text=x.a+'/'+x.b+' = ?/'+x.d;
+    }else if(type==='back'){
+      q='Der Bruch wurde erweitert. Welche Zahl stand im Zähler vor dem Erweitern?';t.answer=String(x.a);
+      t.text='?/'+x.b+' = '+x.c+'/'+x.d;
+    }else if(type==='den'){
+      q='Welche Zahl fehlt im Nenner?';t.answer=String(x.d);
+      t.text=x.a+'/'+x.b+' = '+x.c+'/?';
+    }else if(type==='backden'){
+      q='Der Bruch wurde erweitert. Welche Zahl stand im Nenner vor dem Erweitern?';t.answer=String(x.b);
+      t.text=x.a+'/? = '+x.c+'/'+x.d;
+    }else if(type==='factor'){
+      q='Mit welcher Zahl wurde erweitert?';t.answer=String(x.f);
+      t.text=x.a+'/'+x.b+' = '+x.c+'/'+x.d+' (Erweiterungszahl?)';
+    }else{
+      q='Erweitere '+x.a+'/'+x.b+' mit '+x.f+'. Wie heisst der neue Bruch?';t.answer=x.c+'/'+x.d;hint='Antwort als Bruch, zum Beispiel 6/8';
+      t.text='Erweitere '+x.a+'/'+x.b+' mit '+x.f;
+    }
+    t.html='<div class="q">'+q+'</div><div class="eq">'+(type==='full'?frac(x.a,x.b)+' <span class="eqs">·</span> '+frac(x.f,x.f)+' <span class="eqs">=</span> <span class="eqs">?</span>':erwEq(x,type))+'</div><div class="hint">'+hint+'</div>';
+    return t;
+  }
+  function checkErweitern(raw,t){
+    if(t.etype==='full'){let f=parseFraction(raw);return f!==null&&f.num===t.c&&f.den===t.d;}
+    return /^\d+$/.test(String(raw).trim())&&String(raw).trim().replace(/^0+(?=\d)/,'')===t.answer;
+  }
+  function helpErweitern(t){
+    let x=erwNumbers(t.level,t.etype,{a:t.a,b:t.b,f:t.f,type:t.etype});
+    let type=t.etype,A=Z(x.a),B=N(x.b),C=Z(x.c),D=N(x.d),F='<b>'+x.f+'</b>';
+    let h='<b>Hilfsbeispiel:</b><div class="helpcalc">'+frac(A,B)+' <span class="eqs" style="font-size:18px">(· '+x.f+')</span> = '+frac(C,D)+'</div><div class="helpline">';
+    h+='<b>Erweitern</b> heisst: Zähler <b>und</b> Nenner mit derselben Zahl <b>malnehmen</b>.<br>';
+    if(type==='num'||type==='full')h+=(type==='full'?'Du erweiterst mit '+x.f+'.':'Nenner: '+x.b+' → '+x.d+'. Das ist mal '+x.f+'.')+'<br>Also auch der Zähler mal '+x.f+': '+x.a+' · '+x.f+' = '+x.c+'.';
+    else if(type==='back')h+='Nenner: '+x.b+' → '+x.d+'. Das ist mal '+x.f+'.<br>Der Zähler wurde auch mal '+x.f+' genommen. Rückwärts rechnest du geteilt: '+x.c+' : '+x.f+' = '+x.a+'.';
+    else if(type==='den')h+='Zähler: '+x.a+' → '+x.c+'. Das ist mal '+x.f+'.<br>Also auch der Nenner mal '+x.f+': '+x.b+' · '+x.f+' = '+x.d+'.';
+    else if(type==='backden')h+='Zähler: '+x.a+' → '+x.c+'. Das ist mal '+x.f+'.<br>Der Nenner wurde auch mal '+x.f+' genommen. Rückwärts: '+x.d+' : '+x.f+' = '+x.b+'.';
+    else h+='Schau, was beim Zähler oder Nenner passiert ist: '+x.a+' → '+x.c+' ist mal '+x.f+' (oder '+x.b+' → '+x.d+').';
+    return h+'</div>';
+  }
+
+  /* ---------- Kategorien 5–7: Brüche addieren, subtrahieren, multiplizieren & dividieren ----------
+     Antwort: Bruch (3/4), bei Zahlen über 1 auch gemischte Zahl (1 1/4). Richtig ist jeder gleichwertige Bruch;
+     ab Level 4 (addieren/subtrahieren: ab Level 3) muss das Ergebnis vollständig gekürzt sein.
+     addieren / subtrahieren
+       Level 1: gleiche Nenner (3–10), Ergebnis unter 1 und nicht kürzbar
+       Level 2: gleiche Nenner (3–12), Ergebnis auch über 1 und kürzbar
+       Level 3: ungleiche Nenner, einer ist ein Vielfaches des anderen (z. B. 1/2 + 1/4)
+       Level 4: beliebige Nenner 2–10 (z. B. 1/3 + 1/4), Ergebnis muss gekürzt sein
+       Level 5: gemischte Zahlen (z. B. 1 1/2 + 2 2/3), Ergebnis gekürzt
+     multiplizieren & dividieren
+       Level 1: Bruch · ganze Zahl, Ergebnis unter 1
+       Level 2: Bruch · ganze Zahl (auch über 1) und Bruch : ganze Zahl
+       Level 3: Bruch · Bruch
+       Level 4: Bruch · Bruch und Bruch : Bruch, Ergebnis gekürzt
+       Level 5: mit gemischten Zahlen, Ergebnis gekürzt */
+  function lcm(a,b){return a/gcd(a,b)*b;}
+  function opx(x){return x.w?mixed(x.w,x.n,x.d):frac(x.n,x.d);}
+  function opt(x){return x.w?x.w+' '+x.n+'/'+x.d:x.n+'/'+x.d;}
+  function imp(x){return {n:(x.w||0)*x.d+x.n,d:x.d};}
+  function gmix(n,d){let w=Math.floor(n/d),r=n%d;return w?(r?w+' '+r+'/'+d:String(w)):r+'/'+d;}
+  function arithHint(reqRed){return 'Antwort als Bruch, zum Beispiel 3/4 (über 1 auch als gemischte Zahl, zum Beispiel 1 1/4)'+(reqRed?'. Kürze so weit wie möglich.':'');}
+  function arithFinish(t,x,op,y,rn,rd,reqRed){
+    let g=gcd(rn,rd);t.num=rn/g;t.den=rd/g;t.reqRed=reqRed;
+    t.answer=t.num+'/'+t.den;
+    t.text=opt(x)+' '+op+' '+opt(y);
+    t.html='<div class="q">Rechne'+(reqRed?' und kürze':'')+'</div><div class="eq">'+opx(x)+' <span class="eqs">'+op+'</span> '+opx(y)+' <span class="eqs">=</span> <span class="eqs">?</span></div><div class="hint">'+arithHint(reqRed)+'</div>';
+    return t;
+  }
+  function checkArith(raw,t){
+    let f=parseFraction(raw);
+    if(f===null||f.den===0)return false;
+    if(f.num*t.den!==t.num*f.den)return false;
+    if(t.reqRed&&(gcd(f.num,f.den)!==1))return false;
+    return true;
+  }
+  /* addieren / subtrahieren */
+  function genAddSub(l,sub,avoid){
+    for(let tries=0;tries<3000;tries++){
+      let x,y,b,d;
+      if(l===0){d=ri(3,10);x={n:ri(1,d-1),d:d,w:0};y={n:ri(1,d-1),d:d,w:0};}
+      else if(l===1){d=ri(3,12);x={n:ri(1,d-1),d:d,w:0};y={n:ri(1,d-1),d:d,w:0};}
+      else if(l===2){b=ri(2,6);d=b*pick([2,3,4]);if(d>12)continue;x={n:ri(1,b-1),d:b,w:0};y={n:ri(1,d-1),d:d,w:0};if(Math.random()<0.5){let z=x;x=y;y=z;}}
+      else if(l===3){b=ri(2,10);d=ri(2,10);if(b===d||d%b===0||b%d===0)continue;x={n:ri(1,b-1),d:b,w:0};y={n:ri(1,d-1),d:d,w:0};}
+      else{b=ri(2,8);d=ri(2,8);x={w:ri(1,4),n:ri(1,b-1),d:b};y={w:ri(1,4),n:ri(1,d-1),d:d};}
+      let ix=imp(x),iy=imp(y),L=lcm(ix.d,iy.d),vx=ix.n*(L/ix.d),vy=iy.n*(L/iy.d),rn;
+      if(sub){if(vx<vy){let z=x;x=y;y=z;let v=vx;vx=vy;vy=v;}if(vx===vy)continue;rn=vx-vy;}
+      else rn=vx+vy;
+      let g=gcd(rn,L);if(L/g===1)continue;          /* kein ganzes Ergebnis */
+      if(l===0&&(g>1||(!sub&&rn>=L)))continue;      /* Level 1: unter 1, nicht kürzbar */
+      if(avoid&&opt(x)===avoid.x&&opt(y)===avoid.y)continue;
+      return {x:x,y:y,rn:rn,rd:L};
+    }
+    return {x:{n:1,d:5,w:0},y:{n:2,d:5,w:0},rn:3,rd:5};
+  }
+  function taskAddSub(l,sub){
+    let g=genAddSub(l,sub);
+    let t={cat:sub?'subtrahieren':'addieren',level:l,sub:sub};
+    return arithFinish(t,g.x,sub?'−':'+',g.y,g.rn,g.rd,l>=3);
+  }
+  function helpAddSub(t){
+    let g=genAddSub(t.level,t.sub,{x:null,y:null});
+    for(let i=0;i<50&&opt(g.x)+' '+opt(g.y)===t.text.replace(/ [+−] /,' ');i++)g=genAddSub(t.level,t.sub);
+    let x=g.x,y=g.y,op=t.sub?'−':'+',word=t.sub?'subtrahierst':'addierst';
+    let ix=imp(x),iy=imp(y),L=lcm(ix.d,iy.d),ax=ix.n*(L/ix.d),ay=iy.n*(L/iy.d);
+    let h='<b>Hilfsbeispiel:</b><div class="helpcalc">'+opx(x)+' '+op+' '+opx(y)+'</div><div class="helpline">';
+    if(x.d===y.d&&!x.w)h+='Die Nenner sind gleich: Der Nenner '+N(x.d)+' bleibt.<br>Du '+word+' nur die Zähler: '+x.n+' '+op+' '+y.n+' = '+Z(g.rn)+'.<br>Ergebnis: '+frac(Z(g.rn),N(g.rd));
+    else{
+      if(x.w||y.w)h+='1. Wandle die gemischten Zahlen in unechte Brüche um: '+(x.w?x.w+' '+x.n+'/'+x.d+' = '+frac(ix.n,ix.d)+'. ':'')+(y.w?y.w+' '+y.n+'/'+y.d+' = '+frac(iy.n,iy.d)+'.':'')+'<br>';
+      h+=(x.w||y.w?'2. ':'1. ')+'Suche einen gemeinsamen Nenner: '+N(L)+' (ein Nenner, in den beide Nenner passen).<br>'
+        +(x.w||y.w?'3. ':'2. ')+'Erweitere beide Brüche: '+frac(ix.n,ix.d)+' = '+frac(Z(ax),N(L))+' und '+frac(iy.n,iy.d)+' = '+frac(Z(ay),N(L))+'.<br>'
+        +(x.w||y.w?'4. ':'3. ')+'Jetzt '+word+' du die Zähler: '+ax+' '+op+' '+ay+' = '+Z(g.rn)+'.<br>Ergebnis: '+frac(Z(g.rn),N(L));
+    }
+    let gg=gcd(g.rn,g.rd);
+    if(gg>1)h+=' <span class="eqs" style="font-size:18px">=</span> '+frac(g.rn/gg,g.rd/gg)+' (gekürzt)';
+    if(g.rn>g.rd)h+='<br>Als gemischte Zahl: <b>'+gmix(g.rn/gg,g.rd/gg)+'</b>';
+    return h+'</div>';
+  }
+  /* multiplizieren & dividieren */
+  const MD_TYPES=[['mulint'],['mulint','divint'],['mulfrac'],['mulfrac','divfrac'],['mulmix','divmix']];
+  function genMulDiv(l,type,avoidText){
+    for(let tries=0;tries<3000;tries++){
+      let x,y,op='·',rn,rd,swap=false,b,d;
+      if(type==='mulint'){
+        b=ri(l===0?3:2,l===0?10:8);x={n:ri(1,b-1),d:b,w:0};let n=ri(2,l===0?4:5);y={n:n,d:1,w:0,int:true};
+        rn=x.n*n;rd=b;if(l===0&&rn>=rd)continue;if(Math.random()<0.5)swap=true;
+      }else if(type==='divint'){
+        b=ri(2,8);x={n:ri(1,b-1),d:b,w:0};let n=ri(2,5);y={n:n,d:1,w:0,int:true};op=':';rn=x.n;rd=b*n;
+      }else if(type==='mulfrac'){
+        b=ri(2,6);d=ri(2,6);x={n:ri(1,b-1),d:b,w:0};y={n:ri(1,d-1),d:d,w:0};rn=x.n*y.n;rd=x.d*y.d;
+      }else if(type==='divfrac'){
+        b=ri(2,8);d=ri(2,8);x={n:ri(1,b-1),d:b,w:0};y={n:ri(1,d-1),d:d,w:0};op=':';rn=x.n*y.d;rd=x.d*y.n;
+      }else{
+        b=ri(2,6);d=ri(2,6);
+        x={w:ri(1,3),n:ri(1,b-1),d:b};y=Math.random()<0.5?{n:ri(1,d-1),d:d,w:0}:{w:ri(1,2),n:ri(1,d-1),d:d};
+        if(type==='divmix')op=':';
+        let ix=imp(x),iy=imp(y);
+        if(op==='·'){rn=ix.n*iy.n;rd=ix.d*iy.d;}else{rn=ix.n*iy.d;rd=ix.d*iy.n;}
+        if(op===':'&&Math.random()<0.4){let z=x;x=y;y=z;ix=imp(x);iy=imp(y);rn=ix.n*iy.d;rd=ix.d*iy.n;}
+      }
+      let g=gcd(rn,rd);if(rd/g===1)continue;
+      if(swap){let z=x;x=y;y=z;}
+      let txt=opt(x)+' '+op+' '+opt(y);
+      if(avoidText&&txt===avoidText)continue;
+      return {x:x,y:y,op:op,rn:rn,rd:rd,type:type};
+    }
+    return {x:{n:1,d:2,w:0},y:{n:1,d:3,w:0},op:'·',rn:1,rd:6,type:'mulfrac'};
+  }
+  function opx2(x){return x.int?'<span class="eqs">'+x.n+'</span>':opx(x);}
+  function taskMulDiv(l){
+    let type=pick(MD_TYPES[l]);
+    let g=genMulDiv(l,type);
+    let t={cat:'multdiv',level:l,mtype:type};
+    let e=arithFinish(t,g.x,g.op,g.y,g.rn,g.rd,l>=3);
+    t.html=t.html.replace(/<div class="eq">.*?<\/div>/,'<div class="eq">'+opx2(g.x)+' <span class="eqs">'+g.op+'</span> '+opx2(g.y)+' <span class="eqs">=</span> <span class="eqs">?</span></div>');
+    t.html=t.html.replace('<div class="q">Rechne','<div class="q">Rechne');
+    return t;
+  }
+  function helpMulDiv(t){
+    let g=genMulDiv(t.level,t.mtype,t.text);
+    let x=g.x,y=g.y,h='<b>Hilfsbeispiel:</b><div class="helpcalc">'+opx2(x)+' '+g.op+' '+opx2(y)+'</div><div class="helpline">';
+    let ix=imp(x),iy=imp(y);
+    let gg=gcd(g.rn,g.rd);
+    if(x.w||y.w)h+='1. Wandle gemischte Zahlen in unechte Brüche um: '+(x.w?x.w+' '+x.n+'/'+x.d+' = '+frac(ix.n,ix.d)+'. ':'')+(y.w?y.w+' '+y.n+'/'+y.d+' = '+frac(iy.n,iy.d)+'.':'')+'<br>';
+    if(g.op==='·'){
+      if(x.int||y.int){let f=x.int?y:x,n=x.int?x.n:y.n;h+='Eine ganze Zahl ist ein Bruch mit Nenner 1: '+n+' = '+frac(n,1)+'.<br>Zähler mal Zähler, Nenner mal Nenner: '+frac(Z(f.n+' · '+n),N(f.d))+' = '+frac(Z(g.rn),N(g.rd));}
+      else h+=(x.w||y.w?'2. ':'')+'<b>Zähler mal Zähler</b>, <b>Nenner mal Nenner</b>:<br>'+frac(Z(ix.n+' · '+iy.n),N(ix.d+' · '+iy.d))+' = '+frac(Z(g.rn),N(g.rd));
+    }else{
+      if(y.int)h+='Durch eine ganze Zahl teilen heisst: der Nenner wird mal '+y.n+' genommen.<br>'+frac(Z(x.n),N(x.d+' · '+y.n))+' = '+frac(Z(g.rn),N(g.rd));
+      else h+=(x.w||y.w?'2. ':'')+'Durch einen Bruch teilen heisst: <b>mit dem Kehrwert malnehmen</b> (Zähler und Nenner tauschen).<br>'+frac(ix.n,ix.d)+' : '+frac(iy.n,iy.d)+' = '+frac(ix.n,ix.d)+' · '+frac(iy.d,iy.n)+' = '+frac(Z(g.rn),N(g.rd));
+    }
+    if(gg>1)h+=' <span class="eqs" style="font-size:18px">=</span> '+frac(g.rn/gg,g.rd/gg)+' (gekürzt)';
+    if(g.rn>g.rd)h+='<br>Als gemischte Zahl: <b>'+gmix(g.rn/gg,g.rd/gg)+'</b>';
+    h+='<br><span class="legend">Tipp: Du kannst schon vor dem Multiplizieren kürzen.</span>';
+    return h+'</div>';
+  }
+
+  /* ---------- Schnittstelle zur Engine ---------- */
+  function makeTask(l,opt){
+    let cat=CATS[opt]?opt:pick(CAT_KEYS);
+    if(cat==='kuchen')return taskKuchen(l);
+    if(cat==='kuerzen')return taskKuerzen(l);
+    if(cat==='erweitern')return taskErweitern(l);
+    if(cat==='addieren')return taskAddSub(l,false);
+    if(cat==='subtrahieren')return taskAddSub(l,true);
+    if(cat==='multdiv')return taskMulDiv(l);
+    return taskDezimal(l);
+  }
+  function check(raw,t){
+    if(t.cat==='kuchen'&&t.interactive){
+      let cnt=t.state.sh.reduce((a,p)=>a+p.filter(Boolean).length,0);
+      return (t.mode!=='draw'||t.state.n===t.den)&&cnt===t.num;
+    }
+    if(t.cat==='erweitern')return checkErweitern(raw,t);
+    if(t.cat==='addieren'||t.cat==='subtrahieren'||t.cat==='multdiv')return checkArith(raw,t);
+    if(t.cat==='kuerzen'){   /* nur der vollständig gekürzte Bruch ist richtig */
+      let f=parseFraction(raw);
+      return f!==null&&f.num*t.den===t.num*f.den&&gcd(f.num,f.den)===1&&f.den>1;
+    }
+    if(t.cat==='kuchen'){
+      let f=parseFraction(raw);
+      return f!==null&&f.num*t.den===t.num*f.den;
+    }
+    if(t.rev){let f=parseFraction(raw);return f!==null&&f.num*t.den===t.num*f.den;}
+    let v=normalizeInput(raw);
+    return v!==null&&v===t.answer;
+  }
+  function help(t){
+    return t.cat==='kuchen'?helpKuchen(t):(t.cat==='kuerzen'?helpKuerzen(t):(t.cat==='erweitern'?helpErweitern(t):((t.cat==='addieren'||t.cat==='subtrahieren')?helpAddSub(t):(t.cat==='multdiv'?helpMulDiv(t):helpDezimal(t)))));
+  }
+
+  return {
+    id:'brueche',   /* NIE ändern: sonst gehen gespeicherte Lernstände verloren */
+    title:'Brüche Trainer',
+    subtitle:'Brüche an Kuchen und Quadraten ablesen, umwandeln, kürzen, erweitern und damit rechnen',
+    levels:LEVELS,
+    raceLevel:2,       /* Zeitrennen: immer Aufgaben von Level 3 (Profi) */
+    raceOption:'mix',  /* Zeitrennen: immer alle Kategorien gemischt */
+    medals:['🥉 Bronze-Bruchmeister','🥈 Silber-Bruchmeister','🥇 Gold-Bruchmeister','💠 Platin-Bruchmeister'],
+    options:{
+      choices:CAT_KEYS.map(k=>({v:k,label:CATS[k].icon+' '+CATS[k].name})).concat([{v:'mix',label:'🎲 Gemischt'}]),
+      default:'kuchen'
+    },
+    css:'.q{font-size:22px;font-weight:bold;margin-bottom:8px}.hint{font-size:14px;font-weight:normal;color:#555;margin-top:4px}.qmark{display:inline-block;min-width:30px;border-bottom:3px solid #c62828;color:#c62828;font-weight:bold}.decnum{font-size:34px;font-weight:bold}.qf .frac{font-size:24px;margin:0 3px}.ctl{font-size:18px;margin:6px 0}.ctl .pm{font-size:22px;font-weight:bold;width:40px;height:36px;margin:0 4px;cursor:pointer}.cnt{font-weight:bold;font-size:22px;display:inline-block;min-width:28px}.pie.click path,.pie.click circle{cursor:pointer}.pie.click path:hover,.pie.click circle:hover{stroke:#0f172a;stroke-width:3}.pies{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin:10px 0}.pie{max-width:100%;height:auto}.sqr rect{shape-rendering:crispEdges}.sqr.click rect:hover{stroke:#0f172a;stroke-width:3}.sqr.click rect{cursor:pointer}.eq{font-size:34px}.eqs{font-size:34px;margin:0 6px}.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 5px;line-height:1.15;font-size:34px}.frac .fn{border-bottom:3px solid currentColor;padding:0 8px 2px}.frac .fd{padding:2px 8px 0}.whole{font-size:44px;vertical-align:middle;margin-right:4px}.helpcalc{font-size:22px;font-weight:bold;margin:10px 0 6px}.helpcalc .frac,.hc .frac{font-size:22px}.hc .whole{font-size:28px}.hc{font-weight:bold}.helpline{font-size:16px;line-height:1.5}.cn{color:#c62828;font-weight:bold}.cz{color:#2e7d32;font-weight:bold}.legend{font-size:14px;color:#444}',
+    makeTask:makeTask,
+    mount:mount,
+    check:check,
+    help:help
+  };
+})();
+</script>
+
+<!-- ╔══════════════════════════════════════════════════════════════════════╗
+     ║  2) SPIEL-BLOCK  –  themenunabhängig (Belohnung für Cookies)         ║
+     ║  Schnittstelle: GAME.name, GAME.cost (Cookies pro Runde),            ║
+     ║  GAME.start(container, onEnd(punkte)), GAME.stop()                   ║
+     ║  Zum Austauschen des Spiels nur diesen Block ersetzen.               ║
+     ╚══════════════════════════════════════════════════════════════════════╝ -->
+<script>
+const GAME=(function(){
+  /* Flappy Bird (einfache Version): Leertaste = flattern, durch die Lücken fliegen */
+  const W=360,H=520,GROUND=60,BX=90,R=13,GAP=150,PW=56,SPACING=210,SPEED=150,GRAV=1500,FLAP=-400,MAXSTEP=0.05,SCALE=1.2,TRIES=3,SPEED_UP=1.2,SPEED_EVERY=10,SPEED_MAX=3;   /* alle 10 Röhren 20 % schneller, höchstens Faktor 3 */
+  function speedFactor(score){return Math.min(SPEED_MAX,Math.pow(SPEED_UP,Math.floor(score/SPEED_EVERY)));}
+  function rnd(a,b){return a+Math.random()*(b-a);}
+
+  function addPipe(s){
+    let lo=GAP/2+40,hi=H-GROUND-GAP/2-40;
+    let c=Math.max(lo,Math.min(hi,s.lastCenter+rnd(-140,140)));   /* nie zu weit auseinander: immer machbar */
+    s.lastCenter=c;
+    s.pipes.push({x:s.nextX,c:c,passed:false});
+    s.nextX+=SPACING;
+  }
+  function newState(){
+    let s={bird:{y:H/2-30,v:0},pipes:[],score:0,time:0,deadTime:0,phase:'ready',lastCenter:(H-GROUND)/2,nextX:W+60};
+    addPipe(s);
+    return s;
+  }
+  function flap(s){
+    if(s.phase==='ready')s.phase='play';
+    if(s.phase==='play')s.bird.v=FLAP;
+  }
+  function hitRect(cx,cy,r,rx,ry,rw,rh){
+    let nx=Math.max(rx,Math.min(cx,rx+rw)),ny=Math.max(ry,Math.min(cy,ry+rh));
+    let dx=cx-nx,dy=cy-ny;
+    return dx*dx+dy*dy<r*r;
+  }
+  function die(s){s.phase='dead';s.deadTime=0;}
+  function step(s,dt){
+    s.time+=dt;
+    let b=s.bird;
+    if(s.phase==='ready'){b.y=H/2-30+Math.sin(s.time*4)*6;return;}
+    if(s.phase==='dead'){
+      s.deadTime+=dt;
+      b.v+=GRAV*dt;b.y=Math.min(H-GROUND-R,b.y+b.v*dt);
+      return;
+    }
+    b.v+=GRAV*dt;b.y+=b.v*dt;
+    if(b.y<R){b.y=R;if(b.v<0)b.v=0;}                  /* Decke bremst nur, tötet nicht */
+    let v=SPEED*speedFactor(s.score);
+    s.pipes.forEach(p=>{p.x-=v*dt;});
+    s.nextX-=v*dt;
+    while(s.nextX<=W+20)addPipe(s);
+    s.pipes=s.pipes.filter(p=>p.x>-PW-10);
+    let r=R-2;                                          /* etwas nachsichtig */
+    for(const p of s.pipes){
+      if(hitRect(BX,b.y,r,p.x,0,PW,p.c-GAP/2)||hitRect(BX,b.y,r,p.x,p.c+GAP/2,PW,H-GROUND-(p.c+GAP/2))){die(s);return;}
+      if(!p.passed&&p.x+PW<BX-R){p.passed=true;s.score++;}
+    }
+    if(b.y+R>=H-GROUND){b.y=H-GROUND-R;die(s);}
+  }
+
+  function draw(ctx,s){
+    let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#7ec8f2');g.addColorStop(1,'#d8f0ff');
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    s.pipes.forEach(p=>{
+      ctx.fillStyle='#4caf50';
+      ctx.fillRect(p.x,0,PW,p.c-GAP/2);
+      ctx.fillRect(p.x,p.c+GAP/2,PW,H-GROUND-(p.c+GAP/2));
+      ctx.fillStyle='#388e3c';
+      ctx.fillRect(p.x-4,p.c-GAP/2-18,PW+8,18);
+      ctx.fillRect(p.x-4,p.c+GAP/2,PW+8,18);
+    });
+    ctx.fillStyle='#d7b46a';ctx.fillRect(0,H-GROUND,W,GROUND);
+    ctx.fillStyle='#8bc34a';ctx.fillRect(0,H-GROUND,W,8);
+    let b=s.bird;
+    ctx.save();ctx.translate(BX,b.y);ctx.rotate(Math.max(-0.5,Math.min(1.1,b.v/600)));
+    ctx.fillStyle='#ffd54f';ctx.beginPath();ctx.arc(0,0,R,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ff9800';ctx.beginPath();ctx.moveTo(R-2,-2);ctx.lineTo(R+9,2);ctx.lineTo(R-2,6);ctx.fill();
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(4,-4,4,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#000';ctx.beginPath();ctx.arc(5,-4,2,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+    ctx.fillStyle='#fff';ctx.strokeStyle='#333';ctx.lineWidth=4;ctx.font='bold 40px Arial';ctx.textAlign='center';
+    ctx.strokeText(s.score,W/2,60);ctx.fillText(s.score,W/2,60);
+    if(s.phase==='ready'){
+      ctx.font='bold 22px Arial';ctx.lineWidth=3;
+      ctx.strokeText('Leertaste zum Starten',W/2,H/2+60);ctx.fillText('Leertaste zum Starten',W/2,H/2+60);
+    }
+  }
+
+  let run=null;
+  function stop(){
+    if(!run)return;
+    cancelAnimationFrame(run.raf);
+    document.removeEventListener('keydown',run.onKey);
+    run=null;
+  }
+  function start(root,onEnd){
+    stop();
+    root.innerHTML='';
+    let K=Math.max(0.7,Math.min(SCALE,(window.innerHeight-190)/H,(window.innerWidth-60)/W));   /* Darstellung 1.2x gross, auf kleinen Bildschirmen angepasst */
+    let canvas=document.createElement('canvas');canvas.width=Math.round(W*K);canvas.height=Math.round(H*K);
+    root.appendChild(canvas);
+    let ctx=canvas.getContext('2d');
+    if(ctx)ctx.setTransform(K,0,0,K,0,0);
+    let s=newState();
+    let r={raf:0,ended:false,last:0};
+    r.onKey=e=>{if(e.code==='Space'&&!e.repeat){e.preventDefault();flap(s);}};
+    document.addEventListener('keydown',r.onKey);
+    canvas.addEventListener('pointerdown',e=>{e.preventDefault();flap(s);});
+    run=r;
+    function loop(t){
+      if(run!==r)return;
+      let dt=r.last?Math.min(MAXSTEP,(t-r.last)/1000):0;r.last=t;
+      step(s,dt);
+      if(ctx)draw(ctx,s);
+      if(s.phase==='dead'&&s.deadTime>0.7&&!r.ended){r.ended=true;onEnd(s.score);return;}
+      r.raf=requestAnimationFrame(loop);
+    }
+    r.raf=requestAnimationFrame(loop);
+  }
+  return {name:'Flappy Bird',cost:1,tries:TRIES,start:start,stop:stop,sim:{speedFactor:speedFactor,newState:newState,flap:flap,step:step,W:W,H:H,GAP:GAP,GROUND:GROUND,BX:BX}};
+})();
+</script>
+
+<!-- ╔══════════════════════════════════════════════════════════════════════╗
+     ║  3) ENGINE  –  themenunabhängig, beim Themenwechsel NICHT ändern      ║
+     ║  (Oberfläche, Levels/XP, Cookies, Achievements, Zeitrennen, Speichern)║
+     ╚══════════════════════════════════════════════════════════════════════╝ -->
+<script>
+const LEVELS=TOPIC.levels;
+const LAST=LEVELS.length-1;                 /* Index des höchsten Levels */
+function lvlName(l){return LEVELS[l].icon+' '+LEVELS[l].name;}
+
+/* Titel und Styles aus dem Themen-Block übernehmen */
+document.title=TOPIC.title;
+document.getElementById('topicTitle').textContent=TOPIC.title;
+document.getElementById('topicSubtitle').textContent=TOPIC.subtitle;
+document.getElementById('themeCss').textContent=TOPIC.css;
+
+let lossActive=false,lossFrom=0,lossTo=0;   /* roter Verlust-Abschnitt im XP-Balken */
+let solved=0,streak=0,xp=0,schutz=0,cookies=0,gameBest=0,current={},achs=[];
+/* Cookies: 1 pro 50 gelöste Aufgaben insgesamt, 1 pro 25 richtige am Stück (wiederholbar, unabhängig von den Achievements) */
+const COOKIE_TOTAL=50,COOKIE_STREAK=25;
+/* Zeitrennen: möglichst viele Aufgaben in RACE_SECONDS; Aufgaben immer aus dem Level TOPIC.raceLevel; Rekord pro Level */
+const RACE_LEVEL=TOPIC.raceLevel;
+const RACE_SECONDS=60;
+let race={active:false,phase:'',end:0,count:0,level:0,timer:null};
+let records=LEVELS.map(()=>0);
+const XP_RIGHT=10,XP_LOSS=5; /* richtig: +10 XP, Fehlversuch 1 und 2: je -5 XP (Hälfte) */
+/* XP-Multiplikator bei Serie: je 3 richtige am Stück +0.25, höchstens x2.5 (3 am Stück: x1.25, 6: x1.5 ... 15: x2.5).
+   Dadurch bleiben sehr gute SuS nicht zu lange bei den einfachen Aufgaben hängen. */
+const STREAK_XP_STEP=3,STREAK_XP_ADD=0.25,STREAK_XP_MAX=2.5;
+function xpMultiplier(st){return Math.min(STREAK_XP_MAX,1+Math.floor(st/STREAK_XP_STEP)*STREAK_XP_ADD);}
+const LEVEL_XP=150,MAX_XP=LEVEL_XP*(LAST+1); /* 150 XP pro Level = netto 15 richtige Antworten; das höchste Level hat auch einen Balken, bei MAX_XP ist er voll */
+/* Eigene Referenz auf das Namensfeld (window.name ist in JavaScript bereits belegt) */
+const nameInput=document.getElementById('name');
+
+function getLevel(){return Math.min(LAST,Math.floor(xp/LEVEL_XP));}
+
+function update(){if(lvlSelFor!==getLevel())buildLvlSel();autoSave();updateGameBtn();let l=getLevel();level.innerHTML='<b>Level '+(l+1)+' - '+lvlName(l)+'</b>'+(practiceLevel!==null?' &nbsp;·&nbsp; 📘 Üben in '+lvlName(practiceLevel)+' (ohne XP)':'');correct.textContent=solved;cookieShow.textContent=cookies;let start=l*LEVEL_XP;fill.style.width=((xp-start)/LEVEL_XP*100)+'%';
+  /* roter Abschnitt: so viel XP wurde bei Fehlern verloren (bleibt bis zur nächsten richtigen Antwort) */
+  if(lossActive){
+    let a=Math.max(0,Math.min(1,(lossFrom-start)/LEVEL_XP)),b=Math.max(0,Math.min(1,(lossTo-start)/LEVEL_XP));
+    if(b>a){loss.style.left=(a*100)+'%';loss.style.width=((b-a)*100)+'%';loss.style.display='block';}else loss.style.display='none';
+  }else loss.style.display='none';
+}
+
+/* Neue Aufgabe vom Themen-Block holen (forcedLevel: z. B. im Zeitrennen) */
+/* Optionale Auswahlliste des Themas (z. B. Kategorie): Wahl wird gespeichert und an makeTask übergeben */
+function getOpt(){return TOPIC.options?topicOpt.value:undefined;}
+/* Eigene XP/Levels pro Auswahl (z. B. pro Kategorie): xp gehört immer zur aktuell gewählten Auswahl, die anderen liegen in xpMap */
+let xpMap={},curOpt=(TOPIC.options?TOPIC.options.default:'_');
+/* Übungslevel: tieferes Level freiwillig wählen; dort gibt es keine XP (weder Gewinn noch Verlust) */
+let practiceLevel=null,lvlSelFor=-1;
+function playLevel(){return practiceLevel!==null?practiceLevel:getLevel();}
+function buildLvlSel(){
+  let cur=getLevel();
+  if(practiceLevel!==null&&practiceLevel>=cur)practiceLevel=null;
+  lvlSel.innerHTML='';
+  for(let i=0;i<=cur;i++){
+    let o=document.createElement('option');o.value=i;
+    o.textContent='Level '+(i+1)+' – '+lvlName(i)+(i===cur?' (aktuell)':' (üben, ohne XP)');
+    lvlSel.appendChild(o);
+  }
+  lvlSel.value=(practiceLevel!==null)?practiceLevel:cur;
+  lvlSel.disabled=(cur===0);
+  lvlSel.title=cur===0?'Noch kein tieferes Level vorhanden':'Level zum Üben wählen (tiefere Level geben keine XP)';
+  lvlSelFor=cur;
+}
+function lvlSelChange(){
+  let v=parseInt(lvlSel.value);
+  practiceLevel=(v===getLevel())?null:v;
+  lvlSel.blur();
+  if(race.active)return;
+  update();newTask();answer.focus();
+}
+if(TOPIC.options){
+  TOPIC.options.choices.forEach(c=>{let o=document.createElement('option');o.value=c.v;o.textContent=c.label;topicOpt.appendChild(o);});
+  topicOpt.value=TOPIC.options.default;
+  optRow.style.display='inline';
+  topicOpt.addEventListener('change',()=>{
+    topicOpt.blur();
+    if(race.active){topicOpt.value=curOpt;return;}
+    xpMap[curOpt]=xp;curOpt=topicOpt.value;xp=xpMap[curOpt]||0;
+    schutz=0;lossActive=false;practiceLevel=null;
+    buildLvlSel();autoSave();update();newTask();answer.focus();
+  });
+}
+let lastSig=null;
+function newTask(forcedLevel){
+  update();
+  let l=(forcedLevel===undefined)?playLevel():forcedLevel;
+  const opt=(forcedLevel!==undefined&&TOPIC.raceOption)?TOPIC.raceOption:getOpt();   /* Zeitrennen: festgelegte Auswahl des Themas */
+  /* nie zweimal hintereinander genau dieselbe Aufgabe */
+  const sig=t=>[t.cat,t.mode,t.kind,t.shape,t.answer,t.text].join('|');
+  let tries=0;
+  do{current=TOPIC.makeTask(l,opt);tries++;}while(lastSig!==null&&sig(current)===lastSig&&tries<30);
+  lastSig=sig(current);
+  current.wrong=0;
+  let taskEl=document.getElementById('task');
+  if(current.html)taskEl.innerHTML=current.html;   /* optional: Aufgabe mit Grafik / gestapelten Brüchen */
+  else taskEl.textContent=current.text;
+  answer.value='';
+  answer.style.display=current.noInput?'none':'';   /* Aufgaben zum Anklicken brauchen keine Antwortzeile */
+  if(current.interactive&&TOPIC.mount)TOPIC.mount(taskEl,current);
+}
+
+/* Pop-ups kommen nacheinander (Warteschlange); jedes Enter / jeder Klick auf Weiter zeigt das nächste */
+let popupQueue=[];
+function nextPopup(){
+  let p=popupQueue.shift();
+  if(!p){popup.style.display='none';return false;}
+  popupTitle.textContent=p[0];popupText.innerHTML=p[1];popup.style.display='flex';
+  return true;
+}
+function showPopup(t,txt){popupQueue.push([t,txt]);if(popup.style.display!=='flex')nextPopup();}
+
+/* Pop-up schliessen und Cursor zurück ins Antwortfeld */
+function closePopup(){if(nextPopup())return;answer.focus();}
+
+/* Solange ein Pop-up offen ist: Enter schliesst es und löst NICHT die Aufgabe aus.
+   Capture-Phase, damit die Taste das Antwortfeld gar nicht mehr erreicht.
+   Gedrückt gehaltenes Enter (Wiederholung) wird ignoriert. */
+document.addEventListener('keydown',e=>{
+  if(popup.style.display==='flex'&&e.key==='Enter'){
+    e.preventDefault();
+    e.stopPropagation();
+    if(!e.repeat)closePopup();
+  }
+},true);
+
+/* Achievements in zwei Gruppen:
+   1) Medaillen des Themas (TOPIC.medals) bei MEDAL_AT gelösten Aufgaben insgesamt
+   2) Serien: richtige Antworten am Stück (STREAK_ACHS)
+   Angezeigt werden sie immer gruppiert und in fester Reihenfolge, unabhängig davon, wann sie freigeschaltet wurden. */
+const MEDAL_AT=[10,25,50,100];
+const STREAK_ACHS=[[5,'🔥 5 Aufgaben fehlerfrei'],[10,'🚀 10 Aufgaben fehlerfrei'],[25,'💎 25 Aufgaben fehlerfrei'],[50,'🌋 50 Aufgaben fehlerfrei']];
+const MEDAL_NAMES=TOPIC.medals;
+const STREAK_NAMES=STREAK_ACHS.map(x=>x[1]);
+const ALL_ACHS=MEDAL_NAMES.concat(STREAK_NAMES);
+/* Platzhalter-Liste: reserviert unter dem Titel immer den Platz für alle Achievements (neue hier ergänzen) */
+achSizer.innerHTML=MEDAL_NAMES.map(x=>'<li>'+x+'</li>').join('')+STREAK_NAMES.map((x,i)=>'<li'+(i===0?' class="gap"':'')+'>'+x+'</li>').join('');
+function renderAchs(){
+  let m=MEDAL_NAMES.filter(x=>achs.includes(x));
+  let st=STREAK_NAMES.filter(x=>achs.includes(x));
+  achievements.innerHTML=m.map(x=>'<li>'+x+'</li>').join('')+st.map((x,i)=>'<li'+(i===0&&m.length?' class="gap"':'')+'>'+x+'</li>').join('');
+}
+function addAch(a){if(!achs.includes(a)){achs.push(a);renderAchs();showPopup('🏆 Achievement freigeschaltet!',a);}}
+
+/* XP abziehen (nie unter 0). Dabei kann man ein Level absteigen.
+   Auf dem Levelanfang (0 XP im Level) wird der erste Fehler abgefangen (Schutz):
+   erst bei der 2. falschen Antwort in Folge steigt man ab
+   und landet im tieferen Level bei ca. 75 %. */
+const SCHUTZ_MAX=2;
+const ABSTIEG_XP=Math.floor(LEVEL_XP*0.75/XP_LOSS)*XP_LOSS; /* 110 von 150 = ca. 75 % */
+function loseXP(){
+  if(xp===0)return;
+  if(xp===getLevel()*LEVEL_XP){   /* genau am Levelanfang (im höchsten Level ist ein voller Balken kein Levelanfang) */
+    schutz++;
+    if(schutz<SCHUTZ_MAX)return;
+    schutz=0;
+    xp=xp-LEVEL_XP+ABSTIEG_XP;   /* Abstieg: im tieferen Level bei ca. 75 % landen */
+    return;
+  }
+  xp-=XP_LOSS;
+}
+
+/* Einmalige Cookies (insgesamt, nicht pro Kategorie): beim ersten Erreichen von Level 3 und beim ersten vollen Balken im höchsten Level */
+let cookieFlags={lv:false,max:false};
+const LEVEL_COOKIE_AT=2;   /* Index von Level 3 */
+function levelCookies(){
+  let f=cookieFlags;
+  if(!f.lv&&getLevel()>=LEVEL_COOKIE_AT){f.lv=true;giveCookie('Du hast zum ersten Mal <b>Level '+(LEVEL_COOKIE_AT+1)+'</b> erreicht.');}
+  if(!f.max&&xp>=MAX_XP){f.max=true;giveCookie('Du hast das <b>höchste Level</b> voll geschafft!');}
+}
+function giveCookie(why){
+  cookies++;
+  cookieShow.textContent=cookies;
+  showPopup('🍪 Cookie verdient!',why+'<br><br>Du hast jetzt <b>'+cookies+'</b> Cookie'+(cookies===1?'':'s')+'.');
+}
+
+function checkAnswer(){
+  if(race.active){if(race.phase==='run')raceAnswer();return;}
+  let before=getLevel();
+  if(TOPIC.check(answer.value,current)){
+    /* Ab der Hilfestellung (2. Fehlversuch) gibt es keine XP mehr */
+    let gain=(practiceLevel!==null||current.wrong>=2)?0:Math.round(XP_RIGHT*xpMultiplier(streak));   /* streak = Serie VOR dieser Aufgabe */
+    let practice=(practiceLevel!==null);   /* Übungslevel: XP, Zähler (gelöst/Serie), Achievements und Cookies pausieren */
+    xp=Math.min(MAX_XP,xp+gain);schutz=0;lossActive=false;
+    if(!practice){solved++;streak++;}
+    feedback.innerHTML='✅ Richtig!';
+    if(!practice){
+      MEDAL_AT.forEach((n,i)=>{if(solved===n&&MEDAL_NAMES[i])addAch(MEDAL_NAMES[i]);});
+      STREAK_ACHS.forEach(x=>{if(streak===x[0])addAch(x[1]);});
+      if(solved%COOKIE_TOTAL===0)giveCookie('Du hast insgesamt <b>'+solved+'</b> Aufgaben gelöst.');
+      if(streak%COOKIE_STREAK===0)giveCookie('Du hast <b>'+streak+'</b> Aufgaben am Stück richtig gelöst.');
+    }
+    let after=getLevel();
+    if(!practice)levelCookies();
+    newTask();
+    if(after>before){showPopup('🎉 Levelaufstieg!','Du hast das Level <b>'+lvlName(after)+'</b> erreicht.<br><br>🙌 Hol dir ein High Five oder eine Ghetto-Faust von der Lehrperson!');}
+  }else{
+    if(practiceLevel===null)streak=0;   /* im Übungslevel pausiert auch die Serie */
+    current.wrong++;
+    /* 1. und 2. Fehlversuch: je die Hälfte der XP einer richtigen Antwort weg; danach nichts mehr */
+    if(current.wrong<=2&&practiceLevel===null){
+      let xpBefore=xp;loseXP();
+      if(xp<xpBefore){if(!lossActive){lossTo=xpBefore;lossActive=true;}lossFrom=xp;}
+    }
+    let xpText='';
+    if(getLevel()<before)xpText='<br>⬇️ Du bist ein Level abgestiegen: <b>'+lvlName(getLevel())+'</b>';
+    update();
+    if(current.wrong<2){
+      feedback.innerHTML='❌ Noch nicht korrekt.'+xpText+'<br><br>Überdenke deine Lösung und versuche es nochmals.';
+    }else{
+      feedback.innerHTML='❌ Noch nicht korrekt.'+xpText+'<br><br>'+TOPIC.help(current)+'<br><br>Überdenke deine Lösung und versuche es nochmals.';
+    }
+  }
+}
+
+/* ---------- Zeitrennen ---------- */
+/* Bewertung des Rekords (Anzahl gelöster Aufgaben in der Rennzeit); pro Thema mit TOPIC.raceRating anpassbar */
+const RACE_RATING=TOPIC.raceRating||[
+  {min:10,icon:'🤖',name:'Maschine'},
+  {min:6,icon:'🏃',name:'Sprinter'},
+  {min:3,icon:'🚶',name:'Spaziergänger'},
+  {min:1,icon:'🐌',name:'Schnecke'}
+];
+function rating(n){for(const r of RACE_RATING){if(n>=r.min)return r;}return null;}
+
+/* Zeit-Rekord anzeigen: Rang-Emoji, Name und Anzahl, z. B. "🐌 Schnecke: 2 Aufgaben".
+   Das Zeitrennen läuft immer im Level RACE_LEVEL, darum gibt es nur diesen einen Rekord. */
+function renderRecords(){
+  let n=records[RACE_LEVEL]||0;
+  let rows=[];
+  if(n>0){
+    let r=rating(n);
+    rows.push('<li>'+(r?r.icon+' '+r.name+': ':'')+'<b>'+n+'</b> Aufgabe'+(n===1?'':'n')+'</li>');
+  }
+  if(gameBest>0)rows.push('<li>🐦 Flappy Bird: <b>'+gameBest+'</b> Punkt'+(gameBest===1?'':'e')+'</li>');
+  recordList.innerHTML=rows.join('');
+  recordBox.style.display=rows.length?'block':'none';
+  autoSave();
+}
+
+function startRace(){
+  if(race.active){endRaceUI();return;}   /* Button ist während des Rennens "Abbrechen" */
+  race={active:true,phase:'count',end:0,count:0,level:RACE_LEVEL,timer:null};
+  raceCount.textContent=0;
+  raceTime.textContent=RACE_SECONDS;
+  raceBar.style.display='block';
+  raceBtn.textContent='✖ Abbrechen';
+  updateGameBtn();
+  feedback.innerHTML='';
+  answer.value='';
+  answer.disabled=true;                  /* während der Vorbereitung nicht tippen */
+  let n=3;
+  const showCount=()=>{document.getElementById('task').textContent='Los geht’s in '+n+' …';};
+  showCount();
+  race.timer=setInterval(()=>{
+    n--;
+    if(n>0){showCount();return;}
+    clearInterval(race.timer);
+    beginRace();
+  },1000);
+}
+
+/* Nach den 3 Sekunden Vorbereitung: erste Aufgabe zeigen, dann läuft die Zeit */
+function beginRace(){
+  race.phase='run';
+  race.end=Date.now()+RACE_SECONDS*1000;
+  answer.disabled=false;
+  newTask(RACE_LEVEL);
+  answer.focus();
+  raceTick();
+  race.timer=setInterval(raceTick,200);
+}
+
+function raceTick(){
+  let left=Math.max(0,Math.ceil((race.end-Date.now())/1000));
+  raceTime.textContent=left;
+  raceBar.classList.toggle('low',left<=10);
+  if(Date.now()>=race.end)finishRace();
+}
+
+/* Im Zeitrennen: kein XP, keine Hilfe, keine Achievements. Bei Fehler bleibt die Aufgabe stehen. */
+function raceAnswer(){
+  if(TOPIC.check(answer.value,current)){
+    race.count++;
+    raceCount.textContent=race.count;
+    feedback.innerHTML='✅';
+    newTask(RACE_LEVEL);
+  }else{
+    feedback.innerHTML='❌ Nochmals versuchen';
+    answer.value='';
+  }
+  answer.focus();
+}
+
+function endRaceUI(){
+  clearInterval(race.timer);
+  race.active=false;race.phase='';
+  answer.disabled=false;
+  raceBar.style.display='none';
+  raceBar.classList.remove('low');
+  raceBtn.textContent='⏱️ Zeitrennen';
+  feedback.innerHTML='';
+  newTask();
+}
+
+function finishRace(){
+  let n=race.count,l=race.level;
+  let isRecord=n>(records[l]||0);
+  if(isRecord)records[l]=n;
+  endRaceUI();
+  renderRecords();
+  let txt='Du hast <b>'+n+'</b> Aufgabe'+(n===1?'':'n')+' in '+RACE_SECONDS+' Sekunden gelöst.<br><br>';
+  if(isRecord)txt+='🏆 <b>Neuer Rekord!</b>';
+  else txt+='Dein Rekord: <b>'+records[l]+'</b>';
+  showPopup(isRecord?'🏆 Neuer Zeit-Rekord!':'⏱️ Zeit abgelaufen!',txt);
+}
+
+answer.addEventListener('keydown',e=>{if(e.key==='Enter')checkAnswer();});
+/* Aufgaben zum Anklicken: Enter prüft auch ohne Antwortzeile (nicht, wenn ein Pop-up oder das Spiel offen ist oder ein Knopf fokussiert ist) */
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter'||e.repeat||gameOpen||!current||!current.noInput)return;
+  if(popup.style.display==='flex'||(e.target&&(e.target===answer||e.target.tagName==='BUTTON')))return;   /* Enter in der Antwortzeile hat schon geprüft (sonst würde die neue Klick-Aufgabe sofort mitgeprüft) */
+  checkAnswer();
+});
+
+/* ---------- Spiel (Belohnung für Cookies) ---------- */
+let gameOpen=false,triesLeft=0;   /* 1 Cookie = GAME.tries Versuche; übrige Versuche bleiben bis zum Neuladen erhalten */
+function triesText(){return triesLeft>0?'noch '+triesLeft+' Versuch'+(triesLeft===1?'':'e'):GAME.cost+' 🍪 = '+GAME.tries+' Versuche';}
+function updateGameBtn(){
+  gameBtn.textContent='🎮 '+GAME.name+' ('+triesText()+')';
+  let ok=(triesLeft>0||cookies>=GAME.cost)&&!race.active;
+  gameBtn.disabled=!ok;
+  gameBtn.title=ok?'Spiel starten':(race.active?'Nicht während des Zeitrennens':'Du brauchst '+GAME.cost+' Cookie'+(GAME.cost===1?'':'s'));
+}
+function beginRound(){   /* zieht bei Bedarf 1 Cookie ab (= neue Versuche) und startet einen Versuch */
+  if(triesLeft<=0){
+    if(cookies<GAME.cost)return false;
+    cookies-=GAME.cost;triesLeft=GAME.tries;
+  }
+  triesLeft--;
+  gameTitle.textContent=GAME.name+' – Versuch '+(GAME.tries-triesLeft)+' von '+GAME.tries;
+  gameResult.innerHTML='';gameAgain.style.display='none';
+  update();
+  GAME.start(gameRoot,onGameEnd);
+  return true;
+}
+function openGame(){
+  if(gameOpen||race.active)return;
+  if(triesLeft<=0&&cookies<GAME.cost)return;
+  gameOpen=true;
+  answer.blur();
+  gameOverlay.style.display='flex';
+  beginRound();
+}
+function onGameEnd(score){
+  let rec=score>gameBest;
+  if(rec)gameBest=score;
+  renderRecords();   /* zeigt den Rekord an und speichert automatisch */
+  gameResult.innerHTML='Punkte: <b>'+score+'</b>'+(rec?' 🏆 Neuer Rekord!':'')+' &nbsp;·&nbsp; Rekord: <b>'+gameBest+'</b>';
+  gameAgain.textContent='🔄 Nochmal ('+triesText()+')';
+  gameAgain.disabled=triesLeft<=0&&cookies<GAME.cost;
+  gameAgain.style.display='inline-block';
+}
+function gameAgainClick(btn){
+  if(btn)btn.blur();
+  if(!gameOpen)return;
+  beginRound();
+}
+function closeGame(btn){
+  if(btn)btn.blur();
+  GAME.stop();
+  gameOpen=false;
+  gameOverlay.style.display='none';
+  gameRoot.innerHTML='';
+  update();
+  answer.focus();
+}
+/* Solange das Spiel offen ist: Leertaste scrollt/aktiviert nichts; Esc beendet */
+['keydown','keyup'].forEach(t=>document.addEventListener(t,e=>{
+  if(!gameOpen)return;
+  if(e.code==='Space')e.preventDefault();
+  if(t==='keydown'&&e.key==='Escape')closeGame();
+},true));
+
+/* ---------- Speichern / Laden ---------- */
+async function saveProgress(){
+  let data={v:1,name:nameInput.value,solved,xp,xps:(xpMap[curOpt]=xp,xpMap),cf:cookieFlags,streak,cookies,gameBest,achs,records,opt:getOpt()};
+  let text=JSON.stringify(data,null,2);
+  let clean=nameInput.value.trim().replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,'_');
+  let fname=clean?'lernstand_'+clean+'.json':'lernstand.json';
+  /* Auf der veröffentlichten Seite erlaubt nur die Download-Funktion des Viewers das Speichern einer Datei */
+  try{
+    if(window.claude&&window.claude.use){
+      let dl=await window.claude.use('downloads');
+      if(dl){await dl.save({filename:fname,data:text});return;}
+    }
+  }catch(e){if(e&&e.code==='declined')return;}
+  let blob=new Blob([text],{type:'application/json'});
+  let a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=fname;
+  a.click();
+}
+
+/* Lernstand aus einem Objekt übernehmen (aus Datei oder aus dem Browser-Speicher) */
+function applyData(d){
+  nameInput.value=d.name||'';
+  solved=d.solved||0;xp=Math.max(0,Math.min(MAX_XP,(typeof d.xp==="number")?d.xp:solved*10));streak=d.streak||0;schutz=0;cookies=Math.max(0,parseInt(d.cookies)||0);gameBest=Math.max(0,parseInt(d.gameBest)||0);popupQueue=[];lossActive=false;achs=d.achs||[];
+  if(TOPIC.options&&d.opt&&[...topicOpt.options].some(o=>o.value===d.opt))topicOpt.value=d.opt;
+  /* XP pro Auswahl: neue Dateien haben xps; ältere Dateien nur ein einzelnes xp (gilt dann für die gewählte Auswahl) */
+  curOpt=TOPIC.options?topicOpt.value:'_';practiceLevel=null;
+  /* cf: neu {lv,max}; ältere Dateien hatten es pro Kategorie ({laenge:{lv,max},…}) -> zusammenfassen */
+  cookieFlags={lv:false,max:false};
+  if(d.cf&&typeof d.cf==='object'){
+    if('lv' in d.cf||'max' in d.cf){cookieFlags.lv=!!d.cf.lv;cookieFlags.max=!!d.cf.max;}
+    else for(const k in d.cf){if(d.cf[k]&&d.cf[k].lv)cookieFlags.lv=true;if(d.cf[k]&&d.cf[k].max)cookieFlags.max=true;}
+  }
+  if(d.xps&&typeof d.xps==='object'){
+    xpMap={};for(const k in d.xps)xpMap[k]=Math.max(0,Math.min(MAX_XP,parseInt(d.xps[k])||0));
+    xp=xpMap[curOpt]||0;
+  }else{xpMap={};xpMap[curOpt]=xp;}
+  records=LEVELS.map((_,i)=>Math.max(0,parseInt(d.records&&d.records[i])||0));
+}
+
+loadFile.addEventListener('change',e=>{
+  let r=new FileReader();
+  r.onload=()=>{
+    let d=JSON.parse(r.result);
+    applyData(d);
+    if(race.active)endRaceUI();
+    renderRecords();
+    renderAchs();
+    newTask();
+    feedback.innerHTML='📂 Lernstand geladen.';
+  };
+  r.readAsText(e.target.files[0]);
+});
+
+/* ---------- Automatisches Speichern im Browser (localStorage) ----------
+   Der Schlüssel enthält die Themen-Kennung, damit mehrere Trainer sich nicht überschreiben.
+   Speichern/Laden per Datei bleibt als Backup und für andere Geräte. */
+const AUTO_KEY='trainer_'+TOPIC.id;
+function autoSave(){
+  try{
+    localStorage.setItem(AUTO_KEY,JSON.stringify({name:nameInput.value,solved,xp,xps:(xpMap[curOpt]=xp,xpMap),cf:cookieFlags,streak,cookies,gameBest,achs,records,opt:getOpt()}));
+  }catch(e){}   /* z. B. InPrivate-Fenster oder blockierter Speicher: still ignorieren */
+}
+function autoLoad(){
+  try{
+    let t=localStorage.getItem(AUTO_KEY);
+    if(t){applyData(JSON.parse(t));return true;}
+  }catch(e){}
+  return false;
+}
+nameInput.addEventListener('input',autoSave);
+try{localStorage.setItem('__test','1');localStorage.removeItem('__test');}catch(e){storeWarn.style.display='block';}
+
+autoLoad();
+renderRecords();
+renderAchs();
+newTask();
+</script></body></html>

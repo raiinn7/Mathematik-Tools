@@ -1,0 +1,864 @@
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Masseinheiten Trainer</title><style>body{font-family:Arial,sans-serif;background:#eef4f8;margin:0;padding:20px}.container{max-width:1100px;margin:auto;background:#fff;padding:25px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.1)}.top{display:flex;gap:20px;align-items:flex-start}.main{flex:1}.ach{position:relative;width:320px;background:#f8f9fa;padding:12px;border-radius:12px}.cookies{position:absolute;top:10px;right:12px;font-size:18px;background:#fff;border-radius:14px;padding:3px 12px;box-shadow:0 1px 3px rgba(0,0,0,.18)}.ach li.gap{margin-top:12px}.ach ul{padding-left:20px}.achwrap{display:grid}.achwrap>ul{grid-area:1/1}#achSizer{visibility:hidden;pointer-events:none}#recordBox{display:none}#recordBox h3{margin-top:22px}.sub{color:#555;margin:-6px 0 14px}.task{font-size:30px;font-weight:bold;text-align:center;margin:30px 0}.progress{height:26px;background:#ddd;border-radius:20px;overflow:hidden;position:relative}.loss{position:absolute;top:0;height:100%;background:#e53935;display:none}.fill{height:100%;background:#4caf50;width:0}.answer{font-size:24px;padding:10px;width:220px}.btn{padding:10px 16px}.answer,.check{vertical-align:middle}.check{font-size:20px;font-weight:bold;padding:11px 26px;margin-left:0.5cm;cursor:pointer}.footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}.btn.small{font-size:12px;padding:4px 10px}.popup{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center}.box{background:white;padding:25px;border-radius:15px;text-align:center;max-width:500px}.racebar{display:none;background:#ff9800;color:#fff;font-size:28px;font-weight:bold;text-align:center;padding:10px;border-radius:12px;margin:10px 0}.racebar.low{background:#d32f2f}.gameov{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:20}.gamebox{background:#fff;border-radius:16px;padding:19px 24px;text-align:center;max-width:96vw;max-height:96vh;overflow:auto}.gamebox h2{margin:0 0 8px}.gamebox canvas{border-radius:10px;max-width:100%;touch-action:none;cursor:pointer}.gamehint{font-size:13px;color:#555;margin:6px 0}#gameResult{min-height:24px;font-size:18px;margin:6px 0}.gamebtns{display:flex;gap:10px;justify-content:center}@media(max-width:900px){.top{flex-direction:column;align-items:stretch}.ach{width:auto}}</style><style id="themeCss"></style></head><body><div class="container"><div class="top"><div class="main"><h1 id="topicTitle"></h1><div class="sub" id="topicSubtitle"></div>Name: <input id="name"><span id="optRow" style="display:none;margin-left:18px">Kategorie: <select id="topicOpt" style="font-size:15px;padding:4px"></select></span><p id="level"></p><div class="progress"><div id="fill" class="fill"></div><div id="loss" class="loss"></div></div><p>Richtig gelöst: <span id="correct">0</span></p><div id="raceBar" class="racebar">⏱️ Noch <span id="raceTime">60</span> s &nbsp;|&nbsp; Richtig: <span id="raceCount">0</span></div><div id="task" class="task"></div><input id="answer" class="answer"><button class="btn check" onclick="checkAnswer()">Prüfen</button><div id="feedback"></div></div><div class="ach"><div class="cookies" title="Cookies">🍪 <b id="cookieShow">0</b></div><h3>🏆 Achievements</h3><div class="achwrap"><ul id="achSizer" aria-hidden="true"></ul><ul id="achievements"></ul></div><div id="recordBox"><h3>🏅 Rekorde</h3><ul id="recordList"></ul></div></div></div><div class="footer"><select id="lvlSel" class="btn small" onchange="lvlSelChange()"></select><button id="gameBtn" class="btn small" onclick="openGame()"></button><button id="raceBtn" class="btn small" onclick="startRace()">⏱️ Zeitrennen</button><button class="btn small" onclick="saveProgress()">💾 Speichern</button><button class="btn small" onclick="loadFile.click()">📂 Laden</button><input type="file" id="loadFile" accept=".json" hidden></div></div><div id="popup" class="popup"><div class="box"><h2 id="popupTitle"></h2><p id="popupText"></p><button onclick="closePopup()">Weiter</button></div></div><div id="gameOverlay" class="gameov"><div class="gamebox"><h2 id="gameTitle"></h2><div id="gameRoot"></div><div class="gamehint">Leertaste (oder Klick / Tippen) = fliegen · Esc = beenden</div><div id="gameResult"></div><div class="gamebtns"><button id="gameAgain" class="btn" onclick="gameAgainClick(this)"></button><button class="btn" onclick="closeGame(this)">Schliessen</button></div></div></div>
+
+<!-- ╔══════════════════════════════════════════════════════════════════════╗
+     ║  1) THEMEN-BLOCK  –  hier steht ALLES, was zum Thema gehört          ║
+     ║  (Aufgaben, Schwierigkeit pro Level, Antwortprüfung, Hilfestellung)  ║
+     ╚══════════════════════════════════════════════════════════════════════╝ -->
+<script>
+/* =========================================================================
+   THEMA: Masseinheiten Trainer – Länge, Volumen, Gewicht, Zeit, Fläche umrechnen
+
+   Aufbau wie beim Komma Trainer: Nur dieser Block gehört zum Thema.
+   Die ENGINE weiter unten (Oberfläche, Levels/XP, Cookies, Achievements,
+   Zeitrennen, Speichern/Laden) ist für alle Trainer gleich.
+
+   SCHNITTSTELLE – das muss TOPIC liefern:
+     id, title, subtitle, levels {name,icon,…}, raceLevel, medals, raceRating (optional), css
+     raceOption  (optional) feste Auswahl für das Zeitrennen (hier 'mix' = alle Kategorien gemischt)
+     options     (optional) Auswahlliste über der Aufgabe: {choices:[{v,label}], default}
+                 Die Engine zeigt sie an, speichert die Wahl und übergibt sie als 2. Argument an makeTask.
+     makeTask(l, opt) -> Objekt {text, answer, ...}   neue Aufgabe für Level-Index l
+     check(raw, task) -> true/false
+     help(task)  -> HTML-Text (erscheint ab dem 2. Fehlversuch)
+   ========================================================================= */
+const TOPIC=(function(){
+
+  /* ---------- Einheiten ----------
+     Jede Einheit: n = Name, f = Grösse in der kleinsten Einheit der Kategorie (ganze Zahl, daher exakt rechnen).
+     Reihenfolge: von klein nach gross. Der Abstand der Positionen ist die Anzahl "Einheiten daneben". */
+  const CATS={
+    laenge :{name:'Länge',   icon:'📏',power:true, units:[{n:'mm',f:1n},{n:'cm',f:10n},{n:'dm',f:100n},{n:'m',f:1000n},{n:'km',f:1000000n}]},
+    volumen:{name:'Volumen', icon:'🧴',power:true, units:[{n:'ml',f:1n},{n:'cl',f:10n},{n:'dl',f:100n},{n:'l',f:1000n},{n:'hl',f:100000n}]},
+    gewicht:{name:'Gewicht', icon:'⚖️',power:true, maxDist:2, dist2From:3, units:[{n:'mg',f:1n},{n:'g',f:1000n},{n:'kg',f:1000000n},{n:'t',f:1000000000n}]},
+    zeit   :{name:'Zeit',    icon:'⏱️',power:false,units:[{n:'s',f:1n},{n:'min',f:60n},{n:'h',f:3600n},{n:'d',f:86400n}]},
+    flaeche:{name:'Fläche',  icon:'🟦',power:true, units:[{n:'mm²',f:1n},{n:'cm²',f:100n},{n:'dm²',f:10000n},{n:'m²',f:1000000n},{n:'a',f:100000000n,lv:3},{n:'ha',f:10000000000n,lv:3},{n:'km²',f:1000000000000n,lv:3}]}   /* lv = erstes Level (Index), in dem die Einheit vorkommt: Are, Hektare, km² erst ab Level 4 */
+  };
+  const CAT_KEYS=Object.keys(CATS);
+  const MIX_KEYS=CAT_KEYS.filter(k=>k!=='flaeche');   /* "Gemischt" (und Zeitrennen) ohne Fläche */
+
+  /* ---------- Schwierigkeit pro Level ----------
+     whole   : true = nur ganze Zahlen; sonst ca. 30 % ganze Zahlen, der Rest Dezimalzahlen
+     digits  : [kleinste, grösste] Anzahl Ziffern der Zahl in der Aufgabe (es werden höchstens 2 weniger als das Maximum verwendet)
+     dist    : [kleinster, grösster] Abstand der beiden Einheiten (1 = direkt daneben)
+     noComma : true = Ergebnis ist immer eine ganze Zahl
+     intMax / decMax : höchstens so viele Stellen vor / nach dem Komma im Ergebnis */
+  const LEVELS=[
+    {name:'Anfänger',       icon:'👶',whole:true,digits:[1,2],dist:[1,1],noComma:true,intMax:6,decMax:0},
+    {name:'Fortgeschritten',icon:'🛹',whole:true,digits:[1,3],dist:[1,1],intMax:6,decMax:3},
+    {name:'Profi',          icon:'😎',whole:true,digits:[1,4],dist:[1,2],intMax:7,decMax:6},
+    {name:'Experte',        icon:'🚀',          digits:[2,4],dist:[1,2],intMax:7,decMax:6},
+    {name:'Meister',        icon:'👑',          digits:[3,5],dist:[1,9],intMax:8,decMax:8}
+  ];
+  const WHOLE_SHARE=0.3;   /* ab Level 4: ca. 30 % ganze Zahlen */
+
+  /* ---------- Zahlen als Text (keine Rundungsfehler) ---------- */
+  function randDigit(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+
+  function digitCount(lv,whole){
+    let hi=lv.digits[1],lo=lv.digits[0];
+    let min=Math.max(lo,hi-2);
+    if(!whole)min=Math.max(2,min);   /* Dezimalzahl braucht mind. 2 Ziffern */
+    return randDigit(min,hi);
+  }
+  function randDecimal(k){
+    let dp=randDigit(1,Math.min(2,k-1)),ip=k-dp,i='',d='';   /* höchstens 2 Nachkommastellen */
+    for(let x=0;x<ip;x++)i+=(x===0&&ip>1)?randDigit(1,9):randDigit(0,9);
+    for(let x=0;x<dp;x++)d+=(x===dp-1)?randDigit(1,9):randDigit(0,9);
+    return i+'.'+d;
+  }
+  function randWhole(k){   /* in der Hälfte der Fälle mit Endnull (20, 450 …) */
+    let s='';
+    for(let x=0;x<k;x++)s+=(x===0)?randDigit(1,9):randDigit(0,9);
+    if(k>=2&&Math.random()<0.5)s=s.slice(0,-1)+'0';
+    return s;
+  }
+  function randNum(lv){
+    let whole=lv.whole||Math.random()<WHOLE_SHARE;
+    let k=digitCount(lv,whole);
+    return whole?randWhole(k):randDecimal(k);
+  }
+  function normalize(s){
+    let p=s.split('.');
+    let i=(p[0]||'').replace(/^0+/,'')||'0';
+    let d=(p[1]||'').replace(/0+$/,'');
+    return d?i+'.'+d:i;
+  }
+  function normalizeInput(raw){
+    let s=raw.replace(/[\s'’]/g,'').replace(',','.');
+    if(!/^\d*\.?\d*$/.test(s)||!/\d/.test(s))return null;
+    return normalize(s);
+  }
+
+  /* ---------- Exakt umrechnen (BigInt, kein Gleitkomma) ----------
+     Ergebnis = n · fA / fB. Gibt null zurück, wenn das Ergebnis kein endlicher Dezimalbruch ist (z. B. 1 min = 1/60 h). */
+  function gcd(a,b){while(b){let t=a%b;a=b;b=t;}return a;}
+  function convert(n,fA,fB){
+    let p=n.split('.'),d=p[1]?p[1].length:0;
+    let num=BigInt(p[0]+(p[1]||''))*fA;
+    if(num===0n)return '0';
+    let den=fB*(10n**BigInt(d));
+    let g=gcd(num,den);num/=g;den/=g;
+    let rest=den,a=0,b=0;
+    while(rest%2n===0n){rest/=2n;a++;}
+    while(rest%5n===0n){rest/=5n;b++;}
+    if(rest!==1n)return null;
+    let dec=Math.max(a,b);
+    let scaled=num*(10n**BigInt(dec))/den;
+    let s=scaled.toString();
+    if(dec>0){
+      while(s.length<=dec)s='0'+s;
+      s=s.slice(0,-dec)+'.'+s.slice(-dec);
+    }
+    return normalize(s);
+  }
+
+  /* ---------- Zeit: eigener Aufgaben-Generator ----------
+     Bei der Zeit wird nicht das Komma verschoben, sondern mit 60 und 24 gerechnet. Darum bewusst kleine Zahlen,
+     die pro Level um höchstens 2 wachsen. Keine Dezimalzahlen ausser bei Stunden (fr = erlaubte Bruchteile) und ab Level 4 bei Tagen (frD: nur .5; stepH = Stunden-Schritt bei h→d).
+       reihe60 : höchste Zahl in der 60er-Reihe: h→min bis so viele Stunden, min→h bis so viele mal 60 Minuten,
+                 s→min bis so viele mal 60 Sekunden, min→s bis so viele Minuten
+       tage    : d→h bis so viele Tage, h→d bis so viele mal 24 Stunden
+       sh      : (ab Level 4) gelegentlich s↔h (zwei Schritte), ganz einfach (1–3 Stunden) */
+  const ZEIT=[
+    {reihe60:2, tage:2, fr:[0],               frD:[0],     step:60, stepH:24},                 /* Level 1: 2 h = 120 min, 2 d = 48 h; nur ganze Zahlen */
+    {reihe60:3, tage:3, fr:[0,0.5],           frD:[0],     step:30, stepH:24},                 /* Level 2: 3 h = 180 min, 3 d = 72 h; Stunden auch mit .5 */
+    {reihe60:5, tage:5, fr:[0,0.25,0.5,0.75], frD:[0],     step:15, stepH:24},                 /* Level 3: Stunden auch mit .25 / .75 */
+    {reihe60:7, tage:7, fr:[0,0.25,0.5,0.75], frD:[0,0.5], step:15, stepH:12,sh:true},         /* Level 4: Tage erstmals auch mit .5; erstmals zwei Schritte (s↔h) */
+    {reihe60:10,tage:10,fr:[0,0.25,0.5,0.75], frD:[0,0.5], step:15, stepH:12,sh:true}          /* Level 5: 10 h = 600 min, 10 d = 240 h; mal s↔h */
+  ];
+  function genZeit(l,pair,avoidN){
+    let c=ZEIT[l],u=CATS.zeit.units;
+    const DIRS=[[0,1],[1,0],[1,2],[2,1],[2,3],[3,2]];   /* s→min, min→s, min→h, h→min, h→d, d→h */
+    for(let tries=0;tries<2000;tries++){
+      let pr=pair;
+      if(!pr)pr=(c.sh&&Math.random()<0.1)?(Math.random()<0.5?[0,2]:[2,0]):DIRS[Math.floor(Math.random()*DIRS.length)];
+      let n;
+      switch(pr[0]+''+pr[1]){
+        case '01':n=String(60*randDigit(1,c.reihe60));break;                         /* 60, 120, … Sekunden */
+        case '10':n=String(randDigit(1,c.reihe60));break;                            /* Minuten */
+        case '12':n=String(c.step*randDigit(1,c.reihe60*60/c.step));break;           /* Minuten, die ganze Stunden bzw. .5/.25/.75 ergeben */
+        case '21':{let h=randDigit(0,c.reihe60)+c.fr[Math.floor(Math.random()*c.fr.length)];if(h<=0||h>c.reihe60)continue;n=String(h);break;}
+        case '23':n=String(c.stepH*randDigit(1,c.tage*24/c.stepH));break;            /* Stunden, die ganze Tage bzw. .5/.25/.75 ergeben */
+        case '32':{let d=randDigit(0,c.tage)+c.frD[Math.floor(Math.random()*c.frD.length)];if(d<=0||d>c.tage)continue;n=String(d);break;}   /* Tage, auch mit Bruchteil */
+        case '02':n=String(3600*randDigit(1,3));break;                               /* 3600, 7200, 10800 Sekunden */
+        case '20':n=String(randDigit(1,3));break;                                    /* 1–3 Stunden */
+        default:continue;
+      }
+      if(n===avoidN)continue;
+      let res=convert(n,u[pr[0]].f,u[pr[1]].f);
+      if(res===null)continue;
+      return {n:n,res:res,iA:pr[0],iB:pr[1]};
+    }
+    return {n:'1',res:'60',iA:2,iB:1};
+  }
+
+  /* ---------- Aufgabe erzeugen ---------- */
+  /* Erzeugt Zahl n und Ergebnis für Kategorie cat; pair = [iA,iB] erzwingt ein Einheitenpaar (für Hilfsbeispiele) */
+  function gen(l,cat,pair,avoidN){
+    if(cat==='zeit')return genZeit(l,pair,avoidN);
+    let lv=LEVELS[l],units=CATS[cat].units;
+    let pairs=[];
+    if(pair)pairs.push(pair);
+    else for(let i=0;i<units.length;i++)for(let j=0;j<units.length;j++){
+      let d=Math.abs(i-j);
+      if((units[i].lv||0)>l||(units[j].lv||0)>l)continue;   /* Einheit noch nicht freigeschaltet */
+      let maxD=Math.min(lv.dist[1],CATS[cat].maxDist||99);
+      if(CATS[cat].dist2From!==undefined&&l<CATS[cat].dist2From)maxD=1;   /* Gewicht: bis Level 3 nur 1 Schritt, ab Level 4 höchstens 2 (mg→kg, g→t), mg→t gibt es nie */
+      if(d<lv.dist[0]||d>maxD)continue;
+      /* ohne Komma im Ergebnis: in eine grössere Einheit geht es nur mit Vielfachen, die in die Zahl passen (mind. 4 Möglichkeiten) */
+      if(lv.noComma&&units[j].f>units[i].f){
+        let r=Number(units[j].f/units[i].f);
+        if(Math.floor((Math.pow(10,lv.digits[1])-1)/r)<4)continue;
+      }
+      pairs.push([i,j]);
+    }
+    for(let tries=0;tries<20000;tries++){
+      let pr=pairs[Math.floor(Math.random()*pairs.length)];
+      let A=units[pr[0]],B=units[pr[1]],n;
+      if(lv.noComma&&B.f>A.f){
+        let r=Number(B.f/A.f),kmax=Math.floor((Math.pow(10,lv.digits[1])-1)/r);
+        if(kmax<1)continue;
+        n=String(r*randDigit(1,kmax));
+      }else n=randNum(lv);
+      if(n===avoidN)continue;
+      let res=convert(n,A.f,B.f);
+      if(res===null)continue;
+      let p=res.split('.');
+      if(lv.noComma&&p[1])continue;
+      if(p[0].length>lv.intMax||(p[1]?p[1].length:0)>lv.decMax)continue;
+      return {n:n,res:res,iA:pr[0],iB:pr[1]};
+    }
+    let u=pair||[1,0];   /* Notlösung, sollte nie vorkommen */
+    return {n:'1',res:convert('1',units[u[0]].f,units[u[1]].f)||'1',iA:u[0],iB:u[1]};
+  }
+
+  function makeTask(l,opt){
+    let cat=CATS[opt]?opt:MIX_KEYS[Math.floor(Math.random()*MIX_KEYS.length)];
+    let g=gen(l,cat);
+    let units=CATS[cat].units,A=units[g.iA],B=units[g.iB];
+    return {
+      text:CATS[cat].icon+' '+g.n+' '+A.n+' = ? '+B.n,
+      answer:g.res,n:g.n,cat:cat,iA:g.iA,iB:g.iB,level:l,
+      shift:String(A.f).length-String(B.f).length,   /* Kommaverschiebung (nur bei Zehnerpotenzen) */
+      ratio:Number(A.f>B.f?A.f/B.f:B.f/A.f)
+    };
+  }
+
+  function check(raw,task){
+    let v=normalizeInput(raw);
+    return v!==null&&v===task.answer;
+  }
+
+  /* ---------- Hilfestellung ---------- */
+  function helpNumber(n){   /* gleich viele Stellen vor und nach dem Komma wie die Aufgabe */
+    let p=n.split('.'),ni=p[0].length,nd=p[1]?p[1].length:0,s;
+    do{
+      if(nd===0)s=randWhole(ni);
+      else{
+        let ip='',dp='';
+        for(let i=0;i<ni;i++)ip+=(i===0)?randDigit(1,9):randDigit(0,9);
+        for(let i=0;i<nd;i++)dp+=(i===nd-1)?randDigit(1,9):randDigit(0,9);
+        s=ip+'.'+dp;
+      }
+    }while(s===n);
+    return s;
+  }
+  function shiftView(s,k){   /* Zahl vorher/nachher als HTML, Komma farbig, Stellen gelb */
+    let p=s.split('.'),digs=(p[0]+(p[1]||'')).split(''),p0=p[0].length;
+    let lo=k>0?p0:p0+k,hi=k>0?p0+k:p0;
+    const X=c=>'<span class="cross">'+c+'</span>';
+    let from='';
+    for(let i=0;i<=digs.length;i++){
+      if(i===p0)from+='<span class="cOld">.</span>';
+      if(i<digs.length)from+=(i>=lo&&i<hi)?X(digs[i]):digs[i];
+    }
+    let items=digs.map((c,i)=>({c:c,x:i>=lo&&i<hi}));
+    let pos=p0+k,lead='';
+    if(pos<=0){for(let i=0;i<-pos;i++)items.unshift({c:'0',x:true});pos=0;lead='0';}
+    else{while(items.length<pos)items.push({c:'0',x:true});}
+    while(items.length>pos&&items[items.length-1].c==='0')items.pop();
+    let to=lead;
+    for(let i=0;i<=items.length;i++){
+      if(i===pos)to+='<span class="cNew">.</span>';
+      if(i<items.length)to+=items[i].x?X(items[i].c):items[i].c;
+    }
+    return {from:from,to:to};
+  }
+  function ladder(cat,iA,iB,l){   /* Umrechnungsleiter: Einheiten mit Faktor dazwischen, Weg gelb */
+    let u=CATS[cat].units,lo=Math.min(iA,iB),hi=Math.max(iA,iB),h='<div class="ladder">';
+    for(let i=0;i<u.length;i++){
+      if((u[i].lv||0)>l)break;   /* nur Einheiten zeigen, die in diesem Level vorkommen */
+      h+='<span class="u'+(i===iA?' uA':(i===iB?' uB':''))+'">'+u[i].n+'</span>';
+      if(i<u.length-1&&(u[i+1].lv||0)<=l){
+        /* zwei Pfeile: oben → in die grössere Einheit (:Faktor), unten ← in die kleinere Einheit (·Faktor); der benötigte Weg leuchtet gelb */
+        let f=u[i+1].f/u[i].f,onPath=(i>=lo&&i<hi),up=iA<iB;
+        h+='<span class="lk"><span class="a'+(onPath&&up?' on':'')+'">:'+f+'<br><b>→</b></span><span class="a'+(onPath&&!up?' on':'')+'"><b>←</b><br>·'+f+'</span></span>';
+      }
+    }
+    return h+'</div>';
+  }
+
+  function help(t){
+    let c=CATS[t.cat],u=c.units,A=u[t.iA],B=u[t.iB];
+    let up=t.iB>t.iA,steps=Math.abs(t.iA-t.iB);
+    let h='<b>Umrechnungsleiter:</b>'+ladder(t.cat,t.iA,t.iB,t.level)
+      +'<br>'
+      +'Du gehst von <span class="tA">'+A.n+'</span> nach <span class="tB">'+B.n+'</span>: '+steps+' Schritt'+(steps>1?'e':'')+' zu einer '
+      +(up?'<b>grösseren</b> Einheit. Du brauchst weniger davon, die Zahl wird <b>kleiner</b> (÷).'
+          :'<b>kleineren</b> Einheit. Du brauchst mehr davon, die Zahl wird <b>grösser</b> (×).')+'<br><br>';
+    if(c.power){
+      let k=Math.abs(t.shift),a=helpNumber(t.n),v=shiftView(a,t.shift);
+      h+='Faktor insgesamt: <b>'+(up?'÷ ':'× ')+Math.pow(10,k)+'</b> → das Komma wandert um <b>'+k+'</b> Stelle'+(k>1?'n':'')+' nach <b>'+(t.shift>0?'rechts':'links')+'</b>.<br><br>'
+        +'<b>Hilfsbeispiel:</b><div class="helpcalc">'+v.from+' '+A.n+' = '+v.to+' '+B.n+'</div>'
+        +'<div class="legend"><span class="cOld">Komma vorher</span> · <span class="cNew">Komma nachher</span> · <span class="cross">Stellen, über die das Komma gewandert ist</span></div>';
+    }else{
+      let ex=gen(t.level,t.cat,[t.iA,t.iB],t.n);
+      h+='Faktor insgesamt: <b>'+(up?'÷ ':'× ')+t.ratio+'</b>'+(steps>1?' (':'')+(steps>1?(function(){let f=[];let a=Math.min(t.iA,t.iB),b=Math.max(t.iA,t.iB);for(let i=a;i<b;i++)f.push(String(u[i+1].f/u[i].f));return f.join(' · ');})():'')+(steps>1?')':'')+'.<br><br>'
+        +'<b>Hilfsbeispiel:</b><div class="helpcalc">'+ex.n+' '+A.n+' = '+ex.res+' '+B.n+'</div>'
+        +'<div class="legend">Rechnung: '+ex.n+' '+(up?'÷':'×')+' '+t.ratio+' = '+ex.res+'</div>'
+        +((t.iA+t.iB===3&&Math.abs(t.iA-t.iB)===1)?'<div class="legend">Tipp: 0.25 h = 15 min · 0.5 h = 30 min · 0.75 h = 45 min</div>':'')
+        +((t.iA+t.iB===5&&t.level>=3)?'<div class="legend">Tipp: 0.5 d = 12 h</div>':'');
+    }
+    return h;
+  }
+
+  return {
+    id:'masseinheiten',
+    title:'Masseinheiten Trainer',
+    subtitle:'Länge, Volumen, Gewicht, Zeit und Fläche umrechnen',
+    levels:LEVELS,
+    raceLevel:2,   /* Zeitrennen: immer Aufgaben von Level 3 (Profi) */
+    raceOption:'mix',   /* Zeitrennen: immer gemischte Kategorien, unabhängig von der Auswahl */
+    raceRating:[{min:9,icon:'🤖',name:'Maschine'},{min:6,icon:'🏃',name:'Sprinter'},{min:3,icon:'🚶',name:'Spaziergänger'},{min:1,icon:'🐌',name:'Schnecke'}],
+    medals:['🥉 Bronze-Umrechner','🥈 Silber-Umrechner','🥇 Gold-Umrechner','💠 Platin-Umrechner'],
+    options:{
+      choices:CAT_KEYS.map(k=>({v:k,label:CATS[k].icon+' '+CATS[k].name})).concat([{v:'mix',label:'🎲 Gemischt (ohne Fläche)'}]),
+      default:'laenge'
+    },
+    css:'.helpcalc{font-size:26px;font-weight:bold;margin:12px 0 6px}.cOld{color:#d32f2f;font-weight:bold}.cNew{color:#2e7d32;font-weight:bold}.helpcalc .cOld,.helpcalc .cNew{font-size:1.5em}.cross{background:#fff176;border-radius:4px;padding:0 2px}.legend{font-size:14px;color:#444}.ladder{display:flex;flex-wrap:wrap;align-items:center;gap:2px;margin:10px 0}.u{border:2px solid #90a4ae;border-radius:8px;padding:4px 8px;font-weight:bold;background:#fff}.u.uA{background:#c8e6c9;border-color:#2e7d32}.u.uB{background:#ffcdd2;border-color:#d32f2f}.tA,.tB{font-weight:bold;border-radius:5px;padding:1px 6px}.tA{background:#c8e6c9;color:#1b5e20}.tB{background:#ffcdd2;color:#b71c1c}span.uA{background:#ffcdd2;border-radius:4px;padding:0 4px}span.uB{background:#c8e6c9;border-radius:4px;padding:0 4px}.lk{display:inline-flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;color:#888;padding:0 3px;line-height:1.05}.lk .a{display:block;text-align:center;padding:1px 4px;border-radius:6px}.lk .a b{font-size:17px}.lk .a.on{background:#fff176;color:#000;font-weight:bold}',
+    makeTask:makeTask,
+    check:check,
+    help:help
+  };
+})();
+</script>
+
+<!-- ╔══════════════════════════════════════════════════════════════════════╗
+     ║  2) SPIEL-BLOCK  –  themenunabhängig (Belohnung für Cookies)         ║
+     ║  Schnittstelle: GAME.name, GAME.cost (Cookies pro Runde),            ║
+     ║  GAME.start(container, onEnd(punkte)), GAME.stop()                   ║
+     ║  Zum Austauschen des Spiels nur diesen Block ersetzen.               ║
+     ╚══════════════════════════════════════════════════════════════════════╝ -->
+<script>
+const GAME=(function(){
+  /* Flappy Bird (einfache Version): Leertaste = flattern, durch die Lücken fliegen */
+  const W=360,H=520,GROUND=60,BX=90,R=13,GAP=150,PW=56,SPACING=210,SPEED=150,GRAV=1500,FLAP=-400,MAXSTEP=0.05,SCALE=1.2,TRIES=3,SPEED_UP=1.2,SPEED_EVERY=10,SPEED_MAX=3;   /* alle 10 Röhren 20 % schneller, höchstens Faktor 3 */
+  function speedFactor(score){return Math.min(SPEED_MAX,Math.pow(SPEED_UP,Math.floor(score/SPEED_EVERY)));}
+  function rnd(a,b){return a+Math.random()*(b-a);}
+
+  function addPipe(s){
+    let lo=GAP/2+40,hi=H-GROUND-GAP/2-40;
+    let c=Math.max(lo,Math.min(hi,s.lastCenter+rnd(-140,140)));   /* nie zu weit auseinander: immer machbar */
+    s.lastCenter=c;
+    s.pipes.push({x:s.nextX,c:c,passed:false});
+    s.nextX+=SPACING;
+  }
+  function newState(){
+    let s={bird:{y:H/2-30,v:0},pipes:[],score:0,time:0,deadTime:0,phase:'ready',lastCenter:(H-GROUND)/2,nextX:W+60};
+    addPipe(s);
+    return s;
+  }
+  function flap(s){
+    if(s.phase==='ready')s.phase='play';
+    if(s.phase==='play')s.bird.v=FLAP;
+  }
+  function hitRect(cx,cy,r,rx,ry,rw,rh){
+    let nx=Math.max(rx,Math.min(cx,rx+rw)),ny=Math.max(ry,Math.min(cy,ry+rh));
+    let dx=cx-nx,dy=cy-ny;
+    return dx*dx+dy*dy<r*r;
+  }
+  function die(s){s.phase='dead';s.deadTime=0;}
+  function step(s,dt){
+    s.time+=dt;
+    let b=s.bird;
+    if(s.phase==='ready'){b.y=H/2-30+Math.sin(s.time*4)*6;return;}
+    if(s.phase==='dead'){
+      s.deadTime+=dt;
+      b.v+=GRAV*dt;b.y=Math.min(H-GROUND-R,b.y+b.v*dt);
+      return;
+    }
+    b.v+=GRAV*dt;b.y+=b.v*dt;
+    if(b.y<R){b.y=R;if(b.v<0)b.v=0;}                  /* Decke bremst nur, tötet nicht */
+    let v=SPEED*speedFactor(s.score);
+    s.pipes.forEach(p=>{p.x-=v*dt;});
+    s.nextX-=v*dt;
+    while(s.nextX<=W+20)addPipe(s);
+    s.pipes=s.pipes.filter(p=>p.x>-PW-10);
+    let r=R-2;                                          /* etwas nachsichtig */
+    for(const p of s.pipes){
+      if(hitRect(BX,b.y,r,p.x,0,PW,p.c-GAP/2)||hitRect(BX,b.y,r,p.x,p.c+GAP/2,PW,H-GROUND-(p.c+GAP/2))){die(s);return;}
+      if(!p.passed&&p.x+PW<BX-R){p.passed=true;s.score++;}
+    }
+    if(b.y+R>=H-GROUND){b.y=H-GROUND-R;die(s);}
+  }
+
+  function draw(ctx,s){
+    let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#7ec8f2');g.addColorStop(1,'#d8f0ff');
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    s.pipes.forEach(p=>{
+      ctx.fillStyle='#4caf50';
+      ctx.fillRect(p.x,0,PW,p.c-GAP/2);
+      ctx.fillRect(p.x,p.c+GAP/2,PW,H-GROUND-(p.c+GAP/2));
+      ctx.fillStyle='#388e3c';
+      ctx.fillRect(p.x-4,p.c-GAP/2-18,PW+8,18);
+      ctx.fillRect(p.x-4,p.c+GAP/2,PW+8,18);
+    });
+    ctx.fillStyle='#d7b46a';ctx.fillRect(0,H-GROUND,W,GROUND);
+    ctx.fillStyle='#8bc34a';ctx.fillRect(0,H-GROUND,W,8);
+    let b=s.bird;
+    ctx.save();ctx.translate(BX,b.y);ctx.rotate(Math.max(-0.5,Math.min(1.1,b.v/600)));
+    ctx.fillStyle='#ffd54f';ctx.beginPath();ctx.arc(0,0,R,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ff9800';ctx.beginPath();ctx.moveTo(R-2,-2);ctx.lineTo(R+9,2);ctx.lineTo(R-2,6);ctx.fill();
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(4,-4,4,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#000';ctx.beginPath();ctx.arc(5,-4,2,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+    ctx.fillStyle='#fff';ctx.strokeStyle='#333';ctx.lineWidth=4;ctx.font='bold 40px Arial';ctx.textAlign='center';
+    ctx.strokeText(s.score,W/2,60);ctx.fillText(s.score,W/2,60);
+    if(s.phase==='ready'){
+      ctx.font='bold 22px Arial';ctx.lineWidth=3;
+      ctx.strokeText('Leertaste zum Starten',W/2,H/2+60);ctx.fillText('Leertaste zum Starten',W/2,H/2+60);
+    }
+  }
+
+  let run=null;
+  function stop(){
+    if(!run)return;
+    cancelAnimationFrame(run.raf);
+    document.removeEventListener('keydown',run.onKey);
+    run=null;
+  }
+  function start(root,onEnd){
+    stop();
+    root.innerHTML='';
+    let K=Math.max(0.7,Math.min(SCALE,(window.innerHeight-190)/H,(window.innerWidth-60)/W));   /* Darstellung 1.2x gross, auf kleinen Bildschirmen angepasst */
+    let canvas=document.createElement('canvas');canvas.width=Math.round(W*K);canvas.height=Math.round(H*K);
+    root.appendChild(canvas);
+    let ctx=canvas.getContext('2d');
+    if(ctx)ctx.setTransform(K,0,0,K,0,0);
+    let s=newState();
+    let r={raf:0,ended:false,last:0};
+    r.onKey=e=>{if(e.code==='Space'&&!e.repeat){e.preventDefault();flap(s);}};
+    document.addEventListener('keydown',r.onKey);
+    canvas.addEventListener('pointerdown',e=>{e.preventDefault();flap(s);});
+    run=r;
+    function loop(t){
+      if(run!==r)return;
+      let dt=r.last?Math.min(MAXSTEP,(t-r.last)/1000):0;r.last=t;
+      step(s,dt);
+      if(ctx)draw(ctx,s);
+      if(s.phase==='dead'&&s.deadTime>0.7&&!r.ended){r.ended=true;onEnd(s.score);return;}
+      r.raf=requestAnimationFrame(loop);
+    }
+    r.raf=requestAnimationFrame(loop);
+  }
+  return {name:'Flappy Bird',cost:1,tries:TRIES,start:start,stop:stop,sim:{speedFactor:speedFactor,newState:newState,flap:flap,step:step,W:W,H:H,GAP:GAP,GROUND:GROUND,BX:BX}};
+})();
+</script>
+
+<!-- ╔══════════════════════════════════════════════════════════════════════╗
+     ║  3) ENGINE  –  themenunabhängig, beim Themenwechsel NICHT ändern      ║
+     ║  (Oberfläche, Levels/XP, Cookies, Achievements, Zeitrennen, Speichern)║
+     ╚══════════════════════════════════════════════════════════════════════╝ -->
+<script>
+const LEVELS=TOPIC.levels;
+const LAST=LEVELS.length-1;                 /* Index des höchsten Levels */
+function lvlName(l){return LEVELS[l].icon+' '+LEVELS[l].name;}
+
+/* Titel und Styles aus dem Themen-Block übernehmen */
+document.title=TOPIC.title;
+document.getElementById('topicTitle').textContent=TOPIC.title;
+document.getElementById('topicSubtitle').textContent=TOPIC.subtitle;
+document.getElementById('themeCss').textContent=TOPIC.css;
+
+let lossActive=false,lossFrom=0,lossTo=0;   /* roter Verlust-Abschnitt im XP-Balken */
+let solved=0,streak=0,xp=0,schutz=0,cookies=0,gameBest=0,current={},achs=[];
+/* Cookies: 1 pro 50 gelöste Aufgaben insgesamt, 1 pro 25 richtige am Stück (wiederholbar, unabhängig von den Achievements) */
+const COOKIE_TOTAL=50,COOKIE_STREAK=25;
+/* Zeitrennen: möglichst viele Aufgaben in RACE_SECONDS; Aufgaben immer aus dem Level TOPIC.raceLevel; Rekord pro Level */
+const RACE_LEVEL=TOPIC.raceLevel;
+const RACE_SECONDS=60;
+let race={active:false,phase:'',end:0,count:0,level:0,timer:null};
+let records=LEVELS.map(()=>0);
+const XP_RIGHT=10,XP_LOSS=5; /* richtig: +10 XP, Fehlversuch 1 und 2: je -5 XP (Hälfte) */
+/* XP-Multiplikator bei Serie: je 3 richtige am Stück +0.25, höchstens x2.5 (3 am Stück: x1.25, 6: x1.5 ... 15: x2.5).
+   Dadurch bleiben sehr gute SuS nicht zu lange bei den einfachen Aufgaben hängen. */
+const STREAK_XP_STEP=3,STREAK_XP_ADD=0.25,STREAK_XP_MAX=2.5;
+function xpMultiplier(st){return Math.min(STREAK_XP_MAX,1+Math.floor(st/STREAK_XP_STEP)*STREAK_XP_ADD);}
+const LEVEL_XP=150,MAX_XP=LEVEL_XP*(LAST+1); /* 150 XP pro Level = netto 15 richtige Antworten; das höchste Level hat auch einen Balken, bei MAX_XP ist er voll */
+/* Eigene Referenz auf das Namensfeld (window.name ist in JavaScript bereits belegt) */
+const nameInput=document.getElementById('name');
+
+function getLevel(){return Math.min(LAST,Math.floor(xp/LEVEL_XP));}
+
+function update(){if(lvlSelFor!==getLevel())buildLvlSel();autoSave();updateGameBtn();let l=getLevel();level.innerHTML='<b>Level '+(l+1)+' - '+lvlName(l)+'</b>'+(practiceLevel!==null?' &nbsp;·&nbsp; 📘 Üben in '+lvlName(practiceLevel)+' (ohne XP)':'');correct.textContent=solved;cookieShow.textContent=cookies;let start=l*LEVEL_XP;fill.style.width=((xp-start)/LEVEL_XP*100)+'%';
+  /* roter Abschnitt: so viel XP wurde bei Fehlern verloren (bleibt bis zur nächsten richtigen Antwort) */
+  if(lossActive){
+    let a=Math.max(0,Math.min(1,(lossFrom-start)/LEVEL_XP)),b=Math.max(0,Math.min(1,(lossTo-start)/LEVEL_XP));
+    if(b>a){loss.style.left=(a*100)+'%';loss.style.width=((b-a)*100)+'%';loss.style.display='block';}else loss.style.display='none';
+  }else loss.style.display='none';
+}
+
+/* Neue Aufgabe vom Themen-Block holen (forcedLevel: z. B. im Zeitrennen) */
+/* Optionale Auswahlliste des Themas (z. B. Kategorie): Wahl wird gespeichert und an makeTask übergeben */
+function getOpt(){return TOPIC.options?topicOpt.value:undefined;}
+/* Eigene XP/Levels pro Auswahl (z. B. pro Kategorie): xp gehört immer zur aktuell gewählten Auswahl, die anderen liegen in xpMap */
+let xpMap={},curOpt=(TOPIC.options?TOPIC.options.default:'_');
+/* Übungslevel: tieferes Level freiwillig wählen; dort gibt es keine XP (weder Gewinn noch Verlust) */
+let practiceLevel=null,lvlSelFor=-1;
+function playLevel(){return practiceLevel!==null?practiceLevel:getLevel();}
+function buildLvlSel(){
+  let cur=getLevel();
+  if(practiceLevel!==null&&practiceLevel>=cur)practiceLevel=null;
+  lvlSel.innerHTML='';
+  for(let i=0;i<=cur;i++){
+    let o=document.createElement('option');o.value=i;
+    o.textContent='Level '+(i+1)+' – '+lvlName(i)+(i===cur?' (aktuell)':' (üben, ohne XP)');
+    lvlSel.appendChild(o);
+  }
+  lvlSel.value=(practiceLevel!==null)?practiceLevel:cur;
+  lvlSel.disabled=(cur===0);
+  lvlSel.title=cur===0?'Noch kein tieferes Level vorhanden':'Level zum Üben wählen (tiefere Level geben keine XP)';
+  lvlSelFor=cur;
+}
+function lvlSelChange(){
+  let v=parseInt(lvlSel.value);
+  practiceLevel=(v===getLevel())?null:v;
+  lvlSel.blur();
+  if(race.active)return;
+  update();newTask();answer.focus();
+}
+if(TOPIC.options){
+  TOPIC.options.choices.forEach(c=>{let o=document.createElement('option');o.value=c.v;o.textContent=c.label;topicOpt.appendChild(o);});
+  topicOpt.value=TOPIC.options.default;
+  optRow.style.display='inline';
+  topicOpt.addEventListener('change',()=>{
+    topicOpt.blur();
+    if(race.active){topicOpt.value=curOpt;return;}
+    xpMap[curOpt]=xp;curOpt=topicOpt.value;xp=xpMap[curOpt]||0;
+    schutz=0;lossActive=false;practiceLevel=null;
+    buildLvlSel();autoSave();update();newTask();answer.focus();
+  });
+}
+function newTask(forcedLevel){
+  update();
+  let l=(forcedLevel===undefined)?playLevel():forcedLevel;
+  current=TOPIC.makeTask(l,(forcedLevel!==undefined&&TOPIC.raceOption)?TOPIC.raceOption:getOpt());   /* Zeitrennen: festgelegte Auswahl des Themas */
+  current.wrong=0;
+  document.getElementById('task').textContent=current.text;
+  answer.value='';
+}
+
+/* Pop-ups kommen nacheinander (Warteschlange); jedes Enter / jeder Klick auf Weiter zeigt das nächste */
+let popupQueue=[];
+function nextPopup(){
+  let p=popupQueue.shift();
+  if(!p){popup.style.display='none';return false;}
+  popupTitle.textContent=p[0];popupText.innerHTML=p[1];popup.style.display='flex';
+  return true;
+}
+function showPopup(t,txt){popupQueue.push([t,txt]);if(popup.style.display!=='flex')nextPopup();}
+
+/* Pop-up schliessen und Cursor zurück ins Antwortfeld */
+function closePopup(){if(nextPopup())return;answer.focus();}
+
+/* Solange ein Pop-up offen ist: Enter schliesst es und löst NICHT die Aufgabe aus.
+   Capture-Phase, damit die Taste das Antwortfeld gar nicht mehr erreicht.
+   Gedrückt gehaltenes Enter (Wiederholung) wird ignoriert. */
+document.addEventListener('keydown',e=>{
+  if(popup.style.display==='flex'&&e.key==='Enter'){
+    e.preventDefault();
+    e.stopPropagation();
+    if(!e.repeat)closePopup();
+  }
+},true);
+
+/* Achievements in zwei Gruppen:
+   1) Medaillen des Themas (TOPIC.medals) bei MEDAL_AT gelösten Aufgaben insgesamt
+   2) Serien: richtige Antworten am Stück (STREAK_ACHS)
+   Angezeigt werden sie immer gruppiert und in fester Reihenfolge, unabhängig davon, wann sie freigeschaltet wurden. */
+const MEDAL_AT=[10,25,50,100];
+const STREAK_ACHS=[[5,'🔥 5 Aufgaben fehlerfrei'],[10,'🚀 10 Aufgaben fehlerfrei'],[25,'💎 25 Aufgaben fehlerfrei'],[50,'🌋 50 Aufgaben fehlerfrei']];
+const MEDAL_NAMES=TOPIC.medals;
+const STREAK_NAMES=STREAK_ACHS.map(x=>x[1]);
+const ALL_ACHS=MEDAL_NAMES.concat(STREAK_NAMES);
+/* Platzhalter-Liste: reserviert unter dem Titel immer den Platz für alle Achievements (neue hier ergänzen) */
+achSizer.innerHTML=MEDAL_NAMES.map(x=>'<li>'+x+'</li>').join('')+STREAK_NAMES.map((x,i)=>'<li'+(i===0?' class="gap"':'')+'>'+x+'</li>').join('');
+function renderAchs(){
+  let m=MEDAL_NAMES.filter(x=>achs.includes(x));
+  let st=STREAK_NAMES.filter(x=>achs.includes(x));
+  achievements.innerHTML=m.map(x=>'<li>'+x+'</li>').join('')+st.map((x,i)=>'<li'+(i===0&&m.length?' class="gap"':'')+'>'+x+'</li>').join('');
+}
+function addAch(a){if(!achs.includes(a)){achs.push(a);renderAchs();showPopup('🏆 Achievement freigeschaltet!',a);}}
+
+/* XP abziehen (nie unter 0). Dabei kann man ein Level absteigen.
+   Auf dem Levelanfang (0 XP im Level) wird der erste Fehler abgefangen (Schutz):
+   erst bei der 2. falschen Antwort in Folge steigt man ab
+   und landet im tieferen Level bei ca. 75 %. */
+const SCHUTZ_MAX=2;
+const ABSTIEG_XP=Math.floor(LEVEL_XP*0.75/XP_LOSS)*XP_LOSS; /* 110 von 150 = ca. 75 % */
+function loseXP(){
+  if(xp===0)return;
+  if(xp===getLevel()*LEVEL_XP){   /* genau am Levelanfang (im höchsten Level ist ein voller Balken kein Levelanfang) */
+    schutz++;
+    if(schutz<SCHUTZ_MAX)return;
+    schutz=0;
+    xp=xp-LEVEL_XP+ABSTIEG_XP;   /* Abstieg: im tieferen Level bei ca. 75 % landen */
+    return;
+  }
+  xp-=XP_LOSS;
+}
+
+/* Einmalige Cookies (insgesamt, nicht pro Kategorie): beim ersten Erreichen von Level 3 und beim ersten vollen Balken im höchsten Level */
+let cookieFlags={lv:false,max:false};
+const LEVEL_COOKIE_AT=2;   /* Index von Level 3 */
+function levelCookies(){
+  let f=cookieFlags;
+  if(!f.lv&&getLevel()>=LEVEL_COOKIE_AT){f.lv=true;giveCookie('Du hast zum ersten Mal <b>Level '+(LEVEL_COOKIE_AT+1)+'</b> erreicht.');}
+  if(!f.max&&xp>=MAX_XP){f.max=true;giveCookie('Du hast das <b>höchste Level</b> voll geschafft!');}
+}
+function giveCookie(why){
+  cookies++;
+  cookieShow.textContent=cookies;
+  showPopup('🍪 Cookie verdient!',why+'<br><br>Du hast jetzt <b>'+cookies+'</b> Cookie'+(cookies===1?'':'s')+'.');
+}
+
+function checkAnswer(){
+  if(race.active){if(race.phase==='run')raceAnswer();return;}
+  let before=getLevel();
+  if(TOPIC.check(answer.value,current)){
+    /* Ab der Hilfestellung (2. Fehlversuch) gibt es keine XP mehr */
+    let gain=(practiceLevel!==null||current.wrong>=2)?0:Math.round(XP_RIGHT*xpMultiplier(streak));   /* streak = Serie VOR dieser Aufgabe */
+    let practice=(practiceLevel!==null);   /* Übungslevel: XP, Zähler (gelöst/Serie), Achievements und Cookies pausieren */
+    xp=Math.min(MAX_XP,xp+gain);schutz=0;lossActive=false;
+    if(!practice){solved++;streak++;}
+    feedback.innerHTML='✅ Richtig!';
+    if(!practice){
+      MEDAL_AT.forEach((n,i)=>{if(solved===n&&MEDAL_NAMES[i])addAch(MEDAL_NAMES[i]);});
+      STREAK_ACHS.forEach(x=>{if(streak===x[0])addAch(x[1]);});
+      if(solved%COOKIE_TOTAL===0)giveCookie('Du hast insgesamt <b>'+solved+'</b> Aufgaben gelöst.');
+      if(streak%COOKIE_STREAK===0)giveCookie('Du hast <b>'+streak+'</b> Aufgaben am Stück richtig gelöst.');
+    }
+    let after=getLevel();
+    if(!practice)levelCookies();
+    newTask();
+    if(after>before){showPopup('🎉 Levelaufstieg!','Du hast das Level <b>'+lvlName(after)+'</b> erreicht.<br><br>🙌 Hol dir ein High Five oder eine Ghetto-Faust von der Lehrperson!');}
+  }else{
+    if(practiceLevel===null)streak=0;   /* im Übungslevel pausiert auch die Serie */
+    current.wrong++;
+    /* 1. und 2. Fehlversuch: je die Hälfte der XP einer richtigen Antwort weg; danach nichts mehr */
+    if(current.wrong<=2&&practiceLevel===null){
+      let xpBefore=xp;loseXP();
+      if(xp<xpBefore){if(!lossActive){lossTo=xpBefore;lossActive=true;}lossFrom=xp;}
+    }
+    let xpText='';
+    if(getLevel()<before)xpText='<br>⬇️ Du bist ein Level abgestiegen: <b>'+lvlName(getLevel())+'</b>';
+    update();
+    if(current.wrong<2){
+      feedback.innerHTML='❌ Noch nicht korrekt.'+xpText+'<br><br>Überdenke deine Lösung und versuche es nochmals.';
+    }else{
+      feedback.innerHTML='❌ Noch nicht korrekt.'+xpText+'<br><br>'+TOPIC.help(current)+'<br><br>Überdenke deine Lösung und versuche es nochmals.';
+    }
+  }
+}
+
+/* ---------- Zeitrennen ---------- */
+/* Bewertung des Rekords (Anzahl gelöster Aufgaben in der Rennzeit); pro Thema mit TOPIC.raceRating anpassbar */
+const RACE_RATING=TOPIC.raceRating||[
+  {min:10,icon:'🤖',name:'Maschine'},
+  {min:6,icon:'🏃',name:'Sprinter'},
+  {min:3,icon:'🚶',name:'Spaziergänger'},
+  {min:1,icon:'🐌',name:'Schnecke'}
+];
+function rating(n){for(const r of RACE_RATING){if(n>=r.min)return r;}return null;}
+
+/* Zeit-Rekord anzeigen: Rang-Emoji, Name und Anzahl, z. B. "🐌 Schnecke: 2 Aufgaben".
+   Das Zeitrennen läuft immer im Level RACE_LEVEL, darum gibt es nur diesen einen Rekord. */
+function renderRecords(){
+  let n=records[RACE_LEVEL]||0;
+  let rows=[];
+  if(n>0){
+    let r=rating(n);
+    rows.push('<li>'+(r?r.icon+' '+r.name+': ':'')+'<b>'+n+'</b> Aufgabe'+(n===1?'':'n')+'</li>');
+  }
+  if(gameBest>0)rows.push('<li>🐦 Flappy Bird: <b>'+gameBest+'</b> Punkt'+(gameBest===1?'':'e')+'</li>');
+  recordList.innerHTML=rows.join('');
+  recordBox.style.display=rows.length?'block':'none';
+  autoSave();
+}
+
+function startRace(){
+  if(race.active){endRaceUI();return;}   /* Button ist während des Rennens "Abbrechen" */
+  race={active:true,phase:'count',end:0,count:0,level:RACE_LEVEL,timer:null};
+  raceCount.textContent=0;
+  raceTime.textContent=RACE_SECONDS;
+  raceBar.style.display='block';
+  raceBtn.textContent='✖ Abbrechen';
+  updateGameBtn();
+  feedback.innerHTML='';
+  answer.value='';
+  answer.disabled=true;                  /* während der Vorbereitung nicht tippen */
+  let n=3;
+  const showCount=()=>{document.getElementById('task').textContent='Los geht’s in '+n+' …';};
+  showCount();
+  race.timer=setInterval(()=>{
+    n--;
+    if(n>0){showCount();return;}
+    clearInterval(race.timer);
+    beginRace();
+  },1000);
+}
+
+/* Nach den 3 Sekunden Vorbereitung: erste Aufgabe zeigen, dann läuft die Zeit */
+function beginRace(){
+  race.phase='run';
+  race.end=Date.now()+RACE_SECONDS*1000;
+  answer.disabled=false;
+  newTask(RACE_LEVEL);
+  answer.focus();
+  raceTick();
+  race.timer=setInterval(raceTick,200);
+}
+
+function raceTick(){
+  let left=Math.max(0,Math.ceil((race.end-Date.now())/1000));
+  raceTime.textContent=left;
+  raceBar.classList.toggle('low',left<=10);
+  if(Date.now()>=race.end)finishRace();
+}
+
+/* Im Zeitrennen: kein XP, keine Hilfe, keine Achievements. Bei Fehler bleibt die Aufgabe stehen. */
+function raceAnswer(){
+  if(TOPIC.check(answer.value,current)){
+    race.count++;
+    raceCount.textContent=race.count;
+    feedback.innerHTML='✅';
+    newTask(RACE_LEVEL);
+  }else{
+    feedback.innerHTML='❌ Nochmals versuchen';
+    answer.value='';
+  }
+  answer.focus();
+}
+
+function endRaceUI(){
+  clearInterval(race.timer);
+  race.active=false;race.phase='';
+  answer.disabled=false;
+  raceBar.style.display='none';
+  raceBar.classList.remove('low');
+  raceBtn.textContent='⏱️ Zeitrennen';
+  feedback.innerHTML='';
+  newTask();
+}
+
+function finishRace(){
+  let n=race.count,l=race.level;
+  let isRecord=n>(records[l]||0);
+  if(isRecord)records[l]=n;
+  endRaceUI();
+  renderRecords();
+  let txt='Du hast <b>'+n+'</b> Aufgabe'+(n===1?'':'n')+' in '+RACE_SECONDS+' Sekunden gelöst.<br><br>';
+  if(isRecord)txt+='🏆 <b>Neuer Rekord!</b>';
+  else txt+='Dein Rekord: <b>'+records[l]+'</b>';
+  showPopup(isRecord?'🏆 Neuer Zeit-Rekord!':'⏱️ Zeit abgelaufen!',txt);
+}
+
+answer.addEventListener('keydown',e=>{if(e.key==='Enter')checkAnswer();});
+
+/* ---------- Spiel (Belohnung für Cookies) ---------- */
+let gameOpen=false,triesLeft=0;   /* 1 Cookie = GAME.tries Versuche; übrige Versuche bleiben bis zum Neuladen erhalten */
+function triesText(){return triesLeft>0?'noch '+triesLeft+' Versuch'+(triesLeft===1?'':'e'):GAME.cost+' 🍪 = '+GAME.tries+' Versuche';}
+function updateGameBtn(){
+  gameBtn.textContent='🎮 '+GAME.name+' ('+triesText()+')';
+  let ok=(triesLeft>0||cookies>=GAME.cost)&&!race.active;
+  gameBtn.disabled=!ok;
+  gameBtn.title=ok?'Spiel starten':(race.active?'Nicht während des Zeitrennens':'Du brauchst '+GAME.cost+' Cookie'+(GAME.cost===1?'':'s'));
+}
+function beginRound(){   /* zieht bei Bedarf 1 Cookie ab (= neue Versuche) und startet einen Versuch */
+  if(triesLeft<=0){
+    if(cookies<GAME.cost)return false;
+    cookies-=GAME.cost;triesLeft=GAME.tries;
+  }
+  triesLeft--;
+  gameTitle.textContent=GAME.name+' – Versuch '+(GAME.tries-triesLeft)+' von '+GAME.tries;
+  gameResult.innerHTML='';gameAgain.style.display='none';
+  update();
+  GAME.start(gameRoot,onGameEnd);
+  return true;
+}
+function openGame(){
+  if(gameOpen||race.active)return;
+  if(triesLeft<=0&&cookies<GAME.cost)return;
+  gameOpen=true;
+  answer.blur();
+  gameOverlay.style.display='flex';
+  beginRound();
+}
+function onGameEnd(score){
+  let rec=score>gameBest;
+  if(rec)gameBest=score;
+  renderRecords();   /* zeigt den Rekord an und speichert automatisch */
+  gameResult.innerHTML='Punkte: <b>'+score+'</b>'+(rec?' 🏆 Neuer Rekord!':'')+' &nbsp;·&nbsp; Rekord: <b>'+gameBest+'</b>';
+  gameAgain.textContent='🔄 Nochmal ('+triesText()+')';
+  gameAgain.disabled=triesLeft<=0&&cookies<GAME.cost;
+  gameAgain.style.display='inline-block';
+}
+function gameAgainClick(btn){
+  if(btn)btn.blur();
+  if(!gameOpen)return;
+  beginRound();
+}
+function closeGame(btn){
+  if(btn)btn.blur();
+  GAME.stop();
+  gameOpen=false;
+  gameOverlay.style.display='none';
+  gameRoot.innerHTML='';
+  update();
+  answer.focus();
+}
+/* Solange das Spiel offen ist: Leertaste scrollt/aktiviert nichts; Esc beendet */
+['keydown','keyup'].forEach(t=>document.addEventListener(t,e=>{
+  if(!gameOpen)return;
+  if(e.code==='Space')e.preventDefault();
+  if(t==='keydown'&&e.key==='Escape')closeGame();
+},true));
+
+/* ---------- Speichern / Laden ---------- */
+function saveProgress(){
+  let data={name:nameInput.value,solved,xp,xps:(xpMap[curOpt]=xp,xpMap),cf:cookieFlags,streak,cookies,gameBest,achs,records,opt:getOpt()};
+  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  let clean=nameInput.value.trim().replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,'_');
+  let a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=clean?'lernstand_'+clean+'.json':'lernstand.json';
+  a.click();
+}
+
+/* Lernstand aus einem Objekt übernehmen (aus Datei oder aus dem Browser-Speicher) */
+function applyData(d){
+  nameInput.value=d.name||'';
+  solved=d.solved||0;xp=Math.max(0,Math.min(MAX_XP,(typeof d.xp==="number")?d.xp:solved*10));streak=d.streak||0;schutz=0;cookies=Math.max(0,parseInt(d.cookies)||0);gameBest=Math.max(0,parseInt(d.gameBest)||0);popupQueue=[];lossActive=false;achs=d.achs||[];
+  if(TOPIC.options&&d.opt&&[...topicOpt.options].some(o=>o.value===d.opt))topicOpt.value=d.opt;
+  /* XP pro Auswahl: neue Dateien haben xps; ältere Dateien nur ein einzelnes xp (gilt dann für die gewählte Auswahl) */
+  curOpt=TOPIC.options?topicOpt.value:'_';practiceLevel=null;
+  /* cf: neu {lv,max}; ältere Dateien hatten es pro Kategorie ({laenge:{lv,max},…}) -> zusammenfassen */
+  cookieFlags={lv:false,max:false};
+  if(d.cf&&typeof d.cf==='object'){
+    if('lv' in d.cf||'max' in d.cf){cookieFlags.lv=!!d.cf.lv;cookieFlags.max=!!d.cf.max;}
+    else for(const k in d.cf){if(d.cf[k]&&d.cf[k].lv)cookieFlags.lv=true;if(d.cf[k]&&d.cf[k].max)cookieFlags.max=true;}
+  }
+  if(d.xps&&typeof d.xps==='object'){
+    xpMap={};for(const k in d.xps)xpMap[k]=Math.max(0,Math.min(MAX_XP,parseInt(d.xps[k])||0));
+    xp=xpMap[curOpt]||0;
+  }else{xpMap={};xpMap[curOpt]=xp;}
+  records=LEVELS.map((_,i)=>Math.max(0,parseInt(d.records&&d.records[i])||0));
+}
+
+loadFile.addEventListener('change',e=>{
+  let r=new FileReader();
+  r.onload=()=>{
+    let d=JSON.parse(r.result);
+    applyData(d);
+    if(race.active)endRaceUI();
+    renderRecords();
+    renderAchs();
+    newTask();
+    feedback.innerHTML='📂 Lernstand geladen.';
+  };
+  r.readAsText(e.target.files[0]);
+});
+
+/* ---------- Automatisches Speichern im Browser (localStorage) ----------
+   Der Schlüssel enthält die Themen-Kennung, damit mehrere Trainer sich nicht überschreiben.
+   Speichern/Laden per Datei bleibt als Backup und für andere Geräte. */
+const AUTO_KEY='trainer_'+TOPIC.id;
+function autoSave(){
+  try{
+    localStorage.setItem(AUTO_KEY,JSON.stringify({name:nameInput.value,solved,xp,xps:(xpMap[curOpt]=xp,xpMap),cf:cookieFlags,streak,cookies,gameBest,achs,records,opt:getOpt()}));
+  }catch(e){}   /* z. B. InPrivate-Fenster oder blockierter Speicher: still ignorieren */
+}
+function autoLoad(){
+  try{
+    let t=localStorage.getItem(AUTO_KEY);
+    if(t){applyData(JSON.parse(t));return true;}
+  }catch(e){}
+  return false;
+}
+nameInput.addEventListener('input',autoSave);
+
+autoLoad();
+renderRecords();
+renderAchs();
+newTask();
+</script></body></html>
