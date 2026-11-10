@@ -117,6 +117,9 @@ const TOPIC=(function(){
   const HINT_COLOUR='Klicke auf die Stücke, die du färben willst. Ein zweiter Klick macht das Stück wieder weiss.';
   const HINT_DRAW='Mit − und + wählst du, in wie viele gleich grosse Stücke jeder Kuchen geteilt wird. Dann klickst du die Stücke an, die du färben willst.';
 
+  /* Zufallszahl lo..top; der oberste Wert (= ganzer Kuchen) nur in ca. 5 % der Fälle */
+  function rareTop(lo,top){return Math.random()<0.05?top:ri(lo,top-1);}
+
   function pickMode(l){
     if(l<=1)return 'read';
     if(l===2)return pick(['read','colour']);
@@ -135,7 +138,7 @@ const TOPIC=(function(){
         t.kind='single';t.n=n;t.k=1;t.num=1;t.den=n;
         t.html=q+piesHtml([{n:n,k:1,scattered:false}],180)+'<div class="hint">'+HINT_READ_1+'</div>';
       }else if(l<=3){
-        let n=ri(2,10),k=ri(1,n);   /* auch der ganze Kuchen (n/n) ist möglich */
+        let n=ri(2,10),k=rareTop(1,n);   /* der ganze Kuchen (n/n) kommt nur selten vor */
         t.kind='single';t.n=n;t.k=k;t.num=k;t.den=n;
         t.html=q+piesHtml([{n:n,k:k,scattered:l>=1}],180)+'<div class="hint">'+HINT_READ_2+'</div>';
       }else if(Math.random()<0.5){
@@ -153,11 +156,15 @@ const TOPIC=(function(){
       /* Aufgaben zum Anklicken: einfärben (Kuchen schon geteilt) oder selbst einteilen + einfärben */
       let multi=(l===4);
       let n,pies,num;
-      if(multi){pies=ri(2,3);n=ri(2,8);num=ri((pies-1)*n+1,pies*n);}
-      else{pies=1;n=ri(2,10);num=ri(1,n);}
+      let wantExt=(t.mode==='colour'&&Math.random()<0.5);   /* jede zweite Einfärb-Aufgabe: feiner eingeteilter Kuchen (Nenner dann klein genug, max. 12 Stücke) */
+      if(multi){pies=ri(2,3);n=ri(2,wantExt?6:8);num=rareTop((pies-1)*n+1,pies*n);}
+      else{pies=1;n=ri(2,wantExt?6:10);num=rareTop(1,n);}
       t.interactive=true;t.noInput=true;t.pies=pies;t.n=n;t.num=num;t.den=n;
       t.size=pies===1?190:(pies===2?150:125);
-      let startN=(t.mode==='draw')?1:n;
+      /* Einfärben: bei jeder zweiten Aufgabe ist der Kuchen feiner eingeteilt (z. B. 1/3 auf Sechstel/Neuntel); gefärbt werden gleich viele Stücke wie bei erweitertem Bruch */
+      t.ext=1;
+      if(wantExt)t.ext=pick([2,3].filter(f=>n*f<=12));
+      let startN=(t.mode==='draw')?1:n*t.ext;
       t.state={n:startN,sh:[...Array(pies)].map(()=>new Array(startN).fill(false))};
       let q=(t.mode==='colour')
         ?'<div class="q">Färbe '+qFrac(num,n)+(pies>1?' (alle Kuchen zusammen)':'')+'</div>'
@@ -206,6 +213,16 @@ const TOPIC=(function(){
 
   function helpPieTask(t){   /* Hilfe für Einfärben / Selbst einteilen */
     let multi=t.pies>1,draw=(t.mode==='draw'),n2;
+    if(t.ext>1){   /* Kuchen feiner eingeteilt als der Nenner: erweitern */
+      let e2,k3;
+      do{n2=pick([2,3,4,5]);e2=pick([2,3]);}while(n2===t.den||n2*e2>12);
+      k3=ri(1,n2-1);
+      let m2=n2*e2;
+      return '<b>Hilfsbeispiel:</b>'+piesHtml([{n:m2,k:k3*e2,scattered:false}],120)
+        +'<div class="helpline">Gesucht ist '+frac(Z(k3),N(n2))+', aber es sind '+m2+' gleich grosse Stücke da, nicht '+N(n2)+'.<br>'
+        +'Erweitere den Bruch auf '+m2+'tel: '+frac(Z(k3),N(n2))+' = '+frac(Z(k3)+'·'+e2,N(n2)+'·'+e2)+' = <span class="hc">'+frac(Z(k3*e2),N(m2))+'</span><br>'
+        +'Färbe also '+Z(k3*e2)+' von '+m2+' Stücken.'+(multi?'<br>Bei mehreren Kuchen zählst du alle gefärbten Stücke zusammen.':'')+'</div>';
+    }
     do{n2=pick(multi?[2,3,4,5,6,8]:[3,4,5,6,8,10]);}while(n2===t.den);
     let k2=ri(1,n2-1),h='<b>Hilfsbeispiel:</b>';
     if(!multi){
@@ -654,7 +671,7 @@ const TOPIC=(function(){
   function check(raw,t){
     if(t.cat==='kuchen'&&t.interactive){
       let cnt=t.state.sh.reduce((a,p)=>a+p.filter(Boolean).length,0);
-      return (t.mode!=='draw'||t.state.n===t.den)&&cnt===t.num;
+      return (t.mode!=='draw'||t.state.n===t.den)&&cnt===t.num*(t.ext||1);
     }
     if(t.cat==='erweitern')return checkErweitern(raw,t);
     if(t.cat==='addieren'||t.cat==='subtrahieren'||t.cat==='multdiv')return checkArith(raw,t);
