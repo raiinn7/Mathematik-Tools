@@ -442,6 +442,26 @@ document.getElementById('themeCss').textContent=TOPIC.css;
 
 let lossActive=false,lossFrom=0,lossTo=0;   /* roter Verlust-Abschnitt im XP-Balken */
 let solved=0,streak=0,xp=0,schutz=0,cookies=0,gameBest=0,current={},achs=[];
+/* ---------- Gemeinsamer Cookie-Geldbeutel ----------
+   Alle Trainer auf derselben Internetadresse teilen sich diese Cookies (localStorage-Eintrag mathe_wallet).
+   Verdienen und Ausgeben (Spiel) wirken direkt auf den gemeinsamen Stand. XP, Level und Rekorde bleiben pro Trainer. */
+const WALLET_KEY='mathe_wallet';
+let memWallet=0,walletMigrated=false;   /* memWallet: Reserve, falls der Browser-Speicher blockiert ist */
+function walletGet(){try{let w=JSON.parse(localStorage.getItem(WALLET_KEY));if(w&&typeof w.balance==='number'&&isFinite(w.balance)){memWallet=Math.max(0,Math.floor(w.balance));return memWallet;}}catch(e){}return memWallet;}
+function walletSet(n){memWallet=Math.max(0,Math.floor(n));try{localStorage.setItem(WALLET_KEY,JSON.stringify({balance:memWallet}));}catch(e){}return memWallet;}
+function walletAdd(d){return walletSet(walletGet()+d);}
+function walletRefresh(){let c=walletGet();if(c!==cookies){cookies=c;cookieShow.textContent=cookies;updateGameBtn();}}
+window.addEventListener('storage',function(e){if(e.key===WALLET_KEY)walletRefresh();});
+document.addEventListener('visibilitychange',function(){if(!document.hidden)walletRefresh();});
+window.addEventListener('focus',walletRefresh);
+/* Cookies aus einem Lernstand übernehmen: alte Stände (ohne cw) werden einmalig dazugezählt; eine Datei stellt höchstens den höheren Stand wieder her */
+function adoptCookies(d,fromFile){
+  let fc=Math.max(0,parseInt(d.cookies)||0);
+  if(fromFile){if(fc>walletGet())walletSet(fc);}
+  else if(!d.cw){walletAdd(fc);walletMigrated=true;}
+  return walletGet();
+}
+
 /* Cookies: 1 pro 50 gelöste Aufgaben insgesamt, 1 pro 25 richtige am Stück (wiederholbar, unabhängig von den Achievements) */
 const COOKIE_TOTAL=50,COOKIE_STREAK=25;
 /* Zeitrennen: möglichst viele Aufgaben in RACE_SECONDS; Aufgaben immer aus dem Level TOPIC.raceLevel; Rekord pro Level */
@@ -587,7 +607,7 @@ function levelCookies(){
   if(!f.max&&xp>=MAX_XP){f.max=true;giveCookie('Du hast das <b>höchste Level</b> voll geschafft!');}
 }
 function giveCookie(why){
-  cookies++;
+  cookies=walletAdd(1);
   cookieShow.textContent=cookies;
   showPopup('🍪 Cookie verdient!',why+'<br><br>Du hast jetzt <b>'+cookies+'</b> Cookie'+(cookies===1?'':'s')+'.');
 }
@@ -746,8 +766,9 @@ function updateGameBtn(){
 }
 function beginRound(){   /* zieht bei Bedarf 1 Cookie ab (= neue Versuche) und startet einen Versuch */
   if(triesLeft<=0){
+    cookies=walletGet();
     if(cookies<GAME.cost)return false;
-    cookies-=GAME.cost;triesLeft=GAME.tries;
+    cookies=walletAdd(-GAME.cost);triesLeft=GAME.tries;
   }
   triesLeft--;
   gameTitle.textContent=GAME.name+' – Versuch '+(GAME.tries-triesLeft)+' von '+GAME.tries;
@@ -758,6 +779,7 @@ function beginRound(){   /* zieht bei Bedarf 1 Cookie ab (= neue Versuche) und s
 }
 function openGame(){
   if(gameOpen||race.active)return;
+  cookies=walletGet();
   if(triesLeft<=0&&cookies<GAME.cost)return;
   gameOpen=true;
   answer.blur();
@@ -796,7 +818,8 @@ function closeGame(btn){
 
 /* ---------- Speichern / Laden ---------- */
 function saveProgress(){
-  let data={name:nameInput.value,solved,xp,xps:(xpMap[curOpt]=xp,xpMap),cf:cookieFlags,streak,cookies,gameBest,achs,records,opt:getOpt()};
+  cookies=walletGet();
+  let data={name:nameInput.value,solved,xp,xps:(xpMap[curOpt]=xp,xpMap),cf:cookieFlags,cw:1,streak,cookies,gameBest,achs,records,opt:getOpt()};
   let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   let clean=nameInput.value.trim().replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,'_');
   let a=document.createElement('a');
@@ -806,9 +829,9 @@ function saveProgress(){
 }
 
 /* Lernstand aus einem Objekt übernehmen (aus Datei oder aus dem Browser-Speicher) */
-function applyData(d){
+function applyData(d,fromFile){
   nameInput.value=d.name||'';
-  solved=d.solved||0;xp=Math.max(0,Math.min(MAX_XP,(typeof d.xp==="number")?d.xp:solved*10));streak=d.streak||0;schutz=0;cookies=Math.max(0,parseInt(d.cookies)||0);gameBest=Math.max(0,parseInt(d.gameBest)||0);popupQueue=[];lossActive=false;achs=d.achs||[];
+  solved=d.solved||0;xp=Math.max(0,Math.min(MAX_XP,(typeof d.xp==="number")?d.xp:solved*10));streak=d.streak||0;schutz=0;cookies=adoptCookies(d,fromFile);gameBest=Math.max(0,parseInt(d.gameBest)||0);popupQueue=[];lossActive=false;achs=d.achs||[];
   if(TOPIC.options&&d.opt&&[...topicOpt.options].some(o=>o.value===d.opt))topicOpt.value=d.opt;
   /* XP pro Auswahl: neue Dateien haben xps; ältere Dateien nur ein einzelnes xp (gilt dann für die gewählte Auswahl) */
   curOpt=TOPIC.options?topicOpt.value:'_';practiceLevel=null;
@@ -829,7 +852,7 @@ loadFile.addEventListener('change',e=>{
   let r=new FileReader();
   r.onload=()=>{
     let d=JSON.parse(r.result);
-    applyData(d);
+    applyData(d,true);
     if(race.active)endRaceUI();
     renderRecords();
     renderAchs();
@@ -844,14 +867,16 @@ loadFile.addEventListener('change',e=>{
    Speichern/Laden per Datei bleibt als Backup und für andere Geräte. */
 const AUTO_KEY='trainer_'+TOPIC.id;
 function autoSave(){
+  cookies=walletGet();
   try{
-    localStorage.setItem(AUTO_KEY,JSON.stringify({name:nameInput.value,solved,xp,xps:(xpMap[curOpt]=xp,xpMap),cf:cookieFlags,streak,cookies,gameBest,achs,records,opt:getOpt()}));
+    localStorage.setItem(AUTO_KEY,JSON.stringify({name:nameInput.value,solved,xp,xps:(xpMap[curOpt]=xp,xpMap),cf:cookieFlags,cw:1,streak,cookies,gameBest,achs,records,opt:getOpt()}));
   }catch(e){}   /* z. B. InPrivate-Fenster oder blockierter Speicher: still ignorieren */
 }
 function autoLoad(){
+  cookies=walletGet();
   try{
     let t=localStorage.getItem(AUTO_KEY);
-    if(t){applyData(JSON.parse(t));return true;}
+    if(t){applyData(JSON.parse(t),false);if(walletMigrated){walletMigrated=false;autoSave();}return true;}
   }catch(e){}
   return false;
 }

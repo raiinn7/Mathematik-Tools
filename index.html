@@ -22,12 +22,20 @@
   .tool { font-size:.9rem; color:var(--muted); }
   .off { background:var(--off); opacity:.65; }
   .off .lu { color:var(--muted); }
+  header { display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:12px; }
+  .wallet { padding:8px 14px; background:var(--card); border:1px solid var(--line); border-radius:999px; font-weight:700; white-space:nowrap; }
+  .wallet small { display:block; font-weight:400; font-size:.7rem; color:var(--muted); }
 </style>
 </head>
 <body>
 <main>
-  <h1>Mathe Tools</h1>
-  <p class="sub">Übungstrainer nach Lernumgebung. Klicke auf eine Karte, um zu üben.</p>
+  <header>
+    <div>
+      <h1>Mathe Tools</h1>
+      <p class="sub">Übungstrainer nach Lernumgebung. Klicke auf eine Karte, um zu üben.</p>
+    </div>
+    <div class="wallet" title="Deine Cookies gelten in allen Trainern">🍪 <span id="cookies">0</span><small>Cookies für alle Trainer</small></div>
+  </header>
   <div class="grid" id="grid"></div>
 </main>
 <script>
@@ -51,6 +59,16 @@ var LU = [
   { k:'Q', n:'Gleichungen bearbeiten',      d:'lu-q-gleichungen-bearbeiten' },
   { k:'R', n:'Prozente',                    d:'lu-r-prozente' }
 ];
+/* Gemeinsamer Cookie-Stand: wird von allen Trainern unter derselben Adresse geschrieben */
+function showCookies() {
+  var n = 0;
+  try { var w = JSON.parse(localStorage.getItem('mathe_wallet')); if (w && typeof w.balance === 'number') n = Math.max(0, Math.floor(w.balance)); } catch (e) {}
+  document.getElementById('cookies').textContent = n;
+}
+showCookies();
+window.addEventListener('storage', showCookies);
+window.addEventListener('focus', showCookies);
+document.addEventListener('visibilitychange', showCookies);
 var grid = document.getElementById('grid');
 LU.forEach(function (x) {
   var el = document.createElement(x.tool ? 'a' : 'div');
