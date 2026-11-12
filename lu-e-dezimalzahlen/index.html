@@ -1,4 +1,41 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Komma Trainer</title><style>body{font-family:Arial,sans-serif;background:#eef4f8;margin:0;padding:20px}.container{max-width:1100px;margin:auto;background:#fff;padding:25px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.1)}.top{display:flex;gap:20px;align-items:flex-start}.main{flex:1}.ach{position:relative;width:320px;background:#f8f9fa;padding:12px;border-radius:12px}.cookies{position:absolute;top:10px;right:12px;font-size:18px;background:#fff;border-radius:14px;padding:3px 12px;box-shadow:0 1px 3px rgba(0,0,0,.18)}.ach li.gap{margin-top:12px}.ach ul{padding-left:20px}.achwrap{display:grid}.achwrap>ul{grid-area:1/1}#achSizer{visibility:hidden;pointer-events:none}#recordBox{display:none}#recordBox h3{margin-top:22px}.sub{color:#555;margin:-6px 0 14px}.task{font-size:30px;font-weight:bold;text-align:center;margin:30px 0}.progress{height:26px;background:#ddd;border-radius:20px;overflow:hidden;position:relative}.loss{position:absolute;top:0;height:100%;background:#e53935;display:none}.fill{height:100%;background:#4caf50;width:0}.answer{font-size:24px;padding:10px;width:220px}.btn{padding:10px 16px}.answer,.check{vertical-align:middle}.check{font-size:20px;font-weight:bold;padding:11px 26px;margin-left:0.5cm;cursor:pointer}.footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}.btn.small{font-size:12px;padding:4px 10px}.popup{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center}.box{background:white;padding:25px;border-radius:15px;text-align:center;max-width:500px}.racebar{display:none;background:#ff9800;color:#fff;font-size:28px;font-weight:bold;text-align:center;padding:10px;border-radius:12px;margin:10px 0}.racebar.low{background:#d32f2f}.gameov{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:20}.gamebox{background:#fff;border-radius:16px;padding:19px 24px;text-align:center;max-width:96vw;max-height:96vh;overflow:auto}.gamebox h2{margin:0 0 8px}.gamebox canvas{border-radius:10px;max-width:100%;touch-action:none;cursor:pointer}.gamehint{font-size:13px;color:#555;margin:6px 0}#gameResult{min-height:24px;font-size:18px;margin:6px 0}.gamebtns{display:flex;gap:10px;justify-content:center}@media(max-width:900px){.top{flex-direction:column;align-items:stretch}.ach{width:auto}}</style><style id="themeCss"></style></head><body><div class="container"><div class="top"><div class="main"><h1 id="topicTitle"></h1><div class="sub" id="topicSubtitle"></div>Name: <input id="name"><p id="level"></p><div class="progress"><div id="fill" class="fill"></div><div id="loss" class="loss"></div></div><p>Richtig gelöst: <span id="correct">0</span></p><div id="raceBar" class="racebar">⏱️ Noch <span id="raceTime">60</span> s &nbsp;|&nbsp; Richtig: <span id="raceCount">0</span></div><div id="task" class="task"></div><input id="answer" class="answer"><button class="btn check" onclick="checkAnswer()">Prüfen</button><div id="feedback"></div></div><div class="ach"><div class="cookies" title="Cookies">🍪 <b id="cookieShow">0</b></div><h3>🏆 Achievements</h3><div class="achwrap"><ul id="achSizer" aria-hidden="true"></ul><ul id="achievements"></ul></div><div id="recordBox"><h3>🏅 Rekorde</h3><ul id="recordList"></ul></div></div></div><div class="footer"><button id="gameBtn" class="btn small" onclick="openGame()"></button><button id="raceBtn" class="btn small" onclick="startRace()">⏱️ Zeitrennen</button><button class="btn small" onclick="saveProgress()">💾 Speichern</button><button class="btn small" onclick="loadFile.click()">📂 Laden</button><input type="file" id="loadFile" accept=".json" hidden></div></div><div id="popup" class="popup"><div class="box"><h2 id="popupTitle"></h2><p id="popupText"></p><button onclick="closePopup()">Weiter</button></div></div><div id="gameOverlay" class="gameov"><div class="gamebox"><h2 id="gameTitle"></h2><div id="gameRoot"></div><div class="gamehint">Leertaste (oder Klick / Tippen) = fliegen · Esc = beenden</div><div id="gameResult"></div><div class="gamebtns"><button id="gameAgain" class="btn" onclick="gameAgainClick(this)"></button><button class="btn" onclick="closeGame(this)">Schliessen</button></div></div></div>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Komma Trainer</title><style>body{font-family:Arial,sans-serif;background:#eef4f8;margin:0;padding:20px}.container{max-width:1100px;margin:auto;background:#fff;padding:25px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.1)}.top{display:flex;gap:20px;align-items:flex-start}.main{flex:1}.ach{position:relative;width:320px;background:#f8f9fa;padding:12px;border-radius:12px}.cookies{position:absolute;top:10px;right:12px;font-size:18px;background:#fff;border-radius:14px;padding:3px 12px;box-shadow:0 1px 3px rgba(0,0,0,.18)}.ach li.gap{margin-top:12px}.ach ul{padding-left:20px}.achwrap{display:grid}.achwrap>ul{grid-area:1/1}#achSizer{visibility:hidden;pointer-events:none}#recordBox{display:none}#recordBox h3{margin-top:22px}.sub{color:#555;margin:-6px 0 14px}.task{font-size:30px;font-weight:bold;text-align:center;margin:30px 0}.progress{height:26px;background:#ddd;border-radius:20px;overflow:hidden;position:relative}.loss{position:absolute;top:0;height:100%;background:#e53935;display:none}.fill{height:100%;background:#4caf50;width:0}.answer{font-size:24px;padding:10px;width:220px}.btn{padding:10px 16px}.answer,.check{vertical-align:middle}.check{font-size:20px;font-weight:bold;padding:11px 26px;margin-left:0.5cm;cursor:pointer}.footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}.btn.small{font-size:12px;padding:4px 10px}.popup{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center}.box{background:white;padding:25px;border-radius:15px;text-align:center;max-width:500px}.racebar{display:none;background:#ff9800;color:#fff;font-size:28px;font-weight:bold;text-align:center;padding:10px;border-radius:12px;margin:10px 0}.racebar.low{background:#d32f2f}.gameov{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:20}.gamebox{background:#fff;border-radius:16px;padding:19px 24px;text-align:center;max-width:96vw;max-height:96vh;overflow:auto}.gamebox h2{margin:0 0 8px}.gamebox canvas{border-radius:10px;max-width:100%;touch-action:none;cursor:pointer}.gamehint{font-size:13px;color:#555;margin:6px 0}#gameResult{min-height:24px;font-size:18px;margin:6px 0}.gamebtns{display:flex;gap:10px;justify-content:center}@media(max-width:900px){.top{flex-direction:column;align-items:stretch}.ach{width:auto}}
+/* ---- Smartphone-Ansicht (Laptop bleibt unverändert) ---- */
+.keypad{display:none}
+@media(max-width:700px){
+body{padding:8px}
+.container{padding:14px;border-radius:12px}
+h1{font-size:26px;margin:4px 0 6px}
+.sub{font-size:14px;margin:0 0 10px}
+#name{width:calc(100% - 62px);font-size:16px;padding:6px;box-sizing:border-box}
+#optRow:not([style*="none"]){display:block!important;margin:8px 0 0!important}
+#topicOpt{width:100%;font-size:16px!important;padding:8px!important}
+.task{font-size:24px;margin:14px 0}
+.answer{width:100%;box-sizing:border-box;font-size:24px;text-align:center}
+.check{width:100%;margin:10px 0 0;padding:14px}
+#answer:not([style*="display: none"]) ~ .check{display:none}
+.keypad{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+#answer[style*="display: none"] ~ .keypad{display:none}
+.keypad button{font-size:22px;font-weight:bold;padding:0;height:48px;border-radius:10px;border:1px solid #b8c4cf;background:#f3f6f9;touch-action:manipulation}
+.keypad button:active{background:#dbe5ee}
+.keypad button.kok{grid-column:span 2;background:#4caf50;border-color:#3d8b40;color:#fff;font-size:20px}
+.keypad button.kdel{background:#fdecea;border-color:#e5a8a2}
+.keypad.num button.kok{grid-column:4;grid-row:3 / span 2;font-size:20px;height:auto}
+.keypad.num button.kzero{grid-column:1 / span 3}
+.btn{touch-action:manipulation}
+.ach{padding:10px 12px}
+.ach h3{margin:4px 0;cursor:pointer;font-size:17px}
+.ach h3::after{content:" ▾";color:#777}
+.ach.open h3::after{content:" ▴"}
+.ach:not(.open) .achwrap,.ach:not(.open) #recordBox{display:none}
+.cookies{top:8px}
+.footer{flex-wrap:wrap;justify-content:stretch}
+.footer #lvlSel{flex:1 1 100%;font-size:16px;padding:8px}
+.footer .btn.small{flex:1 1 calc(50% - 8px);font-size:14px;padding:10px 6px}
+#feedback{overflow-x:auto}
+.box{max-width:88vw;padding:18px;box-sizing:border-box}
+.gamebox{padding:12px}
+}
+</style><style id="themeCss"></style></head><body><div class="container"><div class="top"><div class="main"><h1 id="topicTitle"></h1><div class="sub" id="topicSubtitle"></div>Name: <input id="name"><p id="level"></p><div class="progress"><div id="fill" class="fill"></div><div id="loss" class="loss"></div></div><p>Richtig gelöst: <span id="correct">0</span></p><div id="raceBar" class="racebar">⏱️ Noch <span id="raceTime">60</span> s &nbsp;|&nbsp; Richtig: <span id="raceCount">0</span></div><div id="task" class="task"></div><input id="answer" class="answer"><div class="keypad num" id="keypad"><button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="del" class="kdel">⌫</button><button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k=",">,</button><button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="ok" class="kok">Prüfen</button><button data-k="0" class="kzero">0</button></div><button class="btn check" onclick="checkAnswer()">Prüfen</button><div id="feedback"></div></div><div class="ach"><div class="cookies" title="Cookies">🍪 <b id="cookieShow">0</b></div><h3>🏆 Achievements</h3><div class="achwrap"><ul id="achSizer" aria-hidden="true"></ul><ul id="achievements"></ul></div><div id="recordBox"><h3>🏅 Rekorde</h3><ul id="recordList"></ul></div></div></div><div class="footer"><button id="gameBtn" class="btn small" onclick="openGame()"></button><button id="raceBtn" class="btn small" onclick="startRace()">⏱️ Zeitrennen</button><button class="btn small" onclick="saveProgress()">💾 Speichern</button><button class="btn small" onclick="loadFile.click()">📂 Laden</button><input type="file" id="loadFile" accept=".json" hidden></div></div><div id="popup" class="popup"><div class="box"><h2 id="popupTitle"></h2><p id="popupText"></p><button onclick="closePopup()">Weiter</button></div></div><div id="gameOverlay" class="gameov"><div class="gamebox"><h2 id="gameTitle"></h2><div id="gameRoot"></div><div class="gamehint">Leertaste (oder Klick / Tippen) = fliegen · Esc = beenden</div><div id="gameResult"></div><div class="gamebtns"><button id="gameAgain" class="btn" onclick="gameAgainClick(this)"></button><button class="btn" onclick="closeGame(this)">Schliessen</button></div></div></div>
 
 <!-- ╔══════════════════════════════════════════════════════════════════════╗
      ║  1) THEMEN-BLOCK  –  hier steht ALLES, was zum Thema gehört          ║
@@ -349,6 +386,31 @@ document.getElementById('themeCss').textContent=TOPIC.css;
 
 let lossActive=false,lossFrom=0,lossTo=0;   /* roter Verlust-Abschnitt im XP-Balken */
 let solved=0,streak=0,xp=0,schutz=0,cookies=0,gameBest=0,current={},achs=[];
+/* Smartphone: eigene Zahlentasten (statt der Bildschirmtastatur) und einklappbare Achievements */
+(function(){
+  const kp=document.getElementById('keypad');
+  const mq=window.matchMedia('(max-width:700px)');
+  function sync(){if(mq.matches)answer.setAttribute('inputmode','none');else answer.removeAttribute('inputmode');}
+  sync();if(mq.addEventListener)mq.addEventListener('change',sync);else mq.addListener(sync);
+  kp.addEventListener('mousedown',function(e){e.preventDefault();});   /* Fokus bleibt im Antwortfeld */
+  kp.addEventListener('click',function(e){
+    const b=e.target.closest('button[data-k]');if(!b)return;
+    const k=b.getAttribute('data-k');
+    if(k==='ok'){checkAnswer();return;}
+    answer.focus();
+    let s=answer.selectionStart,t=answer.selectionEnd,v=answer.value;
+    if(s==null){s=t=v.length;}
+    if(k==='del'){
+      if(s!==t){v=v.slice(0,s)+v.slice(t);}
+      else if(s>0){v=v.slice(0,s-1)+v.slice(s);s--;}
+      answer.value=v;answer.setSelectionRange(s,s);
+    }else{
+      answer.value=v.slice(0,s)+k+v.slice(t);answer.setSelectionRange(s+k.length,s+k.length);
+    }
+  });
+  const ach=document.querySelector('.ach');
+  ach.querySelector('h3').addEventListener('click',function(){ach.classList.toggle('open');});
+})();
 /* ---------- Gemeinsamer Cookie-Geldbeutel ----------
    Alle Trainer auf derselben Internetadresse teilen sich diese Cookies (localStorage-Eintrag mathe_wallet).
    Verdienen und Ausgeben (Spiel) wirken direkt auf den gemeinsamen Stand. XP, Level und Rekorde bleiben pro Trainer. */
