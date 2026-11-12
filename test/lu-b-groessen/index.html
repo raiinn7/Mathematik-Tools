@@ -628,8 +628,6 @@ const TOWER=(function(){
     ctx.fillStyle='#7cb342';ctx.fillRect(0,GROUND+s.cam,W,H);
     ctx.fillStyle='#a1887f';ctx.fillRect(0,GROUND+s.cam+BH*0.0,W,6);
     s.blocks.forEach(function(b,i){brick(ctx,b.x,GROUND-(i+1)*BH+s.cam,b.w,i);});
-    let t=s.blocks[s.blocks.length-1],ti=s.blocks.length-1,ty=GROUND-(ti+1)*BH+s.cam;
-    ctx.fillStyle='#c0392b';ctx.beginPath();ctx.moveTo(t.x-5,ty);ctx.lineTo(t.x+t.w/2,ty-Math.min(30,6+t.w/4));ctx.lineTo(t.x+t.w+5,ty);ctx.closePath();ctx.fill();   /* Dach auf der obersten Etage */
     s.pieces.forEach(function(q){brick(ctx,q.x,q.y+s.cam,q.w,q.i);});
     if(s.cur)brick(ctx,s.cur.x,s.cur.y+s.cam,s.cur.w,s.blocks.length);
     ctx.textAlign='center';ctx.font='bold 30px Arial';outline(ctx,String(s.score),W/2,44);
