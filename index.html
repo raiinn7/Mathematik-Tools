@@ -23,8 +23,26 @@
   .off { background:var(--off); opacity:.65; }
   .off .lu { color:var(--muted); }
   header { display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:12px; }
-  .wallet { padding:8px 14px; background:var(--card); border:1px solid var(--line); border-radius:999px; font-weight:700; white-space:nowrap; }
-  .wallet small { display:block; font-weight:400; font-size:.7rem; color:var(--muted); }
+  .wallet { padding:8px 14px; background:var(--card); color:var(--fg); border:1px solid var(--line); border-radius:999px; font:inherit; font-weight:700; white-space:nowrap; cursor:pointer; }
+  .wallet:hover { border-color:var(--accent); }
+  .overlay { position:fixed; inset:0; z-index:20; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(10,14,24,.55); }
+  .overlay[hidden] { display:none; }
+  .shop { width:100%; max-width:520px; max-height:100%; overflow:auto; padding:20px; background:var(--card); border:1px solid var(--line); border-radius:16px; }
+  .shop h2 { margin:0; font-size:1.4rem; }
+  .shop-head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:4px; }
+  .shop-bal { font-weight:700; }
+  .shop-note { margin:0 0 14px; color:var(--muted); font-size:.9rem; }
+  .item { display:flex; align-items:center; gap:14px; padding:12px; margin-bottom:10px; background:var(--bg); border:1px solid var(--line); border-radius:12px; }
+  .item .ic { font-size:2rem; }
+  .item .txt { flex:1; min-width:0; }
+  .item .nm { font-weight:700; }
+  .item .ds { font-size:.85rem; color:var(--muted); }
+  .item button { padding:8px 12px; border-radius:10px; border:1px solid var(--accent); background:var(--accent); color:#fff; font:inherit; font-weight:700; cursor:pointer; white-space:nowrap; }
+  .item button:disabled { background:transparent; color:var(--muted); border-color:var(--line); cursor:default; }
+  .item button.sure { background:#2e9e5b; border-color:#2e9e5b; }
+  .item .own { color:#2e9e5b; font-weight:700; white-space:nowrap; }
+  .item.soon { opacity:.6; }
+  .shop .close { padding:6px 12px; border-radius:10px; border:1px solid var(--line); background:transparent; color:var(--fg); font:inherit; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -32,12 +50,20 @@
   <header>
     <div>
       <h1>Mathe Tools</h1>
-      <p class="sub">Übungstrainer nach Lernumgebung. Klicke auf eine Karte, um zu üben.</p>
+      <p class="sub">Übungsaufgaben für alle Lernumgebungen im Mathbuch</p>
     </div>
-    <div class="wallet" title="Deine Cookies gelten in allen Trainern">🍪 <span id="cookies">0</span><small>Cookies für alle Trainer</small></div>
+    <button class="wallet" id="walletBtn" type="button" title="Shop öffnen" aria-label="Shop öffnen">🍪 <span id="cookies">0</span></button>
   </header>
   <div class="grid" id="grid"></div>
 </main>
+<div class="overlay" id="shopOv" hidden>
+  <div class="shop" role="dialog" aria-modal="true" aria-labelledby="shopTitle">
+    <div class="shop-head"><h2 id="shopTitle">🛒 Shop</h2><button class="close" id="shopClose" type="button">Schliessen</button></div>
+    <p class="shop-bal">Du hast <span id="shopBal">0</span> 🍪</p>
+    <p class="shop-note">Spiele spielst du in jedem Trainer mit dem Button «🎮 Spielen» unten (1 🍪 = 3 Versuche).</p>
+    <div id="shopList"></div>
+  </div>
+</div>
 <script>
 // Neuen Trainer freischalten: bei der passenden Lernumgebung  tool: 'Name'  eintragen.
 var LU = [
@@ -60,12 +86,97 @@ var LU = [
   { k:'R', n:'Prozente',                    d:'lu-r-prozente' }
 ];
 /* Gemeinsamer Cookie-Stand: wird von allen Trainern unter derselben Adresse geschrieben */
-function showCookies() {
-  var n = 0;
-  try { var w = JSON.parse(localStorage.getItem('mathe_wallet')); if (w && typeof w.balance === 'number') n = Math.max(0, Math.floor(w.balance)); } catch (e) {}
-  document.getElementById('cookies').textContent = n;
+var WALLET_KEY = 'mathe_wallet';
+var memWallet = { balance: 0, games: [] };   /* Reserve, falls der Browser-Speicher blockiert ist */
+function readWallet() {
+  try {
+    var w = JSON.parse(localStorage.getItem(WALLET_KEY));
+    if (w && typeof w === 'object') {
+      memWallet = { balance: Math.max(0, Math.floor(Number(w.balance) || 0)), games: Array.isArray(w.games) ? w.games.slice() : [] };
+    }
+  } catch (e) {}
+  return memWallet;
 }
+function writeWallet(w) {
+  memWallet = w;
+  try { localStorage.setItem(WALLET_KEY, JSON.stringify(w)); } catch (e) {}
+}
+
+/* Spiele im Shop. Preise in Cookies; Flappy Bird ist immer dabei. Neue Spiele hier eintragen
+   (und im Trainer unter GAMES_ORDER / GAMES). */
+var SHOP = [
+  { id: 'flappy', icon: '🐦', name: 'Flappy Bird', desc: 'Weiche den Röhren aus.', price: 0 },
+  { id: 'snake',  icon: '🐍', name: 'Snake',       desc: 'Friss Äpfel und werde länger, ohne dich selbst oder die Wand zu berühren.', price: 3 },
+  { id: 'tower',  icon: '🏠', name: 'Stapelturm',  desc: 'Lass die Steine fallen und baue ein möglichst hohes Haus.', price: 5 },
+  { id: 'more',   icon: '✨', name: 'Weitere Spiele', desc: 'Folgen bald.', soon: true }
+];
+var sureId = null, sureTimer = 0;
+
+function showCookies() {
+  document.getElementById('cookies').textContent = readWallet().balance;
+  if (!document.getElementById('shopOv').hidden) renderShop();
+}
+function renderShop() {
+  var w = readWallet();
+  document.getElementById('shopBal').textContent = w.balance;
+  var list = document.getElementById('shopList');
+  list.innerHTML = '';
+  SHOP.forEach(function (g) {
+    var owned = g.price === 0 || w.games.indexOf(g.id) >= 0;
+    var row = document.createElement('div');
+    row.className = 'item' + (g.soon ? ' soon' : '');
+    var txt = '<div class="ic">' + g.icon + '</div><div class="txt"><div class="nm"></div><div class="ds"></div></div>';
+    row.innerHTML = txt;
+    row.querySelector('.nm').textContent = g.name;
+    row.querySelector('.ds').textContent = g.desc;
+    if (g.soon) {
+      /* kein Button */
+    } else if (owned) {
+      var o = document.createElement('span'); o.className = 'own'; o.textContent = '✓ Freigeschaltet'; row.appendChild(o);
+    } else {
+      var b = document.createElement('button'); b.type = 'button';
+      var can = w.balance >= g.price;
+      b.disabled = !can;
+      if (sureId === g.id && can) { b.textContent = 'Wirklich kaufen?'; b.className = 'sure'; }
+      else b.textContent = g.price + ' 🍪 kaufen';
+      b.addEventListener('click', function () { buy(g); });
+      row.appendChild(b);
+    }
+    list.appendChild(row);
+  });
+}
+function buy(g) {
+  var w = readWallet();
+  if (w.games.indexOf(g.id) >= 0 || w.balance < g.price) { sureId = null; renderShop(); return; }
+  if (sureId !== g.id) {   /* erst Sicherheitsfrage (confirm() geht in manchen Ansichten nicht) */
+    sureId = g.id; clearTimeout(sureTimer);
+    sureTimer = setTimeout(function () { sureId = null; renderShop(); }, 4000);
+    renderShop(); return;
+  }
+  clearTimeout(sureTimer); sureId = null;
+  w.balance -= g.price; w.games.push(g.id);
+  writeWallet(w);
+  showCookies();
+}
+function openShop() {
+  document.getElementById('shopOv').hidden = false;
+  renderShop();
+  document.getElementById('shopClose').focus();
+}
+function closeShop() {
+  document.getElementById('shopOv').hidden = true;
+  sureId = null;
+  if (location.hash === '#shop') { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { location.hash = ''; } }
+  document.getElementById('walletBtn').focus();
+}
+document.getElementById('walletBtn').addEventListener('click', openShop);
+document.getElementById('shopClose').addEventListener('click', closeShop);
+document.getElementById('shopOv').addEventListener('click', function (e) { if (e.target === this) closeShop(); });
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !document.getElementById('shopOv').hidden) closeShop(); });
+function checkHash() { if (location.hash === '#shop') openShop(); }
+window.addEventListener('hashchange', checkHash);
 showCookies();
+checkHash();
 window.addEventListener('storage', showCookies);
 window.addEventListener('focus', showCookies);
 document.addEventListener('visibilitychange', showCookies);

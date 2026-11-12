@@ -35,7 +35,11 @@ h1{font-size:26px;margin:4px 0 6px}
 .box{max-width:88vw;padding:18px;box-sizing:border-box}
 .gamebox{padding:12px}
 }
-</style><style id="themeCss"></style></head><body><div class="container"><div class="top"><div class="main"><h1 id="topicTitle"></h1><div class="sub" id="topicSubtitle"></div>Name: <input id="name"><span id="optRow" style="display:none;margin-left:18px">Kategorie: <select id="topicOpt" style="font-size:15px;padding:4px"></select></span><p id="level"></p><div class="progress"><div id="fill" class="fill"></div><div id="loss" class="loss"></div></div><p>Richtig gelöst: <span id="correct">0</span></p><div id="raceBar" class="racebar">⏱️ Noch <span id="raceTime">60</span> s &nbsp;|&nbsp; Richtig: <span id="raceCount">0</span></div><div id="task" class="task"></div><input id="answer" class="answer"><div class="keypad num" id="keypad"><button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="del" class="kdel">⌫</button><button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k=",">,</button><button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="ok" class="kok">Prüfen</button><button data-k="0" class="kzero">0</button></div><button class="btn check" onclick="checkAnswer()">Prüfen</button><div id="feedback"></div></div><div class="ach"><div class="cookies" title="Cookies">🍪 <b id="cookieShow">0</b></div><h3>🏆 Achievements</h3><div class="achwrap"><ul id="achSizer" aria-hidden="true"></ul><ul id="achievements"></ul></div><div id="recordBox"><h3>🏅 Rekorde</h3><ul id="recordList"></ul></div></div></div><div class="footer"><select id="lvlSel" class="btn small" onchange="lvlSelChange()"></select><button id="gameBtn" class="btn small" onclick="openGame()"></button><button id="raceBtn" class="btn small" onclick="startRace()">⏱️ Zeitrennen</button><button class="btn small" onclick="saveProgress()">💾 Speichern</button><button class="btn small" onclick="loadFile.click()">📂 Laden</button><input type="file" id="loadFile" accept=".json" hidden></div></div><div id="popup" class="popup"><div class="box"><h2 id="popupTitle"></h2><p id="popupText"></p><button onclick="closePopup()">Weiter</button></div></div><div id="gameOverlay" class="gameov"><div class="gamebox"><h2 id="gameTitle"></h2><div id="gameRoot"></div><div class="gamehint">Leertaste (oder Klick / Tippen) = fliegen · Esc = beenden</div><div id="gameResult"></div><div class="gamebtns"><button id="gameAgain" class="btn" onclick="gameAgainClick(this)"></button><button class="btn" onclick="closeGame(this)">Schliessen</button></div></div></div>
+.gpick{display:flex;flex-direction:column;gap:10px;margin:10px 0;min-width:min(300px,76vw)}
+.gpbtn{display:flex!important;align-items:center;gap:12px;text-align:left;padding:12px!important;font-size:16px!important}
+.gpbtn .gpi{font-size:30px}.gpbtn small{display:block;font-weight:normal;color:#667;font-size:12px}
+.gshop{margin-top:6px;font-size:14px;text-align:center}
+</style><style id="themeCss"></style></head><body><div class="container"><div class="top"><div class="main"><h1 id="topicTitle"></h1><div class="sub" id="topicSubtitle"></div>Name: <input id="name"><span id="optRow" style="display:none;margin-left:18px">Kategorie: <select id="topicOpt" style="font-size:15px;padding:4px"></select></span><p id="level"></p><div class="progress"><div id="fill" class="fill"></div><div id="loss" class="loss"></div></div><p>Richtig gelöst: <span id="correct">0</span></p><div id="raceBar" class="racebar">⏱️ Noch <span id="raceTime">60</span> s &nbsp;|&nbsp; Richtig: <span id="raceCount">0</span></div><div id="task" class="task"></div><input id="answer" class="answer"><div class="keypad num" id="keypad"><button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="del" class="kdel">⌫</button><button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k=",">,</button><button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="ok" class="kok">Prüfen</button><button data-k="0" class="kzero">0</button></div><button class="btn check" onclick="checkAnswer()">Prüfen</button><div id="feedback"></div></div><div class="ach"><div class="cookies" title="Cookies">🍪 <b id="cookieShow">0</b></div><h3>🏆 Achievements</h3><div class="achwrap"><ul id="achSizer" aria-hidden="true"></ul><ul id="achievements"></ul></div><div id="recordBox"><h3>🏅 Rekorde</h3><ul id="recordList"></ul></div></div></div><div class="footer"><select id="lvlSel" class="btn small" onchange="lvlSelChange()"></select><button id="gameBtn" class="btn small" onclick="openGame()"></button><button id="raceBtn" class="btn small" onclick="startRace()">⏱️ Zeitrennen</button><button class="btn small" onclick="saveProgress()">💾 Speichern</button><button class="btn small" onclick="loadFile.click()">📂 Laden</button><input type="file" id="loadFile" accept=".json" hidden></div></div><div id="popup" class="popup"><div class="box"><h2 id="popupTitle"></h2><p id="popupText"></p><button onclick="closePopup()">Weiter</button></div></div><div id="gameOverlay" class="gameov"><div class="gamebox"><h2 id="gameTitle"></h2><div id="gameRoot"></div><div class="gamehint" id="gameHint">Leertaste (oder Klick / Tippen) = fliegen · Esc = beenden</div><div id="gameResult"></div><div class="gamebtns"><button id="gameAgain" class="btn" onclick="gameAgainClick(this)"></button><button id="gameSwitch" class="btn" onclick="showGamePicker()" style="display:none">🎮 Anderes Spiel</button><button class="btn" onclick="closeGame(this)">Schliessen</button></div></div></div>
 
 <!-- ╔══════════════════════════════════════════════════════════════════════╗
      ║  1) THEMEN-BLOCK  –  hier steht ALLES, was zum Thema gehört          ║
@@ -462,6 +466,217 @@ const GAME=(function(){
 })();
 </script>
 
+<!-- ╔════════════════════════════════════════════════════════════════
+     ║  2b) ZUSATZSPIELE (Shop)  –  Snake und Stapelturm                    ║
+     ║  Gleiche Schnittstelle wie GAME: name, cost, tries, start, stop.     ║
+     ║  GAMES ist die Liste aller Spiele; Flappy Bird ist immer freigeschaltet. ║
+     ╚════════════════════════════════════════════════════════════════╝ -->
+<script>
+const SNAKE=(function(){
+  const N=18,C=20,W=N*C,H=N*C,TRIES=3,SCALE=1.2;
+  function newState(){return {phase:'ready',dir:{x:1,y:0},q:[],snake:[{x:5,y:9},{x:4,y:9},{x:3,y:9}],apple:null,score:0,acc:0,deadTime:0};}
+  function placeApple(s){
+    let free=[];
+    for(let x=0;x<N;x++)for(let y=0;y<N;y++){if(!s.snake.some(p=>p.x===x&&p.y===y))free.push({x:x,y:y});}
+    s.apple=free.length?free[Math.floor(Math.random()*free.length)]:null;
+  }
+  function turn(s,dx,dy){
+    if(s.phase==='dead')return;
+    let last=s.q.length?s.q[s.q.length-1]:s.dir;
+    if((dx===-last.x&&dy===-last.y)||(dx===last.x&&dy===last.y))return;   /* keine Umkehr, kein Doppeltes */
+    if(s.q.length<2)s.q.push({x:dx,y:dy});
+    if(s.phase==='ready')s.phase='run';
+  }
+  function interval(score){return Math.max(0.075,0.16-0.004*score);}
+  function step(s,dt){
+    if(s.phase==='dead'){s.deadTime+=dt;return;}
+    if(s.phase!=='run')return;
+    s.acc+=dt;
+    while(s.phase==='run'&&s.acc>=interval(s.score)){
+      s.acc-=interval(s.score);
+      if(s.q.length)s.dir=s.q.shift();
+      let h=s.snake[0],nx=h.x+s.dir.x,ny=h.y+s.dir.y;
+      let eat=!!s.apple&&nx===s.apple.x&&ny===s.apple.y;
+      let body=eat?s.snake:s.snake.slice(0,-1);   /* die Schwanzspitze wird frei, wenn nichts gefressen wird */
+      if(nx<0||ny<0||nx>=N||ny>=N||body.some(p=>p.x===nx&&p.y===ny)){s.phase='dead';s.deadTime=0;return;}
+      s.snake.unshift({x:nx,y:ny});
+      if(eat){s.score++;placeApple(s);if(!s.apple){s.phase='dead';s.deadTime=0;}}
+      else s.snake.pop();
+    }
+  }
+  function outline(ctx,t,x,y){ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,0,.55)';ctx.strokeText(t,x,y);ctx.fillStyle='#fff';ctx.fillText(t,x,y);}
+  function draw(ctx,s){
+    for(let x=0;x<N;x++)for(let y=0;y<N;y++){ctx.fillStyle=(x+y)%2?'#a8d86a':'#b9e07a';ctx.fillRect(x*C,y*C,C,C);}
+    if(s.apple){
+      let a=s.apple;
+      ctx.fillStyle='#e53935';ctx.beginPath();ctx.arc(a.x*C+C/2,a.y*C+C/2+1,C*0.38,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#2e7d32';ctx.fillRect(a.x*C+C/2-1,a.y*C+1,3,5);
+    }
+    s.snake.forEach(function(p,i){
+      ctx.fillStyle=i===0?'#1b5e20':(i%2?'#2e7d32':'#388e3c');
+      ctx.fillRect(p.x*C+1,p.y*C+1,C-2,C-2);
+    });
+    let h=s.snake[0],d=s.dir,ex=h.x*C+C/2,ey=h.y*C+C/2,px=-d.y,py=d.x;
+    ctx.fillStyle='#fff';
+    [-1,1].forEach(function(k){ctx.beginPath();ctx.arc(ex+d.x*3+px*k*4,ey+d.y*3+py*k*4,2.6,0,Math.PI*2);ctx.fill();});
+    ctx.fillStyle='#111';
+    [-1,1].forEach(function(k){ctx.beginPath();ctx.arc(ex+d.x*4+px*k*4,ey+d.y*4+py*k*4,1.3,0,Math.PI*2);ctx.fill();});
+    ctx.textAlign='center';ctx.font='bold 26px Arial';outline(ctx,String(s.score),W/2,34);
+    if(s.phase==='ready'){ctx.font='bold 20px Arial';outline(ctx,'Pfeiltasten oder Wischen',W/2,H/2-20);outline(ctx,'zum Starten',W/2,H/2+8);}
+    if(s.phase==='dead'){ctx.font='bold 30px Arial';outline(ctx,'Aus!',W/2,H/2);}
+  }
+  let run=null;
+  function stop(){
+    if(!run)return;
+    cancelAnimationFrame(run.raf);
+    document.removeEventListener('keydown',run.onKey);
+    run=null;
+  }
+  function start(root,onEnd){
+    stop();root.innerHTML='';
+    let K=Math.max(0.7,Math.min(SCALE,(window.innerHeight-190)/H,(window.innerWidth-60)/W));
+    let canvas=document.createElement('canvas');canvas.width=Math.round(W*K);canvas.height=Math.round(H*K);
+    canvas.style.touchAction='none';
+    root.appendChild(canvas);
+    let ctx=canvas.getContext('2d');if(ctx)ctx.setTransform(K,0,0,K,0,0);
+    let s=newState();placeApple(s);
+    let r={raf:0,ended:false,last:0};
+    const KEYS={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1],a:[-1,0],d:[1,0],w:[0,-1],s:[0,1],A:[-1,0],D:[1,0],W:[0,-1],S:[0,1]};
+    r.onKey=function(e){let v=KEYS[e.key];if(v){e.preventDefault();turn(s,v[0],v[1]);}};
+    document.addEventListener('keydown',r.onKey);
+    let sx=0,sy=0,sw=false;   /* Wischen: Richtung aus der Fingerbewegung */
+    canvas.addEventListener('pointerdown',function(e){e.preventDefault();sx=e.clientX;sy=e.clientY;sw=true;});
+    canvas.addEventListener('pointermove',function(e){
+      if(!sw)return;
+      let dx=e.clientX-sx,dy=e.clientY-sy;
+      if(Math.max(Math.abs(dx),Math.abs(dy))<22)return;
+      if(Math.abs(dx)>Math.abs(dy))turn(s,dx>0?1:-1,0);else turn(s,0,dy>0?1:-1);
+      sx=e.clientX;sy=e.clientY;
+    });
+    ['pointerup','pointercancel','pointerleave'].forEach(function(t){canvas.addEventListener(t,function(){sw=false;});});
+    run=r;
+    function loop(t){
+      if(run!==r)return;
+      let dt=r.last?Math.min(0.05,(t-r.last)/1000):0;r.last=t;
+      step(s,dt);
+      if(ctx)draw(ctx,s);
+      if(s.phase==='dead'&&s.deadTime>0.7&&!r.ended){r.ended=true;onEnd(s.score);return;}
+      r.raf=requestAnimationFrame(loop);
+    }
+    r.raf=requestAnimationFrame(loop);
+  }
+  return {id:'snake',icon:'🐍',name:'Snake',hint:'Pfeiltasten oder Wischen = lenken · Esc = beenden',cost:1,tries:TRIES,start:start,stop:stop,sim:{newState:newState,placeApple:placeApple,turn:turn,step:step,N:N}};
+})();
+
+const TOWER=(function(){
+  const W=360,H=520,BH=24,GROUND=H-50,W0=190,HOVER=90,TRIES=3,SCALE=1.2;
+  function landY(s){return GROUND-(s.blocks.length+1)*BH;}
+  function speed(score){return Math.min(380,130+9*score);}
+  function spawn(s){
+    let w=s.blocks[s.blocks.length-1].w;
+    s.cur={x:s.fromLeft?0:W-w,w:w,y:landY(s)-HOVER,vy:0,dir:s.fromLeft?1:-1};
+    s.fromLeft=!s.fromLeft;s.mode='hover';
+  }
+  function newState(){
+    let s={phase:'ready',mode:'hover',blocks:[{x:(W-W0)/2,w:W0}],cur:null,pieces:[],score:0,cam:0,deadTime:0,msg:'',msgT:0,fromLeft:true};
+    spawn(s);return s;
+  }
+  function drop(s){if(s.phase!=='dead'&&s.mode==='hover'){s.mode='fall';s.phase='run';s.cur.vy=0;}}
+  function land(s){
+    let p=s.blocks[s.blocks.length-1],c=s.cur;
+    let left=Math.max(c.x,p.x),right=Math.min(c.x+c.w,p.x+p.w),ov=right-left;
+    if(ov<=0){s.phase='dead';s.deadTime=0;s.msg='Daneben!';s.msgT=9;return;}   /* der Stein verfehlt den Turm und fällt weiter */
+    if(Math.abs(c.x-p.x)<=4){s.blocks.push({x:p.x,w:p.w});s.msg='Perfekt!';s.msgT=0.8;}
+    else{
+      s.blocks.push({x:left,w:ov});
+      if(c.x<p.x)s.pieces.push({x:c.x,w:p.x-c.x,y:c.y,vy:0,i:s.blocks.length});
+      else s.pieces.push({x:p.x+p.w,w:c.x+c.w-(p.x+p.w),y:c.y,vy:0,i:s.blocks.length});
+    }
+    s.score++;
+    spawn(s);
+  }
+  function step(s,dt){
+    let target=Math.max(0,s.blocks.length*BH-(GROUND-230));
+    s.cam+=(target-s.cam)*Math.min(1,dt*4);
+    s.pieces.forEach(function(q){q.vy+=1500*dt;q.y+=q.vy*dt;});
+    s.pieces=s.pieces.filter(function(q){return q.y<H+s.cam+60;});
+    if(s.msgT>0)s.msgT-=dt;
+    if(s.phase==='dead'){s.deadTime+=dt;if(s.cur){s.cur.vy+=1800*dt;s.cur.y+=s.cur.vy*dt;}return;}
+    let c=s.cur;
+    if(s.mode==='hover'){
+      c.x+=c.dir*speed(s.score)*dt;
+      if(c.x<=0){c.x=0;c.dir=1;}else if(c.x+c.w>=W){c.x=W-c.w;c.dir=-1;}
+    }else{
+      c.vy+=2400*dt;c.y+=c.vy*dt;
+      let ly=landY(s);
+      if(c.y>=ly){c.y=ly;land(s);}
+    }
+  }
+  function outline(ctx,t,x,y){ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,0,.55)';ctx.strokeText(t,x,y);ctx.fillStyle='#fff';ctx.fillText(t,x,y);}
+  function color(i){return 'hsl('+((i*27+8)%360)+',55%,60%)';}
+  function brick(ctx,x,y,w,i){
+    ctx.fillStyle=color(i);ctx.fillRect(x,y,w,BH);
+    ctx.strokeStyle='rgba(0,0,0,.35)';ctx.lineWidth=1.5;ctx.strokeRect(x+0.75,y+0.75,w-1.5,BH-1.5);
+    if(w>=40){
+      ctx.fillStyle='#fff6bf';
+      for(let wx=x+12;wx+8<=x+w-8;wx+=24)ctx.fillRect(wx,y+8,8,9);
+    }
+  }
+  function draw(ctx,s){
+    let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#8fd3f4');g.addColorStop(1,'#e8f6ff');
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#7cb342';ctx.fillRect(0,GROUND+s.cam,W,H);
+    ctx.fillStyle='#a1887f';ctx.fillRect(0,GROUND+s.cam+BH*0.0,W,6);
+    s.blocks.forEach(function(b,i){brick(ctx,b.x,GROUND-(i+1)*BH+s.cam,b.w,i);});
+    let t=s.blocks[s.blocks.length-1],ti=s.blocks.length-1,ty=GROUND-(ti+1)*BH+s.cam;
+    ctx.fillStyle='#c0392b';ctx.beginPath();ctx.moveTo(t.x-5,ty);ctx.lineTo(t.x+t.w/2,ty-Math.min(30,6+t.w/4));ctx.lineTo(t.x+t.w+5,ty);ctx.closePath();ctx.fill();   /* Dach auf der obersten Etage */
+    s.pieces.forEach(function(q){brick(ctx,q.x,q.y+s.cam,q.w,q.i);});
+    if(s.cur)brick(ctx,s.cur.x,s.cur.y+s.cam,s.cur.w,s.blocks.length);
+    ctx.textAlign='center';ctx.font='bold 30px Arial';outline(ctx,String(s.score),W/2,44);
+    if(s.msgT>0&&s.msg){ctx.font='bold 24px Arial';outline(ctx,s.msg,W/2,H/2-40);}
+    if(s.phase==='ready'){ctx.font='bold 18px Arial';outline(ctx,'Leertaste oder Tippen:',W/2,H-18);}
+  }
+  let run=null;
+  function stop(){
+    if(!run)return;
+    cancelAnimationFrame(run.raf);
+    document.removeEventListener('keydown',run.onKey);
+    run=null;
+  }
+  function start(root,onEnd){
+    stop();root.innerHTML='';
+    let K=Math.max(0.7,Math.min(SCALE,(window.innerHeight-190)/H,(window.innerWidth-60)/W));
+    let canvas=document.createElement('canvas');canvas.width=Math.round(W*K);canvas.height=Math.round(H*K);
+    canvas.style.touchAction='none';
+    root.appendChild(canvas);
+    let ctx=canvas.getContext('2d');if(ctx)ctx.setTransform(K,0,0,K,0,0);
+    let s=newState();
+    let r={raf:0,ended:false,last:0};
+    r.onKey=function(e){if((e.code==='Space'||e.key==='ArrowDown')&&!e.repeat){e.preventDefault();drop(s);}};
+    document.addEventListener('keydown',r.onKey);
+    canvas.addEventListener('pointerdown',function(e){e.preventDefault();drop(s);});
+    run=r;
+    function loop(t){
+      if(run!==r)return;
+      let dt=r.last?Math.min(0.05,(t-r.last)/1000):0;r.last=t;
+      step(s,dt);
+      if(ctx)draw(ctx,s);
+      if(s.phase==='dead'&&s.deadTime>0.9&&!r.ended){r.ended=true;onEnd(s.score);return;}
+      r.raf=requestAnimationFrame(loop);
+    }
+    r.raf=requestAnimationFrame(loop);
+  }
+  return {id:'tower',icon:'🏠',name:'Stapelturm',hint:'Leertaste oder Tippen = Stein fallen lassen · Esc = beenden',cost:1,tries:TRIES,start:start,stop:stop,sim:{newState:newState,drop:drop,step:step,W:W,BH:BH,GROUND:GROUND}};
+})();
+
+const GAMES={
+  flappy:{id:'flappy',icon:'🐦',name:GAME.name,hint:'Leertaste (oder Klick / Tippen) = fliegen · Esc = beenden',cost:GAME.cost,tries:GAME.tries,start:function(r,e){GAME.start(r,e);},stop:function(){GAME.stop();}},
+  snake:SNAKE,
+  tower:TOWER
+};
+const GAMES_ORDER=['flappy','snake','tower'];
+</script>
+
 <!-- ╔══════════════════════════════════════════════════════════════════════╗
      ║  3) ENGINE  –  themenunabhängig, beim Themenwechsel NICHT ändern      ║
      ║  (Oberfläche, Levels/XP, Cookies, Achievements, Zeitrennen, Speichern)║
@@ -510,7 +725,9 @@ let solved=0,streak=0,xp=0,schutz=0,cookies=0,gameBest=0,current={},achs=[];
 const WALLET_KEY='mathe_wallet';
 let memWallet=0,walletMigrated=false;   /* memWallet: Reserve, falls der Browser-Speicher blockiert ist */
 function walletGet(){try{let w=JSON.parse(localStorage.getItem(WALLET_KEY));if(w&&typeof w.balance==='number'&&isFinite(w.balance)){memWallet=Math.max(0,Math.floor(w.balance));return memWallet;}}catch(e){}return memWallet;}
-function walletSet(n){memWallet=Math.max(0,Math.floor(n));try{localStorage.setItem(WALLET_KEY,JSON.stringify({balance:memWallet}));}catch(e){}return memWallet;}
+function walletRead(){try{let w=JSON.parse(localStorage.getItem(WALLET_KEY));if(w&&typeof w==='object')return w;}catch(e){}return null;}
+function walletSet(n){memWallet=Math.max(0,Math.floor(n));try{let w=walletRead()||{};w.balance=memWallet;localStorage.setItem(WALLET_KEY,JSON.stringify(w));}catch(e){}return memWallet;}   /* behält z. B. die gekauften Spiele */
+function walletGames(){let w=walletRead();return (w&&Array.isArray(w.games))?w.games:[];}   /* im Shop gekaufte Spiele */
 function walletAdd(d){return walletSet(walletGet()+d);}
 function walletRefresh(){let c=walletGet();if(c!==cookies){cookies=c;cookieShow.textContent=cookies;updateGameBtn();}}
 window.addEventListener('storage',function(e){if(e.key===WALLET_KEY)walletRefresh();});
@@ -733,6 +950,7 @@ function renderRecords(){
     rows.push('<li>'+(r?r.icon+' '+r.name+': ':'')+'<b>'+n+'</b> Aufgabe'+(n===1?'':'n')+'</li>');
   }
   if(gameBest>0)rows.push('<li>🐦 Flappy Bird: <b>'+gameBest+'</b> Punkt'+(gameBest===1?'':'e')+'</li>');
+  GAMES_ORDER.forEach(function(id){let b=gameBests[id]||0;if(id!=='flappy'&&b>0)rows.push('<li>'+GAMES[id].icon+' '+GAMES[id].name+': <b>'+b+'</b> Punkt'+(b===1?'':'e')+'</li>');});
   recordList.innerHTML=rows.join('');
   recordBox.style.display=rows.length?'block':'none';
   autoSave();
@@ -818,10 +1036,11 @@ function finishRace(){
 answer.addEventListener('keydown',e=>{if(e.key==='Enter')checkAnswer();});
 
 /* ---------- Spiel (Belohnung für Cookies) ---------- */
-let gameOpen=false,triesLeft=0;   /* 1 Cookie = GAME.tries Versuche; übrige Versuche bleiben bis zum Neuladen erhalten */
+let gameOpen=false,triesLeft=0,curGame=GAMES.flappy,gameBests={};
+function ownedGames(){let own=walletGames();return GAMES_ORDER.filter(function(id){return id==='flappy'||own.indexOf(id)>=0;}).map(function(id){return GAMES[id];});}   /* 1 Cookie = GAME.tries Versuche; übrige Versuche bleiben bis zum Neuladen erhalten */
 function triesText(){return triesLeft>0?'noch '+triesLeft+' Versuch'+(triesLeft===1?'':'e'):GAME.cost+' 🍪 = '+GAME.tries+' Versuche';}
 function updateGameBtn(){
-  gameBtn.textContent='🎮 '+GAME.name+' ('+triesText()+')';
+  gameBtn.textContent='🎮 Spielen ('+(triesLeft>0?'noch '+triesLeft+' Versuch'+(triesLeft===1?'':'e'):GAME.cost+' 🍪')+')';
   let ok=(triesLeft>0||cookies>=GAME.cost)&&!race.active;
   gameBtn.disabled=!ok;
   gameBtn.title=ok?'Spiel starten':(race.active?'Nicht während des Zeitrennens':'Du brauchst '+GAME.cost+' Cookie'+(GAME.cost===1?'':'s'));
@@ -833,10 +1052,11 @@ function beginRound(){   /* zieht bei Bedarf 1 Cookie ab (= neue Versuche) und s
     cookies=walletAdd(-GAME.cost);triesLeft=GAME.tries;
   }
   triesLeft--;
-  gameTitle.textContent=GAME.name+' – Versuch '+(GAME.tries-triesLeft)+' von '+GAME.tries;
-  gameResult.innerHTML='';gameAgain.style.display='none';
+  gameTitle.textContent=curGame.name+' – Versuch '+(GAME.tries-triesLeft)+' von '+GAME.tries;
+  gameHint.textContent=curGame.hint;
+  gameResult.innerHTML='';gameAgain.style.display='none';gameSwitch.style.display='none';
   update();
-  GAME.start(gameRoot,onGameEnd);
+  curGame.start(gameRoot,onGameEnd);
   return true;
 }
 function openGame(){
@@ -846,16 +1066,32 @@ function openGame(){
   gameOpen=true;
   answer.blur();
   gameOverlay.style.display='flex';
-  beginRound();
+  if(ownedGames().length>1)showGamePicker();else{curGame=GAMES.flappy;beginRound();}
 }
 function onGameEnd(score){
-  let rec=score>gameBest;
-  if(rec)gameBest=score;
+  let id=curGame.id,best=id==='flappy'?gameBest:(gameBests[id]||0);
+  let rec=score>best;
+  if(rec){best=score;if(id==='flappy')gameBest=score;else gameBests[id]=score;}
   renderRecords();   /* zeigt den Rekord an und speichert automatisch */
-  gameResult.innerHTML='Punkte: <b>'+score+'</b>'+(rec?' 🏆 Neuer Rekord!':'')+' &nbsp;·&nbsp; Rekord: <b>'+gameBest+'</b>';
+  gameResult.innerHTML='Punkte: <b>'+score+'</b>'+(rec?' 🏆 Neuer Rekord!':'')+' &nbsp;·&nbsp; Rekord: <b>'+best+'</b>';
   gameAgain.textContent='🔄 Nochmal ('+triesText()+')';
   gameAgain.disabled=triesLeft<=0&&cookies<GAME.cost;
   gameAgain.style.display='inline-block';
+  gameSwitch.style.display=ownedGames().length>1?'inline-block':'none';
+}
+/* Spielauswahl (nur wenn im Shop weitere Spiele gekauft wurden) */
+function showGamePicker(){
+  curGame.stop();
+  gameTitle.textContent='Spiel wählen';gameHint.textContent='';
+  gameResult.innerHTML='';gameAgain.style.display='none';gameSwitch.style.display='none';
+  gameRoot.innerHTML='<div class="gpick">'+ownedGames().map(function(g){
+    return '<button class="btn gpbtn" onclick="pickGame(\''+g.id+'\')"><span class="gpi">'+g.icon+'</span><span><b>'+g.name+'</b><small>'+g.hint.split(' · ')[0]+'</small></span></button>';
+  }).join('')+'</div><div class="gshop"><a href="../#shop">🛒 Weitere Spiele im Shop</a></div>';
+}
+function pickGame(id){
+  if(!GAMES[id])return;
+  let prev=curGame;curGame=GAMES[id];
+  if(!beginRound()){curGame=prev;gameResult.textContent='Du brauchst 1 🍪 für neue Versuche.';}
 }
 function gameAgainClick(btn){
   if(btn)btn.blur();
@@ -864,7 +1100,7 @@ function gameAgainClick(btn){
 }
 function closeGame(btn){
   if(btn)btn.blur();
-  GAME.stop();
+  curGame.stop();
   gameOpen=false;
   gameOverlay.style.display='none';
   gameRoot.innerHTML='';
@@ -881,7 +1117,7 @@ function closeGame(btn){
 /* ---------- Speichern / Laden ---------- */
 function saveProgress(){
   cookies=walletGet();
-  let data={name:nameInput.value,solved,xp,xps:(xpMap[curOpt]=xp,xpMap),cf:cookieFlags,cw:1,streak,cookies,gameBest,achs,records,opt:getOpt()};
+  let data={name:nameInput.value,solved,xp,xps:(xpMap[curOpt]=xp,xpMap),cf:cookieFlags,cw:1,gb:gameBests,streak,cookies,gameBest,achs,records,opt:getOpt()};
   let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   let clean=nameInput.value.trim().replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,'_');
   let a=document.createElement('a');
@@ -893,7 +1129,7 @@ function saveProgress(){
 /* Lernstand aus einem Objekt übernehmen (aus Datei oder aus dem Browser-Speicher) */
 function applyData(d,fromFile){
   nameInput.value=d.name||'';
-  solved=d.solved||0;xp=Math.max(0,Math.min(MAX_XP,(typeof d.xp==="number")?d.xp:solved*10));streak=d.streak||0;schutz=0;cookies=adoptCookies(d,fromFile);gameBest=Math.max(0,parseInt(d.gameBest)||0);popupQueue=[];lossActive=false;achs=d.achs||[];
+  solved=d.solved||0;xp=Math.max(0,Math.min(MAX_XP,(typeof d.xp==="number")?d.xp:solved*10));streak=d.streak||0;schutz=0;cookies=adoptCookies(d,fromFile);gameBest=Math.max(0,parseInt(d.gameBest)||0);gameBests={};if(d.gb&&typeof d.gb==='object')for(const k in d.gb){if(GAMES[k])gameBests[k]=Math.max(0,parseInt(d.gb[k])||0);}popupQueue=[];lossActive=false;achs=d.achs||[];
   if(TOPIC.options&&d.opt&&[...topicOpt.options].some(o=>o.value===d.opt))topicOpt.value=d.opt;
   /* XP pro Auswahl: neue Dateien haben xps; ältere Dateien nur ein einzelnes xp (gilt dann für die gewählte Auswahl) */
   curOpt=TOPIC.options?topicOpt.value:'_';practiceLevel=null;
@@ -931,7 +1167,7 @@ const AUTO_KEY='trainer_'+TOPIC.id;
 function autoSave(){
   cookies=walletGet();
   try{
-    localStorage.setItem(AUTO_KEY,JSON.stringify({name:nameInput.value,solved,xp,xps:(xpMap[curOpt]=xp,xpMap),cf:cookieFlags,cw:1,streak,cookies,gameBest,achs,records,opt:getOpt()}));
+    localStorage.setItem(AUTO_KEY,JSON.stringify({name:nameInput.value,solved,xp,xps:(xpMap[curOpt]=xp,xpMap),cf:cookieFlags,cw:1,gb:gameBests,streak,cookies,gameBest,achs,records,opt:getOpt()}));
   }catch(e){}   /* z. B. InPrivate-Fenster oder blockierter Speicher: still ignorieren */
 }
 function autoLoad(){
