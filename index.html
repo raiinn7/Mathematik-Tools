@@ -87,12 +87,12 @@ var LU = [
 ];
 /* Gemeinsamer Cookie-Stand: wird von allen Trainern unter derselben Adresse geschrieben */
 var WALLET_KEY = 'mathe_wallet';
-var memWallet = { balance: 0, games: [] };   /* Reserve, falls der Browser-Speicher blockiert ist */
+var memWallet = { balance: 0, games: [], records: {} };   /* Reserve, falls der Browser-Speicher blockiert ist */
 function readWallet() {
   try {
     var w = JSON.parse(localStorage.getItem(WALLET_KEY));
     if (w && typeof w === 'object') {
-      memWallet = { balance: Math.max(0, Math.floor(Number(w.balance) || 0)), games: Array.isArray(w.games) ? w.games.slice() : [] };
+      memWallet = { balance: Math.max(0, Math.floor(Number(w.balance) || 0)), games: Array.isArray(w.games) ? w.games.slice() : [], records: (w.records && typeof w.records === 'object') ? w.records : {} };   /* records: Spiel-Rekorde, werden von den Trainern geschrieben */
     }
   } catch (e) {}
   return memWallet;
@@ -128,7 +128,8 @@ function renderShop() {
     var txt = '<div class="ic">' + g.icon + '</div><div class="txt"><div class="nm"></div><div class="ds"></div></div>';
     row.innerHTML = txt;
     row.querySelector('.nm').textContent = g.name;
-    row.querySelector('.ds').textContent = g.desc;
+    var rec = Math.max(0, parseInt(w.records && w.records[g.id]) || 0);
+    row.querySelector('.ds').textContent = g.desc + (rec > 0 ? ' · Dein Rekord: ' + rec : '');
     if (g.soon) {
       /* kein Button */
     } else if (owned) {

@@ -604,8 +604,19 @@ function walletGet(){try{let w=JSON.parse(localStorage.getItem(WALLET_KEY));if(w
 function walletRead(){try{let w=JSON.parse(localStorage.getItem(WALLET_KEY));if(w&&typeof w==='object')return w;}catch(e){}return null;}
 function walletSet(n){memWallet=Math.max(0,Math.floor(n));try{let w=walletRead()||{};w.balance=memWallet;localStorage.setItem(WALLET_KEY,JSON.stringify(w));}catch(e){}return memWallet;}   /* behält z. B. die gekauften Spiele */
 function walletGames(){let w=walletRead();return (w&&Array.isArray(w.games))?w.games:[];}   /* im Shop gekaufte Spiele */
+function walletRecords(){let w=walletRead();return (w&&w.records&&typeof w.records==='object')?w.records:{};}
+/* Spiel-Rekorde gelten für alle Trainer: es zählt der höhere Wert (lokal oder im gemeinsamen Speicher) */
+function mergeBests(){
+  let wr=walletRecords(),changed=false;
+  GAMES_ORDER.forEach(function(id){
+    let loc=id==='flappy'?gameBest:(gameBests[id]||0),rem=Math.max(0,parseInt(wr[id])||0),v=Math.max(loc,rem);
+    if(id==='flappy')gameBest=v;else if(v>0)gameBests[id]=v;
+    if(v>rem){wr[id]=v;changed=true;}
+  });
+  if(changed){try{let w=walletRead()||{};w.records=wr;if(typeof w.balance!=='number')w.balance=memWallet;localStorage.setItem(WALLET_KEY,JSON.stringify(w));}catch(e){}}
+}
 function walletAdd(d){return walletSet(walletGet()+d);}
-function walletRefresh(){let c=walletGet();if(c!==cookies){cookies=c;cookieShow.textContent=cookies;updateGameBtn();}}
+function walletRefresh(){let c=walletGet();if(c!==cookies){cookies=c;cookieShow.textContent=cookies;updateGameBtn();}renderRecords();}
 window.addEventListener('storage',function(e){if(e.key===WALLET_KEY)walletRefresh();});
 document.addEventListener('visibilitychange',function(){if(!document.hidden)walletRefresh();});
 window.addEventListener('focus',walletRefresh);
@@ -829,6 +840,7 @@ function rating(n){for(const r of RACE_RATING){if(n>=r.min)return r;}return null
 /* Zeit-Rekord anzeigen: Rang-Emoji, Name und Anzahl, z. B. "🐌 Schnecke: 2 Aufgaben".
    Das Zeitrennen läuft immer im Level RACE_LEVEL, darum gibt es nur diesen einen Rekord. */
 function renderRecords(){
+  mergeBests();
   let n=records[RACE_LEVEL]||0;
   let rows=[];
   if(n>0){
