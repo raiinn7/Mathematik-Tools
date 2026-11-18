@@ -569,7 +569,7 @@ const SNAKE=(function(){
 })();
 
 const TOWER=(function(){
-  const W=360,H=520,BH=24,GROUND=H-50,W0=190,HOVER=90,TRIES=3,SCALE=1.2;
+  const W=360,H=520,BH=24,GROUND=H-50,W0=190,HOVER=90,TRIES=3,SCALE=1.2,SHRINK=0.85,SHRINK_MIN=14;
   function landY(s){return GROUND-(s.blocks.length+1)*BH;}
   function speed(score){return Math.min(380,130+9*score);}
   function spawn(s){
@@ -605,7 +605,17 @@ const TOWER=(function(){
     let c=s.cur;
     if(s.mode==='hover'){
       c.x+=c.dir*speed(s.score)*dt;
-      if(c.x<=0){c.x=0;c.dir=1;}else if(c.x+c.w>=W){c.x=W-c.w;c.dir=-1;}
+      let hit=0;
+      if(c.x<=0){c.x=0;c.dir=1;hit=1;}else if(c.x+c.w>=W){c.x=W-c.w;c.dir=-1;hit=1;}
+      if(hit){
+        c.bounces=(c.bounces||0)+1;
+        /* nach einmal hin und her (2 Wandberührungen) schrumpft der Stein bei jeder weiteren Berührung */
+        if(c.bounces>=2&&c.w>SHRINK_MIN){
+          let nw=Math.max(SHRINK_MIN,Math.round(c.w*SHRINK));
+          if(c.dir===-1)c.x+=c.w-nw;   /* rechte Wand: rechte Kante bleibt */
+          c.w=nw;s.msg='Schneller!';s.msgT=0.6;
+        }
+      }
     }else{
       c.vy+=2400*dt;c.y+=c.vy*dt;
       let ly=landY(s);
@@ -886,9 +896,9 @@ function loseXP(){
   xp-=XP_LOSS;
 }
 
-/* Einmalige Cookies (insgesamt, nicht pro Kategorie): beim ersten Erreichen von Level 3 und beim ersten vollen Balken im höchsten Level */
+/* Einmalige Cookies (insgesamt, nicht pro Kategorie): beim ersten Erreichen von Level 5 und beim ersten vollen Balken im höchsten Level */
 let cookieFlags={lv:false,max:false};
-const LEVEL_COOKIE_AT=2;   /* Index von Level 3 */
+const LEVEL_COOKIE_AT=4;   /* Index von Level 5 */
 function levelCookies(){
   let f=cookieFlags;
   if(!f.lv&&getLevel()>=LEVEL_COOKIE_AT){f.lv=true;giveCookie('Du hast zum ersten Mal <b>Level '+(LEVEL_COOKIE_AT+1)+'</b> erreicht.');}
