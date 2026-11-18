@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rechenregeln Trainer</title><style>body{font-family:Arial,sans-serif;background:#eef4f8;color:#1b2733;margin:0;padding:20px}.container{color:#1b2733}.container{max-width:1100px;margin:auto;background:#fff;padding:25px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.1)}.top{display:flex;gap:20px;align-items:flex-start}.main{flex:1}.ach{position:relative;width:320px;background:#f8f9fa;padding:12px;border-radius:12px}.cookies{position:absolute;top:10px;right:12px;font-size:18px;background:#fff;border-radius:14px;padding:3px 12px;box-shadow:0 1px 3px rgba(0,0,0,.18)}.ach li.gap{margin-top:12px}.ach ul{padding-left:20px}.achwrap{display:grid}.achwrap>ul{grid-area:1/1}#achSizer{visibility:hidden;pointer-events:none}#recordBox{display:none}#recordBox h3{margin-top:22px}.sub{color:#555;margin:-6px 0 14px}.task{font-size:30px;font-weight:bold;text-align:center;margin:30px 0}.progress{height:26px;background:#ddd;border-radius:20px;overflow:hidden;position:relative}.loss{position:absolute;top:0;height:100%;background:#e53935;display:none}.fill{height:100%;background:#4caf50;width:0}.answer{font-size:24px;padding:10px;width:220px}.btn{padding:10px 16px}.answer,.check{vertical-align:middle}.check{font-size:20px;font-weight:bold;padding:11px 26px;margin-left:0.5cm;cursor:pointer}.footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}.btn.small{font-size:12px;padding:4px 10px}.popup{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center}.box{background:white;padding:25px;border-radius:15px;text-align:center;max-width:500px}.racebar{display:none;background:#ff9800;color:#fff;font-size:28px;font-weight:bold;text-align:center;padding:10px;border-radius:12px;margin:10px 0}.racebar.low{background:#d32f2f}.gameov{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:20}.gamebox{background:#fff;border-radius:16px;padding:19px 24px;text-align:center;max-width:96vw;max-height:96vh;overflow:auto}.gamebox h2{margin:0 0 8px}.gamebox canvas{border-radius:10px;max-width:100%;touch-action:none;cursor:pointer}.gamehint{font-size:13px;color:#555;margin:6px 0}#gameResult{min-height:24px;font-size:18px;margin:6px 0}.gamebtns{display:flex;gap:10px;justify-content:center}@media(max-width:900px){.top{flex-direction:column;align-items:stretch}.ach{width:auto}}
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Komma Trainer</title><style>body{font-family:Arial,sans-serif;background:#eef4f8;color:#1b2733;margin:0;padding:20px}.container{color:#1b2733}.container{max-width:1100px;margin:auto;background:#fff;padding:25px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.1)}.top{display:flex;gap:20px;align-items:flex-start}.main{flex:1}.ach{position:relative;width:320px;background:#f8f9fa;padding:12px;border-radius:12px}.cookies{position:absolute;top:10px;right:12px;font-size:18px;background:#fff;border-radius:14px;padding:3px 12px;box-shadow:0 1px 3px rgba(0,0,0,.18)}.ach li.gap{margin-top:12px}.ach ul{padding-left:20px}.achwrap{display:grid}.achwrap>ul{grid-area:1/1}#achSizer{visibility:hidden;pointer-events:none}#recordBox{display:none}#recordBox h3{margin-top:22px}.sub{color:#555;margin:-6px 0 14px}.task{font-size:30px;font-weight:bold;text-align:center;margin:30px 0}.progress{height:26px;background:#ddd;border-radius:20px;overflow:hidden;position:relative}.loss{position:absolute;top:0;height:100%;background:#e53935;display:none}.fill{height:100%;background:#4caf50;width:0}.answer{font-size:24px;padding:10px;width:220px}.btn{padding:10px 16px}.answer,.check{vertical-align:middle}.check{font-size:20px;font-weight:bold;padding:11px 26px;margin-left:0.5cm;cursor:pointer}.footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}.btn.small{font-size:12px;padding:4px 10px}.popup{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center}.box{background:white;padding:25px;border-radius:15px;text-align:center;max-width:500px}.racebar{display:none;background:#ff9800;color:#fff;font-size:28px;font-weight:bold;text-align:center;padding:10px;border-radius:12px;margin:10px 0}.racebar.low{background:#d32f2f}.gameov{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:20}.gamebox{background:#fff;border-radius:16px;padding:19px 24px;text-align:center;max-width:96vw;max-height:96vh;overflow:auto}.gamebox h2{margin:0 0 8px}.gamebox canvas{border-radius:10px;max-width:100%;touch-action:none;cursor:pointer}.gamehint{font-size:13px;color:#555;margin:6px 0}#gameResult{min-height:24px;font-size:18px;margin:6px 0}.gamebtns{display:flex;gap:10px;justify-content:center}@media(max-width:900px){.top{flex-direction:column;align-items:stretch}.ach{width:auto}}
 /* ---- Smartphone-Ansicht (Laptop bleibt unverändert) ---- */
 .keypad{display:none}
 @media(max-width:700px){
@@ -47,7 +47,7 @@ h1{font-size:26px;margin:4px 0 6px}
      ╚══════════════════════════════════════════════════════════════════════╝ -->
 <script>
 /* =========================================================================
-   THEMA: Rechenregeln Trainer – Komma verschieben, Potenzen / Zehnerpotenzen, Kommutativgesetz
+   THEMA: Komma Trainer – Komma verschieben und Rechnen mit Dezimalzahlen
 
    Aufbau wie beim Komma- und Masseinheiten-Trainer: Nur dieser Block gehört zum Thema.
    Die ENGINE weiter unten (Oberfläche, Levels/XP, Cookies, Achievements, Zeitrennen, Speichern/Laden)
@@ -754,8 +754,6 @@ const TOPIC=(function(){
   ];
   const CATS={
     komma:{icon:'🔢',name:'Komma verschieben'},
-    potenz:{icon:'⚡',name:'Potenzen / Zehnerpotenzen'},
-    komm:{icon:'🧮',name:'Rechengesetze'},
     dez:{icon:'➕',name:'Rechnen mit Dezimalzahlen'}
   };
   const CAT_KEYS=Object.keys(CATS);
@@ -789,15 +787,8 @@ const TOPIC=(function(){
   function makeTask(l,opt){
     let cat=CATS[opt]?opt:pick(CAT_KEYS);
     if(cat==='komma')return makeKommaTask(l);
-    if(cat==='potenz')return makePotenz(l);
     if(cat==='dez')return makeDez(l);
-    /* Rechengesetze: Vertauschen + Punkt vor Strich / Klammern.
-       Reine Plus- oder Mal-Aufgaben ohne Klammern (Vertauschen) höchstens 20 % aller Aufgaben ohne Klammern. */
-    /* Level 3 der Rechengesetze: leichtere Zahlen; Level 4 = früheres Level 3, Level 5 = früheres Level 4 */
-    let eff=[0,1,2,2,3][l];easy3=(l===2);
-    if(rFree[l]===undefined){let n=0,f=0;for(let i=0;i<400;i++){let x=makeRang(eff);n++;if(x.expr.indexOf('(')<0)f++;}rFree[l]=f/n;}
-    let q=0.22*rFree[l]/(1+0.22*rFree[l]);
-    return Math.random()<q?makeKomm(eff):makeRang(eff);
+    return makeKommaTask(l);
   }
   function mount(el,t){
     if(!t.interactive)return;
@@ -826,19 +817,17 @@ const TOPIC=(function(){
 
   return {
     id:'komma',   /* NIE ändern: sonst gehen gespeicherte Lernstände verloren */
-    title:'Rechenregeln Trainer',
-    subtitle:'Komma verschieben, Potenzen und Rechengesetze',
+    title:'Komma Trainer',
+    subtitle:'Dezimalzahlen mit 10, 100 und 1000 multiplizieren und dividieren',
     subtitles:{
       komma:'Dezimalzahlen mit 10, 100 und 1000 multiplizieren und dividieren',
-      potenz:'Potenzen und Zehnerpotenzen lesen, schreiben und ausrechnen',
-      komm:'Rechengesetze: Vertauschen (Kommutativgesetz), Punkt vor Strich und Klammern',
       dez:'Dezimalzahlen addieren, subtrahieren, multiplizieren und dividieren',
-      mix:'Alle Kategorien gemischt: Komma verschieben, Potenzen, Rechengesetze und Dezimalzahlen'
+      mix:'Alle Kategorien gemischt: Komma verschieben und Rechnen mit Dezimalzahlen'
     },
     levels:LEVELS,
     raceLevel:2,
     raceOption:'mix',
-    medals:['🥉 Bronze-Rechenmeister','🥈 Silber-Rechenmeister','🥇 Gold-Rechenmeister','💠 Platin-Rechenmeister'],
+    medals:['🥉 Bronze-Komma-Meister','🥈 Silber-Komma-Meister','🥇 Gold-Komma-Meister','💠 Platin-Komma-Meister'],
     options:{
       choices:CAT_KEYS.map(k=>({v:k,label:CATS[k].icon+' '+CATS[k].name})).concat([{v:'mix',label:'🎲 Gemischt'}]),
       default:'komma'
