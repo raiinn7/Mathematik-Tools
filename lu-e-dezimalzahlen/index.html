@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Komma Trainer</title><style>body{font-family:Arial,sans-serif;background:#eef4f8;margin:0;padding:20px}.container{max-width:1100px;margin:auto;background:#fff;padding:25px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.1)}.top{display:flex;gap:20px;align-items:flex-start}.main{flex:1}.ach{position:relative;width:320px;background:#f8f9fa;padding:12px;border-radius:12px}.cookies{position:absolute;top:10px;right:12px;font-size:18px;background:#fff;border-radius:14px;padding:3px 12px;box-shadow:0 1px 3px rgba(0,0,0,.18)}.ach li.gap{margin-top:12px}.ach ul{padding-left:20px}.achwrap{display:grid}.achwrap>ul{grid-area:1/1}#achSizer{visibility:hidden;pointer-events:none}#recordBox{display:none}#recordBox h3{margin-top:22px}.sub{color:#555;margin:-6px 0 14px}.task{font-size:30px;font-weight:bold;text-align:center;margin:30px 0}.progress{height:26px;background:#ddd;border-radius:20px;overflow:hidden;position:relative}.loss{position:absolute;top:0;height:100%;background:#e53935;display:none}.fill{height:100%;background:#4caf50;width:0}.answer{font-size:24px;padding:10px;width:220px}.btn{padding:10px 16px}.answer,.check{vertical-align:middle}.check{font-size:20px;font-weight:bold;padding:11px 26px;margin-left:0.5cm;cursor:pointer}.footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}.btn.small{font-size:12px;padding:4px 10px}.popup{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center}.box{background:white;padding:25px;border-radius:15px;text-align:center;max-width:500px}.racebar{display:none;background:#ff9800;color:#fff;font-size:28px;font-weight:bold;text-align:center;padding:10px;border-radius:12px;margin:10px 0}.racebar.low{background:#d32f2f}.gameov{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:20}.gamebox{background:#fff;border-radius:16px;padding:19px 24px;text-align:center;max-width:96vw;max-height:96vh;overflow:auto}.gamebox h2{margin:0 0 8px}.gamebox canvas{border-radius:10px;max-width:100%;touch-action:none;cursor:pointer}.gamehint{font-size:13px;color:#555;margin:6px 0}#gameResult{min-height:24px;font-size:18px;margin:6px 0}.gamebtns{display:flex;gap:10px;justify-content:center}@media(max-width:900px){.top{flex-direction:column;align-items:stretch}.ach{width:auto}}
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rechenregeln Trainer</title><style>body{font-family:Arial,sans-serif;background:#eef4f8;color:#1b2733;margin:0;padding:20px}.container{color:#1b2733}.container{max-width:1100px;margin:auto;background:#fff;padding:25px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.1)}.top{display:flex;gap:20px;align-items:flex-start}.main{flex:1}.ach{position:relative;width:320px;background:#f8f9fa;padding:12px;border-radius:12px}.cookies{position:absolute;top:10px;right:12px;font-size:18px;background:#fff;border-radius:14px;padding:3px 12px;box-shadow:0 1px 3px rgba(0,0,0,.18)}.ach li.gap{margin-top:12px}.ach ul{padding-left:20px}.achwrap{display:grid}.achwrap>ul{grid-area:1/1}#achSizer{visibility:hidden;pointer-events:none}#recordBox{display:none}#recordBox h3{margin-top:22px}.sub{color:#555;margin:-6px 0 14px}.task{font-size:30px;font-weight:bold;text-align:center;margin:30px 0}.progress{height:26px;background:#ddd;border-radius:20px;overflow:hidden;position:relative}.loss{position:absolute;top:0;height:100%;background:#e53935;display:none}.fill{height:100%;background:#4caf50;width:0}.answer{font-size:24px;padding:10px;width:220px}.btn{padding:10px 16px}.answer,.check{vertical-align:middle}.check{font-size:20px;font-weight:bold;padding:11px 26px;margin-left:0.5cm;cursor:pointer}.footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}.btn.small{font-size:12px;padding:4px 10px}.popup{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center}.box{background:white;padding:25px;border-radius:15px;text-align:center;max-width:500px}.racebar{display:none;background:#ff9800;color:#fff;font-size:28px;font-weight:bold;text-align:center;padding:10px;border-radius:12px;margin:10px 0}.racebar.low{background:#d32f2f}.gameov{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:20}.gamebox{background:#fff;border-radius:16px;padding:19px 24px;text-align:center;max-width:96vw;max-height:96vh;overflow:auto}.gamebox h2{margin:0 0 8px}.gamebox canvas{border-radius:10px;max-width:100%;touch-action:none;cursor:pointer}.gamehint{font-size:13px;color:#555;margin:6px 0}#gameResult{min-height:24px;font-size:18px;margin:6px 0}.gamebtns{display:flex;gap:10px;justify-content:center}@media(max-width:900px){.top{flex-direction:column;align-items:stretch}.ach{width:auto}}
 /* ---- Smartphone-Ansicht (Laptop bleibt unverändert) ---- */
 .keypad{display:none}
 @media(max-width:700px){
@@ -39,7 +39,7 @@ h1{font-size:26px;margin:4px 0 6px}
 .gpbtn{display:flex!important;align-items:center;gap:12px;text-align:left;padding:12px!important;font-size:16px!important}
 .gpbtn .gpi{font-size:30px}.gpbtn small{display:block;font-weight:normal;color:#667;font-size:12px}
 .gshop{margin-top:6px;font-size:14px;text-align:center}
-</style><style id="themeCss"></style></head><body><div class="container"><div class="top"><div class="main"><h1 id="topicTitle"></h1><div class="sub" id="topicSubtitle"></div>Name: <input id="name"><p id="level"></p><div class="progress"><div id="fill" class="fill"></div><div id="loss" class="loss"></div></div><p>Richtig gelöst: <span id="correct">0</span></p><div id="raceBar" class="racebar">⏱️ Noch <span id="raceTime">60</span> s &nbsp;|&nbsp; Richtig: <span id="raceCount">0</span></div><div id="task" class="task"></div><input id="answer" class="answer"><div class="keypad num" id="keypad"><button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="del" class="kdel">⌫</button><button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k=",">,</button><button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="ok" class="kok">Prüfen</button><button data-k="0" class="kzero">0</button></div><button class="btn check" onclick="checkAnswer()">Prüfen</button><div id="feedback"></div></div><div class="ach"><div class="cookies" title="Cookies">🍪 <b id="cookieShow">0</b></div><h3>🏆 Achievements</h3><div class="achwrap"><ul id="achSizer" aria-hidden="true"></ul><ul id="achievements"></ul></div><div id="recordBox"><h3>🏅 Rekorde</h3><ul id="recordList"></ul></div></div></div><div class="footer"><button id="gameBtn" class="btn small" onclick="openGame()"></button><button id="raceBtn" class="btn small" onclick="startRace()">⏱️ Zeitrennen</button><button class="btn small" onclick="saveProgress()">💾 Speichern</button><button class="btn small" onclick="loadFile.click()">📂 Laden</button><input type="file" id="loadFile" accept=".json" hidden></div></div><div id="popup" class="popup"><div class="box"><h2 id="popupTitle"></h2><p id="popupText"></p><button onclick="closePopup()">Weiter</button></div></div><div id="gameOverlay" class="gameov"><div class="gamebox"><h2 id="gameTitle"></h2><div id="gameRoot"></div><div class="gamehint" id="gameHint">Leertaste (oder Klick / Tippen) = fliegen · Esc = beenden</div><div id="gameResult"></div><div class="gamebtns"><button id="gameAgain" class="btn" onclick="gameAgainClick(this)"></button><button id="gameSwitch" class="btn" onclick="showGamePicker()" style="display:none">🎮 Anderes Spiel</button><button class="btn" onclick="closeGame(this)">Schliessen</button></div></div></div>
+</style><style id="themeCss"></style></head><body><div class="container"><div class="top"><div class="main"><h1 id="topicTitle"></h1><div class="sub" id="topicSubtitle"></div><div id="storeWarn" style="display:none;background:#fff3cd;border:1px solid #e0b100;border-radius:8px;padding:8px 12px;margin:0 0 12px;font-size:14px">⚠️ Dein Browser speichert den Lernstand nicht automatisch. Sichere ihn mit «💾 Speichern» als Datei und lade ihn später mit «📂 Laden».</div>Name: <input id="name"><span id="optRow" style="display:none;margin-left:18px">Kategorie: <select id="topicOpt" style="font-size:15px;padding:4px"></select></span><p id="level"></p><div class="progress"><div id="fill" class="fill"></div><div id="loss" class="loss"></div></div><p>Richtig gelöst: <span id="correct">0</span></p><div id="raceBar" class="racebar">⏱️ Noch <span id="raceTime">60</span> s &nbsp;|&nbsp; Richtig: <span id="raceCount">0</span></div><div id="task" class="task"></div><input id="answer" class="answer"><div class="keypad num" id="keypad"><button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="del" class="kdel">⌫</button><button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k=",">,</button><button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="ok" class="kok">Prüfen</button><button data-k="0" class="kzero">0</button></div><button class="btn check" onclick="checkAnswer()">Prüfen</button><div id="feedback"></div></div><div class="ach"><div class="cookies" title="Cookies">🍪 <b id="cookieShow">0</b></div><h3>🏆 Achievements</h3><div class="achwrap"><ul id="achSizer" aria-hidden="true"></ul><ul id="achievements"></ul></div><div id="recordBox"><h3>🏅 Rekorde</h3><ul id="recordList"></ul></div></div></div><div class="footer"><select id="lvlSel" class="btn small" onchange="lvlSelChange()"></select><button id="gameBtn" class="btn small" onclick="openGame()"></button><button id="raceBtn" class="btn small" onclick="startRace()">⏱️ Zeitrennen</button><button class="btn small" onclick="saveProgress()">💾 Speichern</button><button class="btn small" onclick="loadFile.click()">📂 Laden</button><input type="file" id="loadFile" accept=".json" hidden></div></div><div id="popup" class="popup"><div class="box"><h2 id="popupTitle"></h2><p id="popupText"></p><button onclick="closePopup()">Weiter</button></div></div><div id="gameOverlay" class="gameov"><div class="gamebox"><h2 id="gameTitle"></h2><div id="gameRoot"></div><div class="gamehint" id="gameHint">Leertaste (oder Klick / Tippen) = fliegen · Esc = beenden</div><div id="gameResult"></div><div class="gamebtns"><button id="gameAgain" class="btn" onclick="gameAgainClick(this)"></button><button id="gameSwitch" class="btn" onclick="showGamePicker()" style="display:none">🎮 Anderes Spiel</button><button class="btn" onclick="closeGame(this)">Schliessen</button></div></div></div>
 
 <!-- ╔══════════════════════════════════════════════════════════════════════╗
      ║  1) THEMEN-BLOCK  –  hier steht ALLES, was zum Thema gehört          ║
@@ -47,39 +47,30 @@ h1{font-size:26px;margin:4px 0 6px}
      ╚══════════════════════════════════════════════════════════════════════╝ -->
 <script>
 /* =========================================================================
-   THEMA: Komma Trainer – Dezimalzahlen mit 10, 100, 1000 multiplizieren und dividieren
+   THEMA: Rechenregeln Trainer – Komma verschieben, Potenzen / Zehnerpotenzen, Kommutativgesetz
 
-   Für ein NEUES THEMA (z. B. Masseinheiten) wird nur dieser Block ersetzt.
-   Die ENGINE weiter unten (Oberfläche, Levels/XP, Cookies, Achievements,
-   Zeitrennen, Speichern/Laden) bleibt unverändert.
+   Aufbau wie beim Komma- und Masseinheiten-Trainer: Nur dieser Block gehört zum Thema.
+   Die ENGINE weiter unten (Oberfläche, Levels/XP, Cookies, Achievements, Zeitrennen, Speichern/Laden)
+   ist für alle Trainer gleich.
 
-   SCHNITTSTELLE – das muss TOPIC liefern:
-     id          kurze Kennung des Themas
-     title       Titel der Seite
-     subtitle    Zeile unter dem Titel
-     levels      Liste der Level: {name, icon, ...Schwierigkeitsangaben}
-                 (name + icon zeigt die Engine an; alles andere nutzt nur dieser Block)
-     raceLevel   Index (0 = Level 1) des Levels, aus dem das Zeitrennen Aufgaben nimmt
-     medals      4 Achievement-Namen für 10 / 25 / 50 / 100 gelöste Aufgaben
-     raceRating  (optional) Bewertung des Zeit-Rekords: [{min,icon,name}, …] absteigend nach min;
-                 ohne Angabe nimmt die Engine 1–2 🐌 Schnecke, 3–5 🚶 Spaziergänger, 6–9 🏃 Sprinter, ab 10 🤖 Maschine
-     css         Styles für Aufgabe und Hilfestellung
-     makeTask(l) -> Objekt {text, answer, ...}   neue Aufgabe für Level-Index l;
-                 'text' wird angezeigt, weitere Felder sind frei wählbar
-                 (nur der Name 'wrong' ist von der Engine belegt)
-     check(raw, task) -> true/false      Eingabe der Lernenden prüfen
-     help(task)  -> HTML-Text            Hilfestellung (erscheint ab dem 2. Fehlversuch)
+   NEUE KATEGORIE HINZUFÜGEN (Lernstände bleiben erhalten):
+     1. In CATS einen Eintrag ergänzen (Name, Symbol) und eine Funktion  taskXyz(l)  schreiben,
+        die ein Objekt {text, html, answer, cat:'xyz', level:l, …} liefert.
+     2. In makeTask() die Zeile für 'xyz' ergänzen, in check() und help() je einen Zweig.
+     3. NICHT ändern: TOPIC.id ('komma'), den Namen bestehender Kategorien (cat-Schlüssel) und die Levelzahl-Reihenfolge.
+   Neue Kategorien starten für alle bei Level 1; alles Bisherige bleibt gespeichert.
+
+   SCHNITTSTELLE – das liefert TOPIC:
+     id, title, subtitle, levels {name,icon,…}, raceLevel, raceOption, medals, css
+     options     Auswahlliste über der Aufgabe: {choices:[{v,label}], default}
+     makeTask(l, opt) -> {text, html?, answer, interactive?, noInput?, …}   'html' (optional) wird statt 'text' angezeigt;
+                 'interactive' + 'noInput': Aufgabe zum Anklicken, TOPIC.mount(element, task) macht sie bedienbar, die Antwortzeile entfällt
+     check(raw, task) -> true/false
+     help(task)  -> HTML-Text (erscheint ab dem 2. Fehlversuch)
    ========================================================================= */
 const TOPIC=(function(){
 
-  /* ---------- Schwierigkeit pro Level ----------
-     digits   : maximale Anzahl Ziffern der Zahl in der Aufgabe (alle geschriebenen Ziffern,
-                auch die 0 vor dem Komma: 3.02385 und 52341.6 haben je 6, 0.35 hat 3)
-     wholeMin : (optional) kleinste Ziffernzahl bei ganzen Zahlen, z. B. 1 für "7"
-     f        : erlaubte Zehnerpotenzen
-     reverse  : (optional) Anteil Umkehraufgaben (0–1); je zur Hälfte fehlt die Stufenzahl (6.4 × ? = 640)
-                oder die Ausgangszahl (? ÷ 100 = 3.4) */
-  const LEVELS=[
+  const K_LEVELS=[
     {name:'Anfänger',icon:'👶',digits:2,wholeMin:1,f:[10]},
     {name:'Fortgeschritten',icon:'🛹',digits:3,f:[10,100]},
     {name:'Profi',icon:'😎',digits:4,f:[10,100,1000]},
@@ -93,9 +84,9 @@ const TOPIC=(function(){
 
   /* Anzahl Ziffern: Maximum des Levels, nach unten höchstens 2 Ziffern weniger (mindestens 2) */
   function digitCount(l,whole){
-    let max=LEVELS[l].digits;
+    let max=K_LEVELS[l].digits;
     let min=Math.max(2,max-2);
-    if(whole&&LEVELS[l].wholeMin)min=LEVELS[l].wholeMin;
+    if(whole&&K_LEVELS[l].wholeMin)min=K_LEVELS[l].wholeMin;
     return randDigit(min,max);
   }
 
@@ -197,54 +188,664 @@ const TOPIC=(function(){
     return {from:from,to:to};
   }
 
-  /* ---------- Schnittstelle zur Engine ---------- */
-  function makeTask(l){
-    let lv=LEVELS[l];
+
+  /* ======================================================================
+     NEU: Kategorien Potenzen / Zehnerpotenzen und Kommutativgesetz
+     ====================================================================== */
+  let easy3=false;   /* Rechengesetze, Level 3: leichtere Zahlen */
+  function ri(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+  function pick(a){return a[Math.floor(Math.random()*a.length)];}
+  function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){let j=ri(0,i);[a[i],a[j]]=[a[j],a[i]];}return a;}
+  function ipow(b,e){let r=1;for(let i=0;i<e;i++)r*=b;return r;}
+  /* grosse Zahlen mit ’ gruppieren (ab 5 Stellen), wie in der Schweiz üblich */
+  function fmt(n){let s=String(n);return s.length<5?s:s.replace(/\B(?=(\d{3})+(?!\d))/g,'’');}
+  function sup(e){return '<sup>'+e+'</sup>';}
+  function pw(b,e){return '<span class="pw">'+b+sup(e)+'</span>';}
+  const QM='<span class="qm">?</span>';
+  function dec1(){return (ri(1,99)+ri(1,9)/10).toFixed(1);}   /* Dezimalzahl mit genau einer Nachkommastelle (nie x.0) */
+  function dsum(a,b){return ((Math.round(parseFloat(a)*10)+Math.round(parseFloat(b)*10))/10).toFixed(1);}
+  function dnum(s){let x=normalize(s);return x;}
+
+  /* ---------- Potenzen / Zehnerpotenzen ---------- */
+  /* Aufgabenarten:
+     z2n   10^4 = ?            (Zehnerpotenz → Zahl)
+     n2z   10 000 = 10^?       (Zahl → Zehnerpotenz)
+     mulz  10·10·10 = 10^?     (Produkt gleicher Faktoren → Potenz, Basis 10)
+     mulb  3·3·3·3 = 3^?       (dito, andere Basis)
+     pow   5^3 = ?             (Potenz ausrechnen)
+     vf    4·10^3 = ?          (Vielfaches einer Zehnerpotenz → Zahl)
+     vf2e  4 000 = 4·10^?      (Zahl → Vielfaches einer Zehnerpotenz)
+     vfd   3.5·10^4 = ?        (mit Dezimalzahl)
+     vfd2e 35 000 = 3.5·10^?   */
+  const POT_KINDS=[
+    ['z2n','n2z'],
+    ['z2n','n2z','mulz'],
+    ['pow','pow','mulb','z2n','n2z'],
+    ['pow','pow','mulb','vf','vf2e'],
+    ['pow','vfd','vfd2e','vf2e','pow','vfd']
+  ];
+  const POT_E=[[2,4],[2,6],[2,6],[2,5],[2,6]];   /* Exponentenbereich der Zehnerpotenzen pro Level */
+  function powSpec(l){
+    if(l<=2)return {b:[2,6],e:[2,3]};
+    if(l===3){let b=ri(2,10);return {b:[b,b],e:[2,b>=7?3:4]};}
+    return Math.random()<0.7?{b:[2,12],e:[2,3]}:{b:[2,4],e:[4,6]};
+  }
+  function makePotenz(l){
+    let kind=pick(POT_KINDS[l]),eR=POT_E[l];
+    let t={cat:'potenz',kind:kind};
+    if(kind==='z2n'){
+      let e=ri(eR[0],eR[1]);t.e=e;
+      t.text='10^'+e+' = ?';t.html=pw(10,e)+' = '+QM;t.answer=String(ipow(10,e));
+    }else if(kind==='n2z'){
+      let e=ri(eR[0],eR[1]);t.e=e;
+      t.text=fmt(ipow(10,e))+' = 10^?';t.html=fmt(ipow(10,e))+' = 10<sup>'+QM+'</sup>';t.answer=String(e);
+    }else if(kind==='mulz'||kind==='mulb'){
+      let b=kind==='mulz'?10:ri(2,9),e=ri(2,kind==='mulz'?Math.min(5,eR[1]):4);t.b=b;t.e=e;
+      let prod=Array(e).fill(b).join(' · ');
+      t.text=prod+' = '+b+'^?';t.html=prod+' = '+b+'<sup>'+QM+'</sup>';t.answer=String(e);
+    }else if(kind==='pow'){
+      let s=powSpec(l),b=ri(s.b[0],s.b[1]),e=ri(s.e[0],s.e[1]);t.b=b;t.e=e;
+      t.text=b+'^'+e+' = ?';t.html=pw(b,e)+' = '+QM;t.answer=String(ipow(b,e));
+    }else if(kind==='vf'){
+      let d=ri(2,9),e=ri(2,5);t.d=d;t.e=e;
+      t.text=d+' · 10^'+e+' = ?';t.html=d+' · '+pw(10,e)+' = '+QM;t.answer=String(d*ipow(10,e));
+    }else if(kind==='vf2e'){
+      let d=ri(2,9),e=ri(2,5);t.d=d;t.e=e;
+      t.text=fmt(d*ipow(10,e))+' = '+d+' · 10^?';t.html=fmt(d*ipow(10,e))+' = '+d+' · 10<sup>'+QM+'</sup>';t.answer=String(e);
+    }else if(kind==='vfd'){
+      let m=ri(11,99);if(m%10===0)m+=1;let e=ri(2,5);t.m=m;t.e=e;
+      let ds=(m/10).toFixed(1);
+      t.text=ds+' · 10^'+e+' = ?';t.html=ds+' · '+pw(10,e)+' = '+QM;t.answer=String(m*ipow(10,e-1));
+    }else{ /* vfd2e */
+      let m=ri(11,99);if(m%10===0)m+=1;let e=ri(2,5);t.m=m;t.e=e;
+      let ds=(m/10).toFixed(1);
+      t.text=fmt(m*ipow(10,e-1))+' = '+ds+' · 10^?';t.html=fmt(m*ipow(10,e-1))+' = '+ds+' · 10<sup>'+QM+'</sup>';t.answer=String(e);
+    }
+    return t;
+  }
+  function helpPotenz(t){
+    let k=t.kind,h='<b>Hilfsbeispiel:</b>',e2,b2,d2,m2;
+    function other(v,lo,hi){let x;do{x=ri(lo,hi);}while(x===v&&hi>lo);return x;}
+    if(k==='z2n'){
+      e2=other(t.e,2,Math.max(3,Math.min(6,t.e+2)));
+      return h+'<div class="ex">'+pw(10,e2)+' = '+Array(e2).fill(10).join(' · ')+' = '+fmt(ipow(10,e2))+'</div>Der <b>Exponent</b> sagt, wie viele Zehner multipliziert werden. Bei Zehnerpotenzen ist er gleichzeitig die <b>Anzahl Nullen</b>: '+e2+' Nullen.';
+    }
+    if(k==='n2z'){
+      e2=other(t.e,2,Math.max(3,Math.min(6,t.e+2)));
+      return h+'<div class="ex">'+fmt(ipow(10,e2))+' = '+pw(10,e2)+'</div>Zähle die Nullen: Es sind <b>'+e2+'</b>. Diese Zahl ist der Exponent.';
+    }
+    if(k==='mulz'||k==='mulb'){
+      b2=k==='mulz'?10:other(t.b,2,9);e2=other(t.e,2,4);
+      return h+'<div class="ex">'+Array(e2).fill(b2).join(' · ')+' = '+pw(b2,e2)+'</div>Zähle, wie oft die gleiche Zahl multipliziert wird: <b>'+e2+'-mal</b>. Das ist der Exponent.';
+    }
+    if(k==='pow'){
+      b2=other(t.b,2,t.b>=7?10:6);
+      let f=Array(t.e).fill(b2).join(' · ');
+      return h+'<div class="ex">'+pw(b2,t.e)+' = '+f+' = '+ipow(b2,t.e)+'</div>Die Basis wird so oft mit sich selbst multipliziert, wie der Exponent angibt. Nicht '+b2+' · '+t.e+' rechnen!';
+    }
+    if(k==='vf'){
+      d2=other(t.d,2,9);e2=other(t.e,2,5);
+      return h+'<div class="ex">'+d2+' · '+pw(10,e2)+' = '+d2+' · '+fmt(ipow(10,e2))+' = '+fmt(d2*ipow(10,e2))+'</div>Rechne zuerst die Zehnerpotenz aus (oder hänge einfach '+e2+' Nullen an die '+d2+' an).';
+    }
+    if(k==='vf2e'){
+      d2=other(t.d,2,9);e2=other(t.e,2,5);
+      return h+'<div class="ex">'+fmt(d2*ipow(10,e2))+' = '+d2+' · '+pw(10,e2)+'</div>Zähle die Nullen hinter der '+d2+': Es sind <b>'+e2+'</b>. Das ist der Exponent.';
+    }
+    if(k==='vfd'){
+      m2=ri(11,99);if(m2%10===0)m2++;e2=other(t.e,2,5);
+      return h+'<div class="ex">'+(m2/10).toFixed(1)+' · '+pw(10,e2)+' = '+fmt(m2*ipow(10,e2-1))+'</div>Mal '+pw(10,e2)+' heisst: Das Komma wandert <b>'+e2+' Stellen nach rechts</b>. Fehlende Stellen füllst du mit Nullen auf.';
+    }
+    m2=ri(11,99);if(m2%10===0)m2++;e2=other(t.e,2,5);
+    return h+'<div class="ex">'+fmt(m2*ipow(10,e2-1))+' = '+(m2/10).toFixed(1)+' · '+pw(10,e2)+'</div>Setze das Komma so, dass nur eine Ziffer davor steht. Zähle, über wie viele Stellen es gewandert ist: <b>'+e2+'</b>. Das ist der Exponent.';
+  }
+
+  /* ---------- Kommutativgesetz ---------- */
+  /* Aufgabenarten:
+     sw      7 + 12 = 12 + ?     (eine Zahl der vertauschten Rechnung fehlt)
+     vorteil 4 · 37 · 25 = ?     (durch Vertauschen geschickt rechnen)
+     sw3     7 + 15 + 3 = 3 + ? + 7
+     yn      Stimmt das? 9 − 4 = 4 − 9   (Ja / Nein, gilt nur bei + und ·) */
+  const KOMM_KINDS=[['vorteil','vorteil','vorteil','vorteil','sw','sw','yn'],['vorteil','vorteil','vorteil','vorteil','sw','sw','yn'],['umf','umf','vorteil','vorteil','sw3','yn'],['umf','vorteil','yn','sw3'],['yn','yn','umf','vorteil','vorteil']];
+  function swNumbers(l,op){
+    if(easy3&&l===2)l=1;
+    let a,b;
+    do{
+      if(l===0){a=ri(2,20);b=ri(2,20);}
+      else if(l===1){if(op==='+'){a=ri(10,99);b=ri(10,99);}else{a=ri(2,12);b=ri(2,12);}}
+      else{
+        if(op==='+'){if(Math.random()<0.5){a=dec1();b=dec1();}else{a=ri(100,999);b=ri(100,999);}}
+        else{a=ri(11,99);b=ri(2,9);}
+      }
+    }while(String(a)===String(b));
+    return [String(a),String(b)];
+  }
+  function makeSw(l){
+    let op=(l===0)?'+':pick(['+','·']);
+    let ab=swNumbers(l,op),a=ab[0],b=ab[1];
+    let slot=ri(0,3);   /* welche der vier Zahlen fehlt */
+    let nums=[a,b,b,a],ans=nums[slot];
+    let sh=nums.map((x,i)=>i===slot?'?':x);
+    let t={cat:'komm',kind:'sw',op:op,a:a,b:b};
+    t.text=sh[0]+' '+op+' '+sh[1]+' = '+sh[2]+' '+op+' '+sh[3];
+    t.html=sh.map(x=>x==='?'?QM:x);
+    t.html=t.html[0]+' '+op+' '+t.html[1]+' = '+t.html[2]+' '+op+' '+t.html[3];
+    t.answer=normalize(ans);
+    return t;
+  }
+  function makeSw3(l){
+    let op=pick(['+','·']);
+    let a,b,c,hiP=easy3?30:60,hiM=easy3?9:12;
+    do{
+      if(op==='+'){a=ri(5,hiP);b=ri(5,hiP);c=ri(5,hiP);}else{a=ri(2,hiM);b=ri(2,hiM);c=ri(2,hiM);}
+    }while(a===b||b===c||a===c);
+    /* links a op b op c, rechts: Reihenfolge anders, eine Zahl fehlt */
+    let left=[a,b,c],right=pick([[c,b,a],[b,a,c],[c,a,b],[b,c,a]]);
+    let slot=ri(0,2),ans=right[slot];
+    let r=right.map((x,i)=>i===slot?'?':x);
+    let t={cat:'komm',kind:'sw3',op:op};
+    t.text=left.join(' '+op+' ')+' = '+r.join(' '+op+' ');
+    t.html=left.join(' '+op+' ')+' = '+r.map(x=>x==='?'?QM:x).join(' '+op+' ');
+    t.answer=String(ans);
+    return t;
+  }
+  function makeVorteil(l){
+    if(easy3&&l===2)l=1;
+    let t={cat:'komm',kind:'vorteil'},x,nums,ans,mode=Math.random();
+    if(l>=2&&mode<0.3){   /* Dezimalzahlen: 3.7 + 12.4 + 6.3, die Zehntel ergeben zusammen ganze Zahlen */
+      let ta=ri(11,99);if(ta%10===0)ta++;
+      let tb=(10-ta%10)+10*ri(0,l>=3?6:3),tx=ri(11,99);if(tx%10===0)tx++;
+      let d=v=>(v/10).toFixed(1);
+      nums=[d(ta),d(tx),d(tb)];t.op='+';t.pair=[d(ta),d(tb)];t.x=d(tx);
+      ans=normalize(((ta+tb+tx)/10).toFixed(1));
+    }else if(mode<0.55||l===0&&mode<0.5){   /* Produkt mit Partnerzahlen (2·5, 4·25, 5·20, 8·125, 2·50) */
+      let pairs=l===0?[[2,5],[5,2]]:(l===1?[[4,25],[2,50],[5,20],[25,4]]:[[4,25],[8,125],[4,50],[5,20],[2,50],[25,8]]);
+      let pr=pick(pairs);
+      x=l===0?ri(11,39):(l===1?ri(11,49):ri(12,99));
+      nums=[pr[0],x,pr[1]];t.op='·';t.pair=pr;t.x=x;ans=String(pr[0]*pr[1]*x);
+    }else{   /* Summe: a + x + b ergibt glatte Zahl (10, 20, 100, 1000) */
+      let base=l===0?pick([10,20,20]):(l===1?100:pick([100,1000,1000]));
+      let a=base===10?ri(2,8):(base===20?ri(3,17):(base===100?ri(11,89):ri(101,899)));
+      let b=base-a;
+      x=base<=20?ri(11,59):(base===100?ri(11,99):ri(101,899));
+      nums=[a,x,b];t.op='+';t.pair=[a,b];t.x=x;ans=String(a+b+x);
+    }
+    t.text=nums.join(' '+t.op+' ')+' = ?';
+    t.html=nums.join(' '+t.op+' ')+' = '+QM+'<div class="hint">Tipp: Vertausche die Zahlen so, dass du geschickt rechnen kannst.</div>';
+    t.answer=ans;
+    return t;
+  }
+
+  /* Umformungen bei Plus und Minus: Das Vorzeichen gehört zur Zahl dahinter und wandert mit.
+     Drei Umformungen, eine davon ist falsch (Vorzeichen blieben auf ihrem Platz stehen). */
+  function fmtTerms(ts){
+    return ts.map((t,i)=>i===0?String(t.v):(t.s>0?' + ':' \u2212 ')+t.v).join('').replace(/^/,'');
+  }
+  function partOk(ts){let a=0;for(const t of ts){a+=t.s*t.v;if(a<0)return false;}return true;}   /* nie negative Zwischenresultate */
+  function sumTerms(ts){return ts.reduce((a,t)=>a+t.s*t.v,0);}
+  function makeUmf(l){
+    let n=l<=2?4:5,ts,orig;
+    do{
+      ts=[];for(let i=0;i<n;i++)ts.push({v:ri(2,easy3?25:(l<=2?40:60)),s:i===0?1:(Math.random()<0.5?1:-1)});
+      let p=ts.filter(t=>t.s>0).length;
+      if(p<2||p>n-2)ts=null;
+      else{let vs=ts.map(t=>t.v);if(new Set(vs).size<n)ts=null;}
+      if(ts&&!partOk(ts))ts=null;
+    }while(!ts);
+    orig=sumTerms(ts);
+    function perm(){   /* Termreihenfolge mischen, am Anfang steht ein Plus-Term */
+      let a,g=0;do{a=shuffle(ts);g++;}while((a[0].s<0||a.every((t,i)=>t===ts[i])||!partOk(a))&&g<500);return a;
+    }
+    function wrong(){   /* Zahlen vertauscht, aber die Vorzeichen bleiben auf ihren Plätzen */
+      for(let k=0;k<200;k++){
+        let a=perm();
+        let w=a.map((t,i)=>({v:t.v,s:ts[i].s}));
+        if(sumTerms(w)!==orig&&fmtTerms(w)!==fmtTerms(ts)&&partOk(w))return w;
+      }
+      return null;
+    }
+    let good=[],seen={};seen[fmtTerms(ts)]=1;
+    while(good.length<2){let a=perm(),f=fmtTerms(a);if(!seen[f]){seen[f]=1;good.push(a);}}
+    let bad=wrong();
+    if(!bad||!partOk(good[0])||!partOk(good[1]))return makeUmf(l);
+    let opts=shuffle([{ts:good[0],ok:true},{ts:good[1],ok:true},{ts:bad,ok:false}]);
+    let L=['A','B','C'];
+    let t={cat:'komm',kind:'umf',interactive:true,noInput:true};
+    t.answer=L[opts.findIndex(o=>!o.ok)];
+    t.opts=opts.map(o=>fmtTerms(o.ts));t.orig=fmtTerms(ts);t.total=orig;t.vals=opts.map(o=>sumTerms(o.ts));
+    t.text='Welche Umformung ist falsch? '+t.orig+' ('+t.opts.join(' | ')+')';
+    t.html='<div>Welche Umformung ist <b>falsch</b>?</div><div class="ex">'+t.orig+'</div><div class="yn opts">'+
+      opts.map((o,i)=>'<button type="button" data-v="'+L[i]+'"><b>'+L[i]+'</b> &nbsp;'+t.opts[i]+'</button>').join('')+'</div>';
+    t.state={c:null};
+    return t;
+  }
+  function makeYn(l){
+    /* Keine negativen Zahlen und keine Brüche: Bei Minus und Geteilt fragen wir nur, ob man vertauschen darf. */
+    let op=pick(['+','·','−','÷']),a,b;
+    if(op==='÷'){b=ri(2,9);a=b*ri(2,9);if(a===b)a=b*2;}
+    else if(op==='−'){a=ri(10,60);b=ri(2,a-1);}
+    else if(op==='·'){a=ri(2,12);b=ri(2,12);if(a===b)b=a===12?11:a+1;}
+    else{a=ri(5,60);b=ri(5,60);if(a===b)b++;}
+    let t={cat:'komm',kind:'yn',op:op,a:a,b:b,interactive:true,noInput:true};
+    t.answer=(op==='+'||op==='·')?'ja':'nein';
+    let btn='<div class="yn"><button type="button" data-v="ja">Ja</button><button type="button" data-v="nein">Nein</button></div>';
+    if((op==='+'||op==='·')&&Math.random()<0.5){
+      t.text='Stimmt das? '+a+' '+op+' '+b+' = '+b+' '+op+' '+a;
+      t.html='<div>Stimmt das?</div><div class="ex">'+a+' '+op+' '+b+' = '+b+' '+op+' '+a+'</div>'+btn;
+    }else{
+      t.text='Darf man die Zahlen vertauschen, ohne dass sich das Ergebnis ändert? '+a+' '+op+' '+b;
+      t.html='<div>Darf man die Zahlen vertauschen, ohne dass sich das Ergebnis ändert?</div><div class="ex">'+a+' '+op+' '+b+'</div>'+btn;
+    }
+    t.state={c:null};
+    return t;
+  }
+  function makeKomm(l){
+    let k=pick(KOMM_KINDS[l]);
+    return k==='sw'?makeSw(l):(k==='sw3'?makeSw3(l):(k==='vorteil'?makeVorteil(l):(k==='umf'?makeUmf(l):makeYn(l))));
+  }
+  function helpKomm(t){
+    const h='<b>Hilfsbeispiel:</b>';
+    const rule='<br><span class="legend">Kommutativgesetz (Vertauschungsgesetz): Bei <b>Plus</b> und <b>Mal</b> darfst du die Zahlen vertauschen. Das Ergebnis bleibt gleich.</span>';
+    if(t.kind==='sw'||t.kind==='sw3'){
+      let a,b,r;
+      if(t.op==='+'){a=ri(10,60);b=ri(10,60);while(a===b)b=ri(10,60);r=a+b;}
+      else{a=ri(3,12);b=ri(3,12);while(a===b)b=ri(3,12);r=a*b;}
+      return h+'<div class="ex">'+a+' '+t.op+' '+b+' = '+b+' '+t.op+' '+a+'</div><div class="ex">'+r+' = '+r+'</div>'+'Auf beiden Seiten kommen die gleichen Zahlen vor, nur in anderer Reihenfolge.'+rule;
+    }
+    if(t.kind==='umf'){
+      let a=ri(10,40),b=ri(5,30),c=ri(2,9),d=ri(2,9);
+      return h+'<div class="ex">'+a+' + '+b+' \u2212 '+c+' \u2212 '+d+' = '+a+' \u2212 '+c+' + '+b+' \u2212 '+d+'</div>Das <b>Vorzeichen gehört zur Zahl dahinter</b> und wandert mit. Die \u2212'+c+' bleibt eine \u2212'+c+', auch wenn sie an eine andere Stelle kommt.<br>Prüfe jede Umformung: Hat jede Zahl ihr Vorzeichen behalten? Die falsche ist die, bei der ein Vorzeichen stehen geblieben ist und nicht mit der Zahl mitgewandert ist.'+rule;
+    }
+    if(t.kind==='vorteil'){
+      if(t.op==='·'){
+        let pr=pick([[4,25],[2,50],[5,20]]),x=ri(11,99);
+        return h+'<div class="ex">'+pr[0]+' · '+x+' · '+pr[1]+' = '+pr[0]+' · '+pr[1]+' · '+x+' = '+(pr[0]*pr[1])+' · '+x+' = '+(pr[0]*pr[1]*x)+'</div>Suche zwei Zahlen, die zusammen ein einfaches Produkt (z. B. 100) geben, und rechne sie zuerst.'+rule;
+      }
+      let a=ri(11,89),b=100-a,x=ri(11,99);
+      return h+'<div class="ex">'+a+' + '+x+' + '+b+' = '+a+' + '+b+' + '+x+' = 100 + '+x+' = '+(100+x)+'</div>Suche zwei Zahlen, die zusammen eine glatte Zahl (z. B. 10, 100 oder 1000) ergeben, und rechne sie zuerst.'+rule;
+    }
+    let a=ri(10,40),b=ri(3,9),p=ri(2,6)*ri(2,6);
+    return h+'<div class="ex">'+a+' − '+b+' = '+(a-b)+'<br>'+(a*b)+' ÷ '+b+' = '+a+'</div>Bei <b>Minus</b> und <b>Geteilt</b> darfst du die Zahlen <b>nicht</b> vertauschen: '+b+' − '+a+' geht in den natürlichen Zahlen gar nicht, und '+b+' ÷ '+(a*b)+' ist nicht '+a+'. Bei <b>Plus</b> und <b>Mal</b> geht es immer, z. B. '+a+' + '+b+' = '+b+' + '+a+'.'+rule;
+  }
+
+  /* ---------- Punkt vor Strich und Klammern ---------- */
+  /* Auswerten: nur natürliche Zahlen, Division muss aufgehen, nie negativ; sonst NaN */
+  function evalExpr(str){
+    let tk=str.match(/\d+|[+−·÷()]/g),p=0;
+    function expr(){let v=term();while(p<tk.length&&(tk[p]==='+'||tk[p]==='−')){let o=tk[p++],w=term();if(o==='+')v=v+w;else{v=v-w;if(v<0)return NaN;}if(isNaN(v)||isNaN(w))return NaN;}return v;}
+    function term(){let v=factor();while(p<tk.length&&(tk[p]==='·'||tk[p]==='÷')){let o=tk[p++],w=factor();if(isNaN(v)||isNaN(w))return NaN;if(o==='·')v=v*w;else{if(w===0||v%w!==0)return NaN;v=v/w;}}return v;}
+    function factor(){let t=tk[p++];if(t==='('){let v=expr();p++;return v;}return parseInt(t);}
+    let r=expr();return (p===tk.length)?r:NaN;
+  }
+  function fmtExpr(s){return s.replace(/([+−·÷])/g,' $1 ');}
+  const RANG_T=[
+    ['A+B·C','A·B+C','A−B·C','A+B÷C','A·B−C','A÷B+C'],
+    ['(A+B)·C','A·(B+C)','(A−B)·C','A·(B−C)','(A+B)÷C','A+B·C−D','A·B+C·D','A−B÷C+D','A·B−C÷D','A+B·C+D'],
+    ['A−(B+C)·D','(A+B)·C−D','A+B·(C−D)','A·B−C·D','A·(B+C)−D','(A+B)÷C+D·E','A−(B−C)·D','A·B+C·D−E','A+B·C−D÷E'],
+    ['(A+B)·(C−D)','(A+B)·C−D·E','A−(B−C)·D+E','(A+B)÷(C−D)','A·(B+C)−D÷E','(A·B−C)÷D','A·B−C·D+E·F','A+B·C−D·E+F'],
+    ['(A+B)·C−(D−E)·F','A·(B+(C−D)·E)','(A−B·C)·(D+E)','A+(B+C)·(D−E)÷F','((A+B)·C−D)÷E','A·B+C÷D−E·F','A+B·C−D÷E+F']
+  ];
+  const RANG_N=[[2,9],[2,12],[2,15],[2,12],[2,10]];
+  function fillTpl(tpl,l){
+    let ar=(easy3&&l===2)?[2,10]:RANG_N[l];
+    for(let k=0;k<400;k++){
+      let m={};
+      let s=tpl.replace(/[A-F]/g,c=>{if(!(c in m))m[c]=(c==='A'&&l<=1)?ri(2,20):ri(ar[0],ar[1]);return m[c];});
+      let v=evalExpr(s);
+      if(isNaN(v)||v>((easy3&&l===2)?200:600)||v<1)continue;
+      if(s.indexOf('(')>=0){let ns=evalExpr(s.replace(/[()]/g,''));if(ns===v)continue;}   /* Klammern müssen etwas ändern */
+      {let q=s,m,bad=false;while((m=q.match(/\(([^()]*)\)/))){let bv=evalExpr(m[1]);if(isNaN(bv)||bv<2){bad=true;break;}q=q.replace(m[0],String(bv));}if(bad)continue;}   /* keine Klammer mit Ergebnis 0 oder 1 */
+      return {s:s,v:v};
+    }
+    return null;
+  }
+  /* Schritt für Schritt: ein Rechenschritt pro Zeile */
+  function stepList(str){
+    let tk=str.match(/\d+|[+−·÷()]/g),out=[tk.join('')];
+    function ap(a,o,b){a=+a;b=+b;return o==='+'?a+b:o==='−'?a-b:o==='·'?a*b:a/b;}
+    for(let g=0;g<30&&tk.length>1;g++){
+      let lo=0,hi=tk.length;
+      let c=tk.indexOf(')');
+      if(c>=0){hi=c;lo=tk.lastIndexOf('(',c)+1;}
+      let idx=-1;
+      for(let i=lo+1;i<hi;i+=1){if(tk[i]==='·'||tk[i]==='÷'){idx=i;break;}}
+      if(idx<0)for(let i=lo+1;i<hi;i++){if(tk[i]==='+'||tk[i]==='−'){idx=i;break;}}
+      if(idx<0){ if(c>=0){tk.splice(lo-1,3,tk[lo]);} else break; out.push(null);continue;}
+      let r=ap(tk[idx-1],tk[idx],tk[idx+1]);
+      tk.splice(idx-1,3,String(r));
+      if(c>=0&&tk[lo-1]==='('&&tk[lo+1]===')')tk.splice(lo-1,3,tk[lo]);
+      out.push(tk.join(''));
+    }
+    return out.filter(x=>x!==null);
+  }
+  function stepHtml(str){
+    let st=stepList(str);
+    return st.map(s=>fmtExpr(s)).join('<br>= ');
+  }
+  function firstOps(tk){   /* alle Rechenzeichen mit zwei Zahlen daneben: [{i,txt}] */
+    let r=[];
+    for(let i=1;i<tk.length-1;i++)if(/[+−·÷]/.test(tk[i])&&/^\d+$/.test(tk[i-1])&&/^\d+$/.test(tk[i+1]))r.push({i:i,txt:tk[i-1]+' '+tk[i]+' '+tk[i+1],hi:(tk[i]==='·'||tk[i]==='÷')});
+    return r;
+  }
+  /* Gibt es auf irgendeiner Klammerebene ein Punkt- UND ein Strichzeichen (dann entscheidet Punkt vor Strich)? */
+  function needsPvS(str){
+    let q=str,m;
+    function both(x){return /[\u00b7\u00f7]/.test(x)&&/[+\u2212]/.test(x);}
+    while((m=q.match(/\(([^()]*)\)/))){if(both(m[1]))return true;q=q.replace(m[0],'0');}
+    return both(q);
+  }
+  function makeRang(l,kindForce){
+    let kinds=[['calc','calc','calc','first'],['calc','calc','first','rule'],['calc','calc','first','klam','rule'],['calc','calc','klam','rule'],['calc','calc','klam','calc']][l];
+    let kind=kindForce||pick(kinds);
+    let t={cat:'rang',kind:kind};
+    if(kind==='first'){
+      let second=false,tpl,g=null,P='\u00b7',M='\u2212';   /* «als zweites» gestrichen: bei zwei Malzeichen nicht eindeutig */
+      let pool=second?['A+B'+P+'C'+M+'D','A'+P+'B+C'+P+'D','A'+M+'B'+P+'C+D','A+B'+P+'C+D','A'+P+'B'+M+'C+D']
+                     :['A+B'+P+'C','A'+M+'B'+P+'C','A'+P+'B+C','A+B\u00f7C','A'+P+'B'+M+'C','A+B'+P+'C'+M+'D'].filter(x=>l>0||x.length<7);   /* nur Rechnungen mit genau einem Punktzeichen: dann ist es eindeutig */
+      for(let k=0;k<100&&!g;k++){tpl=pick(pool);g=fillTpl(tpl,l);}
+      let tk=g.s.match(/\d+|[+\u2212\u00b7\u00f7()]/g),st=stepList(g.s);
+      if(second){   /* Nur die Rechnung zeigen; das Rechenzeichen anklicken, das als zweites gerechnet wird */
+        let live=tk.map((x,i)=>({x:x,id:i})),order=[];
+        for(let g2=0;g2<10&&live.length>1;g2++){
+          let k=-1;for(let i=1;i<live.length;i+=2)if(live[i].x==='\u00b7'||live[i].x==='\u00f7'){k=i;break;}
+          if(k<0)k=1;
+          order.push(live[k].id);
+          live.splice(k-1,3,{x:'r',id:live[k-1].id});
+        }
+        t.text='Welches Rechenzeichen rechnest du als zweites? '+fmtExpr(g.s);
+        t.html='<div>Klicke das Rechenzeichen, das du als <b>zweites</b> rechnest.</div><div class="ex exq">'+tk.map((x,i)=>/^\d+$/.test(x)?x:'<button type="button" data-v="'+i+'">'+x+'</button>').join(' ')+'</div>';
+        t.answer=String(order[1]);t.expr=g.s;t.tpl=tpl;t.state={c:null};t.interactive=true;t.noInput=true;t.second=true;t.order=order;
+        return t;
+      }
+      let base=g.s,cur=tk;
+      let ops=firstOps(cur);
+      let good=ops.filter(o=>o.hi)[0]||ops[0];
+      let bads=ops.filter(o=>o!==good);
+      let bad=bads.filter(o=>o.txt!==good.txt)[0]||bads[0];
+      if(bad.txt===good.txt)return makeRang(l,'first');
+      let opts=shuffle([{txt:good.txt,ok:true},{txt:bad.txt,ok:false}]);
+      let q='Was rechnest du <b>zuerst</b>?';
+      let ex=fmtExpr(g.s);
+      t.text='Was rechnest du zuerst? '+fmtExpr(g.s)+' ('+opts[0].txt+' | '+opts[1].txt+')';
+      t.html='<div>'+q+'</div><div class="ex">'+ex+'</div><div class="yn">'+opts.map((o,i)=>'<button type="button" data-v="'+i+'">'+o.txt+'</button>').join('')+'</div>';
+      t.answer=String(opts.findIndex(o=>o.ok));t.expr=g.s;t.tpl=tpl;t.state={c:null};t.interactive=true;t.noInput=true;t.opts=opts.map(o=>o.txt);t.second=second;
+      return t;
+    }
+    if(kind==='rule'){   /* Was kommt als Nächstes dran? Nur Rechnungen, bei denen es wirklich etwas zu entscheiden gibt */
+      const NAMES={k:'Klammer',p:'Punkt (· ÷)',l:'von links nach rechts'};
+      function cls(str){
+        if(str.indexOf('(')>=0){
+          let out=str.replace(/\([^()]*\)/g,'0');   /* Klammern durch eine Zahl ersetzen */
+          return /[+\u2212\u00b7\u00f7]/.test(out)?'k':null;   /* Klammer UND etwas ausserhalb */
+        }
+        let ops=str.match(/[+\u2212\u00b7\u00f7]/g)||[];
+        let hasP=ops.some(o=>o==='\u00b7'||o==='\u00f7'),hasS=ops.some(o=>o==='+'||o==='\u2212');
+        if(hasP&&hasS)return 'p';
+        if(ops.length>=2)return 'l';
+        return null;
+      }
+      let target=pick(['k','p','l']),found=null;
+      for(let k=0;k<800&&!found;k++){
+        let li=Math.max(1,Math.min(3,l)),g=fillTpl(pick(RANG_T[li]),li);
+        if(!g)continue;
+        let sts=stepList(g.s);sts=sts.slice(0,sts.length-1);   /* ohne das Schlussresultat */
+        let cand=sts.filter(x=>cls(x)===target);
+        if(cand.length)found=pick(cand);
+      }
+      if(!found)return makeRang(l,'calc');
+      let keys=['k','p','l'];
+      t.text='Was kommt als Nächstes dran? '+fmtExpr(found);
+      t.html='<div>Was kommt in dieser Rechnung als <b>Nächstes</b> dran?</div><div class="ex">'+fmtExpr(found)+'</div><div class="yn opts">'+
+        keys.map(k=>'<button type="button" data-v="'+k+'">'+NAMES[k]+'</button>').join('')+'</div>';
+      t.answer=target;t.state={c:null};t.interactive=true;t.noInput=true;t.expr=found;
+      return t;
+    }
+    if(kind==='klam'){
+      let g=null,cands,tpl;
+      for(let k=0;k<200&&!g;k++){
+        let ops=[];let nOps=l<=2?3:3;
+        let nums=Array.from({length:nOps+1},()=>ri(2,l<=2?9:10));
+        for(let i=0;i<nOps;i++)ops.push(pick(['+','−','·','·']));
+        let sy=(a,b,c,d)=>{return [a,b,c,d];};
+        let N=nums,O=ops;
+        let J=(parts)=>parts;
+        cands=[
+          '('+N[0]+O[0]+N[1]+')'+O[1]+N[2]+O[2]+N[3],
+          N[0]+O[0]+'('+N[1]+O[1]+N[2]+')'+O[2]+N[3],
+          N[0]+O[0]+N[1]+O[1]+'('+N[2]+O[2]+N[3]+')',
+          '('+N[0]+O[0]+N[1]+O[1]+N[2]+')'+O[2]+N[3],
+          N[0]+O[0]+'('+N[1]+O[1]+N[2]+O[2]+N[3]+')',
+          '('+N[0]+O[0]+N[1]+')'+O[1]+'('+N[2]+O[2]+N[3]+')'
+        ];
+        let plain=N[0]+O[0]+N[1]+O[1]+N[2]+O[2]+N[3];
+        let all=cands.concat([plain]).map(s=>({s:s,v:evalExpr(s)})).filter(o=>!isNaN(o.v)&&o.v>0&&o.v<=800);
+        /* eine Zielvariante, die genau einmal vorkommt, plus zwei andere mit anderen Werten */
+        let byV={};all.forEach(o=>{(byV[o.v]=byV[o.v]||[]).push(o);});
+        let singles=all.filter(o=>byV[o.v].length===1&&o.s.indexOf('(')>=0);
+        let pv=evalExpr(plain);
+        let others=[];Object.keys(byV).forEach(v=>{if(+v!==pv)others.push(byV[v][0]);});
+        if(!singles.length||others.length<3)continue;
+        let target=pick(singles);
+        let rest=shuffle(others.filter(o=>o.v!==target.v)).slice(0,2);
+        if(rest.length<2)continue;
+        g={target:target,opts:shuffle([target].concat(rest)),plain:plain};
+      }
+      if(!g)return makeRang(l,'calc');
+      let L=['A','B','C'];
+      /* gezeigt wird die Rechnung ohne Klammern und das Ergebnis; zur Auswahl stehen drei Klammer-Varianten */
+      let show=fmtExpr(g.target.s.replace(/[()]/g,''));
+      t.text='Welche Klammern passen? '+show+' = '+g.target.v+' ('+g.opts.map(o=>fmtExpr(o.s)).join(' | ')+')';
+      t.html='<div>Wo müssen die <b>Klammern</b> stehen, damit die Rechnung stimmt?</div><div class="ex">'+show+' = '+g.target.v+'</div><div class="yn opts">'+
+        g.opts.map((o,i)=>'<button type="button" data-v="'+L[i]+'"><b>'+L[i]+'</b> &nbsp;'+fmtExpr(o.s)+'</button>').join('')+'</div>';
+      t.answer=L[g.opts.indexOf(g.target)];t.state={c:null};t.interactive=true;t.noInput=true;t.expr=g.target.s;t.vals=g.opts.map(o=>evalExpr(o.s));t.opts=g.opts.map(o=>o.s);t.total=g.target.v;
+      return t;
+    }
+    /* Rechnen */
+    let tpl,g=null;
+    let EASY_OUT=['(A+B)\u00f7C+D\u00b7E','A\u2212(B\u2212C)\u00b7D','A\u00b7B+C\u00b7D\u2212E','A+B\u00b7C\u2212D\u00f7E'];
+    let needP=Math.random()<0.8,pool=RANG_T[l].filter(x=>(!needP||needsPvS(x))&&!(easy3&&l===2&&EASY_OUT.indexOf(x)>=0));
+    if(l>=1&&Math.random()<0.5){let bf=pool.filter(x=>x.indexOf('(')<0);if(bf.length)pool=bf;}   /* mind. die Hälfte ohne Klammern: dort entscheidet Punkt vor Strich */   /* 80 %: Punkt vor Strich ist wirklich nötig */
+    for(let k=0;k<100&&!g;k++){tpl=pick(pool);g=fillTpl(tpl,l);}
+    t.tpl=tpl;t.expr=g.s;t.answer=String(g.v);
+    t.text=fmtExpr(g.s)+' = ?';t.html=fmtExpr(g.s)+' = '+QM;
+    return t;
+  }
+  function helpRang(t){
+    let li=t.tpl?Math.max(0,RANG_T.findIndex(a=>a.indexOf(t.tpl)>=0)):1;
+    let tpl=(t.kind==='calc')?pick(RANG_T[li]):pick(['A+B\u00b7C','A\u2212B\u00b7C','(A+B)\u00b7C','A\u00b7B+C']);
+    let g=null;for(let k=0;k<50&&!g;k++)g=fillTpl(tpl,Math.max(1,li));
+    return '<b>Hilfsbeispiel:</b><div class="helpcalc">'+stepHtml(g.s)+'</div>'+RANG_RULE;
+  }
+  const RANG_RULE='Reihenfolge: <b>1. Klammern</b> (von innen nach aussen), <b>2. Punkt vor Strich</b> (· und ÷ vor + und −), <b>3. von links nach rechts</b>, wenn nur + und − (oder nur · und ÷) vorkommen. Beispiel: 12 − 5 + 4 = 7 + 4 = 11.';
+
+  /* ======================================================================
+     Rechnen mit Dezimalzahlen (genau mit ganzen Zahlen gerechnet, kein Rundungsfehler)
+     ====================================================================== */
+  function p10(n){let r=1;for(let i=0;i<n;i++)r*=10;return r;}
+  function sc(str){let p=str.split('.');return {v:parseInt(p[0]+(p[1]||''),10),p:(p[1]||'').length};}
+  function sfmt(v,p){let s=String(v);if(p===0)return s;while(s.length<=p)s='0'+s;return s.slice(0,-p)+'.'+s.slice(-p);}   /* genau p Nachkommastellen */
+  function dfmt(v,p){return normalize(sfmt(v,p));}                                                                     /* ohne überflüssige Nullen */
+  function randDec(places,intMax,intMin){intMin=intMin||0;let d='';for(let i=0;i<places;i++)d+=(i===places-1)?ri(1,9):ri(0,9);return ri(intMin,intMax)+'.'+d;}   /* letzte Stelle nie 0 */
+  function carryIn(a,b,op){   /* gibt es in irgendeiner Stelle einen Übertritt (beim Minus: Entbündeln)? */
+    while(a>0||b>0){let da=a%10,db=b%10;a=Math.floor(a/10);b=Math.floor(b/10);
+      if(op==='+'){if(da+db>=10)return true;}   /* kein Übertrag aus der Vorstelle, sonst wäre schon true */
+      else if(da<db)return true;}
+    return false;
+  }
+  function genAS(l,ref){   /* Plus und Minus; mit ref: Beispiel mit gleichem Aufbau wie die Aufgabe */
+    if(l>=2)l=1;   /* ab Level 3 bleiben Plus und Minus wie in Level 2 */
+    let op=ref?ref.op:pick(['+','\u2212']);
+    let refCarry=ref?carryIn(ref.A,ref.B,ref.op==='+'?'+':'-'):null;
+    for(let k=0;k<2000;k++){
+      let pa,pb,im;
+      let imA,imB,mnA=0,mnB=0;
+      if(ref){pa=sc(ref.a).p;pb=sc(ref.b).p;let ia=parseInt(ref.a),ib=parseInt(ref.b);let top=Math.max(ia,ib)<10?9:(ia>=10&&ib>=10?(l===3?19:49):(l===3?19:49));
+        imA=ia===0?0:(ia<10?9:top);mnA=ia===0?0:(ia<10?1:10);imB=ib===0?0:(ib<10?9:top);mnB=ib===0?0:(ib<10?1:10);}
+      else if(l<=1){pa=pb=pick([1,1,2]);im=pa===1?9:0;imA=imB=im;}   /* beide Zahlen gleich viele Stellen: 1.4 + 3.5 oder 0.34 + 0.25 */
+      else{pa=pick([1,2,3,3]);pb=pick([1,2,3,3]);im=l===2?9:(l===3?19:49);imA=imB=im;}
+      let a=randDec(pa,imA,mnA),b=randDec(pb,imB,mnB),P=Math.max(pa,pb);
+      let A=sc(a).v*p10(P-pa),B=sc(b).v*p10(P-pb);
+      if(op==='\u2212'){if(A===B)continue;if(ref&&A<B)continue;if(A<B){let x=a;a=b;b=x;let y=A;A=B;B=y;}}
+      let carry=carryIn(A,B,op==='+'?'+':'-');
+      if(ref){if(carry!==refCarry)continue;}
+      else{if(l===0&&carry)continue;if(l===1&&!carry)continue;}
+      let R=op==='+'?A+B:A-B;
+      if((ref||l>=2)&&R<=0)continue;
+      let t={cat:'dez',kind:'as',lvl:l,op:op,a:a,b:b,P:P,A:A,B:B,R:R};
+      t.text=a+' '+op+' '+b+' = ?';t.html=a+' '+op+' '+b+' = '+QM;t.answer=dfmt(R,P);
+      return t;
+    }
+    return genAS(0);
+  }
+  function genMulWD(l){   /* ganze Zahl mal Dezimalzahl */
+    let w=ri(2,9),t10;
+    do{t10=ri(2,l<=2?59:99);}while(t10%10===0);
+    let d=sfmt(t10,1),swap=Math.random()<0.5;
+    let t={cat:'dez',kind:'mulwd',lvl:l,w:w,t10:t10};
+    t.text=swap?d+' \u00b7 '+w+' = ?':w+' \u00b7 '+d+' = ?';
+    t.html=swap?d+' \u00b7 '+w+' = '+QM:w+' \u00b7 '+d+' = '+QM;
+    t.answer=dfmt(w*t10,1);return t;
+  }
+  function genMulDD(l,ref){   /* zwei Dezimalzahlen, höchstens eine davon mit zwei Nachkommastellen */
+    let two=ref?(ref.px+ref.py===3):Math.random()<0.45,X,px,Y,py;
+    let big=ref?(Math.max(ref.X,ref.Y)>=10):Math.random()<0.3;
+    if(two){Y=ri(2,9);py=2;X=big?ri(12,59):ri(2,9);px=1;}
+    else{X=big?ri(12,59):ri(2,9);px=1;Y=ri(2,9);py=1;}
+    let a=sfmt(X,px),b=sfmt(Y,py);
+    if(Math.random()<0.5){let s=a;a=b;b=s;let q=X;X=Y;Y=q;let r=px;px=py;py=r;}
+    let t={cat:'dez',kind:'muldd',lvl:l,X:X,Y:Y,px:px,py:py};
+    t.text=a+' \u00b7 '+b+' = ?';t.html=a+' \u00b7 '+b+' = '+QM;
+    t.answer=dfmt(X*Y,px+py);return t;
+  }
+  function genDiv(l,ref){   /* Dezimalzahl durch natürliche Zahl, geht immer auf */
+    let n=ri(2,9),p,Q,D;
+    if(ref?ref.p===1:Math.random()<0.7){p=1;do{Q=ri(1,Math.floor(99/n));D=Q*n;}while(D%10===0);}
+    else{p=2;do{Q=ri(1,Math.floor(999/n));D=Q*n;}while(D%10===0||Q%10===0&&false);}
+    let t={cat:'dez',kind:'div',lvl:l,n:n,p:p,Q:Q,D:D};
+    t.text=sfmt(D,p)+' \u00f7 '+n+' = ?';t.html=sfmt(D,p)+' \u00f7 '+n+' = '+QM;
+    t.answer=dfmt(Q,p);return t;
+  }
+  function genDez(kind,l,ref){return kind==='as'?genAS(l,ref):(kind==='mulwd'?genMulWD(l):(kind==='muldd'?genMulDD(l,ref):genDiv(l,ref)));}
+  const DEZ_KINDS=[['as'],['as'],['as','as','mulwd'],['as','mulwd','muldd','muldd'],['as','mulwd','muldd','div','div']];
+  function makeDez(l){return genDez(pick(DEZ_KINDS[l]),l);}
+
+  function colLines(a,b,op,P,R){   /* Stellenwert-Rechnung: Komma unter Komma */
+    let A=sfmt(a,P),B=sfmt(b,P),Rs=sfmt(R,P),W=Math.max(A.length,B.length,Rs.length)+2;
+    let pad=s=>' '.repeat(W-s.length)+s;
+    return '<pre class="col">'+pad(A)+'\n'+op+' '+pad(B).slice(2)+'\n'+'-'.repeat(W)+'\n'+pad(Rs)+'</pre>';
+  }
+  function helpDez(t){
+    let ex=null;for(let k=0;k<50;k++){ex=genDez(t.kind,t.lvl,t);if(ex.text!==t.text)break;}
+    const h='<b>Hilfsbeispiel:</b>';
+    if(t.kind==='as'){
+      return h+'<div class="ex">'+ex.a+' '+ex.op+' '+ex.b+'</div>'+colLines(ex.A,ex.B,ex.op,ex.P,ex.R)+
+        'Schreibe die Zahlen so untereinander, dass <b>Komma unter Komma</b> steht. Fehlende Stellen füllst du mit Nullen auf. Dann rechnest du Stelle für Stelle von rechts nach links.';
+    }
+    if(t.kind==='mulwd'){
+      return h+'<div class="ex">'+ex.w+' · '+sfmt(ex.t10,1)+' = ?</div>Rechne zuerst <b>ohne Komma</b>: '+ex.w+' · '+ex.t10+' = '+(ex.w*ex.t10)+'.<br>'+sfmt(ex.t10,1)+' hat <b>1 Nachkommastelle</b>, also auch das Ergebnis: <b>'+dfmt(ex.w*ex.t10,1)+'</b>';
+    }
+    if(t.kind==='muldd'){
+      return h+'<div class="ex">'+sfmt(ex.X,ex.px)+' · '+sfmt(ex.Y,ex.py)+' = ?</div>Rechne zuerst <b>ohne Komma</b>: '+ex.X+' · '+ex.Y+' = '+(ex.X*ex.Y)+'.<br>Zähle die Nachkommastellen beider Zahlen zusammen: '+ex.px+' + '+ex.py+' = <b>'+(ex.px+ex.py)+'</b>. So viele hat das Ergebnis: <b>'+dfmt(ex.X*ex.Y,ex.px+ex.py)+'</b>';
+    }
+    return h+'<div class="ex">'+sfmt(ex.D,ex.p)+' ÷ '+ex.n+' = ?</div>Dividiere zuerst <b>ohne Komma</b>: '+ex.D+' ÷ '+ex.n+' = '+ex.Q+'.<br>Das Ergebnis hat gleich viele Nachkommastellen wie die Zahl, die du teilst ('+ex.p+'): <b>'+dfmt(ex.Q,ex.p)+'</b>';
+  }
+
+  const LEVELS=[
+    {name:'Anfänger',icon:'👶'},{name:'Fortgeschritten',icon:'🛹'},{name:'Profi',icon:'😎'},{name:'Experte',icon:'🚀'},{name:'Meister',icon:'👑'}
+  ];
+  const CATS={
+    komma:{icon:'🔢',name:'Komma verschieben'},
+    potenz:{icon:'⚡',name:'Potenzen / Zehnerpotenzen'},
+    komm:{icon:'🧮',name:'Rechengesetze'},
+    dez:{icon:'➕',name:'Rechnen mit Dezimalzahlen'}
+  };
+  const CAT_KEYS=Object.keys(CATS);
+
+  function makeKommaTask(l){
+    let lv=K_LEVELS[l];
     let factor=lv.f[Math.floor(Math.random()*lv.f.length)];
     let op=Math.random()<0.5?'×':'÷';
     let n=randNum(l);
     let k=String(factor).length-1;
     let shift=op==='×'?k:-k;
     let res=shiftDecimal(n,shift);
-    let t={n:n,op:op,factor:factor,shift:shift,kind:'normal'};
+    let t={cat:'komma',n:n,op:op,factor:factor,shift:shift,kind:'normal'};
     if(lv.reverse&&Math.random()<lv.reverse){
-      if(Math.random()<0.5){   /* Stufenzahl gesucht: 6.4 × ? = 640 */
-        t.kind='factor';t.text=n+' '+op+' ? = '+res;t.answer=String(factor);
-      }else{                   /* Ausgangszahl gesucht: ? ÷ 100 = 3.4 */
-        t.kind='start';t.text='? '+op+' '+factor+' = '+res;t.answer=normalize(n);
-      }
-    }else{
-      t.text=n+' '+op+' '+factor+' = ?';t.answer=res;
-    }
+      if(Math.random()<0.5){t.kind='factor';t.text=n+' '+op+' ? = '+res;t.answer=String(factor);}
+      else{t.kind='start';t.text='? '+op+' '+factor+' = '+res;t.answer=normalize(n);}
+    }else{t.text=n+' '+op+' '+factor+' = ?';t.answer=res;}
     return t;
   }
-
-  function check(raw,task){
-    let v=normalizeInput(raw);
-    return v!==null&&v===task.answer;
-  }
-
-  /* Hilfestellung: gleiches Operationszeichen und gleiche Zehnerpotenz, gleich viele Stellen wie die Aufgabe */
-  function help(task){
+  function helpKomma(task){
     let a=helpNumber(task.n);
     let v=shiftView(a,task.shift);
     let q=task.op==='×'?'Wie wurde das Komma verschoben?':'In welche Richtung wurde das Komma verschoben?';
     if(task.kind==='factor')q='Um wie viele Stellen und in welche Richtung ist das Komma gewandert? Daran erkennst du die Stufenzahl (10, 100 oder 1000).';
     if(task.kind==='start')q='Rechne rückwärts: Mal und geteilt tauschen sich aus. Wohin musst du das Komma schieben, um zur gesuchten Zahl zu kommen?';
     return '<b>Hilfsbeispiel:</b><div class="helpcalc">'+v.from+' '+task.op+' '+task.factor+' = '+v.to+'</div>'
-      +'<div class="legend"><span class="cOld">Komma vorher</span> · <span class="cNew">Komma nachher</span> · <span class="cross">Stellen, über die das Komma gewandert ist</span></div><br>'
-      +q;
+      +'<div class="legend"><span class="cOld">Komma vorher</span> · <span class="cNew">Komma nachher</span> · <span class="cross">Stellen, über die das Komma gewandert ist</span></div><br>'+q;
+  }
+
+  const rFree={};
+  function makeTask(l,opt){
+    let cat=CATS[opt]?opt:pick(CAT_KEYS);
+    if(cat==='komma')return makeKommaTask(l);
+    if(cat==='potenz')return makePotenz(l);
+    if(cat==='dez')return makeDez(l);
+    /* Rechengesetze: Vertauschen + Punkt vor Strich / Klammern.
+       Reine Plus- oder Mal-Aufgaben ohne Klammern (Vertauschen) höchstens 20 % aller Aufgaben ohne Klammern. */
+    /* Level 3 der Rechengesetze: leichtere Zahlen; Level 4 = früheres Level 3, Level 5 = früheres Level 4 */
+    let eff=[0,1,2,2,3][l];easy3=(l===2);
+    if(rFree[l]===undefined){let n=0,f=0;for(let i=0;i<400;i++){let x=makeRang(eff);n++;if(x.expr.indexOf('(')<0)f++;}rFree[l]=f/n;}
+    let q=0.22*rFree[l]/(1+0.22*rFree[l]);
+    return Math.random()<q?makeKomm(eff):makeRang(eff);
+  }
+  function mount(el,t){
+    if(!t.interactive)return;
+    let st=t.state;
+    el.querySelectorAll('.yn button,.exq button').forEach(function(b){
+      b.addEventListener('click',function(){
+        st.c=b.getAttribute('data-v');
+        el.querySelectorAll('.yn button,.exq button').forEach(function(x){x.classList.toggle('sel',x===b);});
+        b.blur();
+      });
+    });
+  }
+  function check(raw,t){
+    if(t.noInput)return t.state.c===t.answer;
+    if(t.cat==='komma'){let v=normalizeInput(raw);return v!==null&&v===t.answer;}
+    let v=normalizeInput(raw);   /* Potenzen und Kommutativgesetz: nur Zahlen */
+    return v!==null&&v===normalize(String(t.answer));
+  }
+  function help(t){
+    if(t.cat==='potenz')return helpPotenz(t);
+    if(t.cat==='dez')return helpDez(t);
+    if(t.cat==='komm')return helpKomm(t);
+    if(t.cat==='rang')return helpRang(t);
+    return helpKomma(t);
   }
 
   return {
-    id:'komma',
-    title:'Komma Trainer',
-    subtitle:'Dezimalzahlen mit 10, 100 und 1000 multiplizieren und dividieren',
+    id:'komma',   /* NIE ändern: sonst gehen gespeicherte Lernstände verloren */
+    title:'Rechenregeln Trainer',
+    subtitle:'Komma verschieben, Potenzen und Rechengesetze',
+    subtitles:{
+      komma:'Dezimalzahlen mit 10, 100 und 1000 multiplizieren und dividieren',
+      potenz:'Potenzen und Zehnerpotenzen lesen, schreiben und ausrechnen',
+      komm:'Rechengesetze: Vertauschen (Kommutativgesetz), Punkt vor Strich und Klammern',
+      dez:'Dezimalzahlen addieren, subtrahieren, multiplizieren und dividieren',
+      mix:'Alle Kategorien gemischt: Komma verschieben, Potenzen, Rechengesetze und Dezimalzahlen'
+    },
     levels:LEVELS,
-    raceLevel:2,   /* Zeitrennen: immer Aufgaben von Level 3 (Profi) */
-    medals:['🥉 Bronze-Komma-Meister','🥈 Silber-Komma-Meister','🥇 Gold-Komma-Meister','💠 Platin-Komma-Meister'],
-    css:'.helpcalc{font-size:30px;font-weight:bold;margin:12px 0 6px}.cOld{color:#d32f2f;font-weight:bold}.cNew{color:#2e7d32;font-weight:bold}.helpcalc .cOld,.helpcalc .cNew{font-size:1.5em}.cross{background:#fff176;border-radius:4px;padding:0 2px}.legend{font-size:14px;color:#444}',
+    raceLevel:2,
+    raceOption:'mix',
+    medals:['🥉 Bronze-Rechenmeister','🥈 Silber-Rechenmeister','🥇 Gold-Rechenmeister','💠 Platin-Rechenmeister'],
+    options:{
+      choices:CAT_KEYS.map(k=>({v:k,label:CATS[k].icon+' '+CATS[k].name})).concat([{v:'mix',label:'🎲 Gemischt'}]),
+      default:'komma'
+    },
+    css:'.helpcalc{font-size:30px;font-weight:bold;margin:12px 0 6px}.cOld{color:#d32f2f;font-weight:bold}.cNew{color:#2e7d32;font-weight:bold}.helpcalc .cOld,.helpcalc .cNew{font-size:1.5em}.cross{background:#fff176;border-radius:4px;padding:0 2px}.legend{font-size:14px;color:#444}.pw{font-size:1.1em}.pw sup,.task sup{font-size:.6em;font-weight:bold}.qm{display:inline-block;min-width:30px;border-bottom:3px solid #c62828;color:#c62828;font-weight:bold;text-align:center}.hint{font-size:14px;font-weight:normal;color:#555;margin-top:8px}.ex{font-size:26px;font-weight:bold;margin:8px 0}.yn{display:flex;gap:16px;justify-content:center;margin-top:12px}.yn button{font-size:22px;font-weight:bold;padding:10px 34px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.yn.opts{flex-direction:column;align-items:stretch;max-width:420px;margin-left:auto;margin-right:auto}.yn.opts button{font-size:22px;padding:10px 16px;text-align:left}.col{font-family:ui-monospace,Consolas,monospace;font-size:24px;line-height:1.3;text-align:left;display:inline-block;margin:8px 0;background:#f5f5f5;padding:6px 14px;border-radius:8px}.exq button{font:inherit;font-size:28px;font-weight:bold;min-width:46px;height:46px;margin:0 4px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.exq button.sel,.yn button.sel{background:#1976d2;border-color:#1976d2;color:#fff}',
     makeTask:makeTask,
+    mount:mount,
     check:check,
     help:help
   };
@@ -675,7 +1276,8 @@ const nameInput=document.getElementById('name');
 
 function getLevel(){return Math.min(LAST,Math.floor(xp/LEVEL_XP));}
 
-function update(){autoSave();updateGameBtn();let l=getLevel();level.innerHTML='<b>Level '+(l+1)+' - '+lvlName(l)+'</b>';correct.textContent=solved;cookieShow.textContent=cookies;let start=l*LEVEL_XP;fill.style.width=((xp-start)/LEVEL_XP*100)+'%';
+function setSubtitle(){let k=TOPIC.options&&typeof topicOpt!=='undefined'?topicOpt.value:null;document.getElementById('topicSubtitle').textContent=(TOPIC.subtitles&&TOPIC.subtitles[k])||TOPIC.subtitle;}
+function update(){setSubtitle();if(lvlSelFor!==getLevel())buildLvlSel();autoSave();updateGameBtn();let l=getLevel();level.innerHTML='<b>Level '+(l+1)+' - '+lvlName(l)+'</b>'+(practiceLevel!==null?' &nbsp;·&nbsp; 📘 Üben in '+lvlName(practiceLevel)+' (ohne XP)':'');correct.textContent=solved;cookieShow.textContent=cookies;let start=l*LEVEL_XP;fill.style.width=((xp-start)/LEVEL_XP*100)+'%';
   /* roter Abschnitt: so viel XP wurde bei Fehlern verloren (bleibt bis zur nächsten richtigen Antwort) */
   if(lossActive){
     let a=Math.max(0,Math.min(1,(lossFrom-start)/LEVEL_XP)),b=Math.max(0,Math.min(1,(lossTo-start)/LEVEL_XP));
@@ -684,13 +1286,63 @@ function update(){autoSave();updateGameBtn();let l=getLevel();level.innerHTML='<
 }
 
 /* Neue Aufgabe vom Themen-Block holen (forcedLevel: z. B. im Zeitrennen) */
+/* Optionale Auswahlliste des Themas (z. B. Kategorie): Wahl wird gespeichert und an makeTask übergeben */
+function getOpt(){return TOPIC.options?topicOpt.value:undefined;}
+/* Eigene XP/Levels pro Auswahl (z. B. pro Kategorie): xp gehört immer zur aktuell gewählten Auswahl, die anderen liegen in xpMap */
+let xpMap={},curOpt=(TOPIC.options?TOPIC.options.default:'_');
+/* Übungslevel: tieferes Level freiwillig wählen; dort gibt es keine XP (weder Gewinn noch Verlust) */
+let practiceLevel=null,lvlSelFor=-1;
+function playLevel(){return practiceLevel!==null?practiceLevel:getLevel();}
+function buildLvlSel(){
+  let cur=getLevel();
+  if(practiceLevel!==null&&practiceLevel>=cur)practiceLevel=null;
+  lvlSel.innerHTML='';
+  for(let i=0;i<=cur;i++){
+    let o=document.createElement('option');o.value=i;
+    o.textContent='Level '+(i+1)+' – '+lvlName(i)+(i===cur?' (aktuell)':' (üben, ohne XP)');
+    lvlSel.appendChild(o);
+  }
+  lvlSel.value=(practiceLevel!==null)?practiceLevel:cur;
+  lvlSel.disabled=(cur===0);
+  lvlSel.title=cur===0?'Noch kein tieferes Level vorhanden':'Level zum Üben wählen (tiefere Level geben keine XP)';
+  lvlSelFor=cur;
+}
+function lvlSelChange(){
+  let v=parseInt(lvlSel.value);
+  practiceLevel=(v===getLevel())?null:v;
+  lvlSel.blur();
+  if(race.active)return;
+  update();newTask();answer.focus();
+}
+if(TOPIC.options){
+  TOPIC.options.choices.forEach(c=>{let o=document.createElement('option');o.value=c.v;o.textContent=c.label;topicOpt.appendChild(o);});
+  topicOpt.value=TOPIC.options.default;
+  optRow.style.display='inline';
+  topicOpt.addEventListener('change',()=>{
+    topicOpt.blur();
+    if(race.active){topicOpt.value=curOpt;return;}
+    xpMap[curOpt]=xp;curOpt=topicOpt.value;xp=xpMap[curOpt]||0;
+    schutz=0;lossActive=false;practiceLevel=null;
+    buildLvlSel();autoSave();update();newTask();answer.focus();
+  });
+}
+let lastSig=null;
 function newTask(forcedLevel){
   update();
-  let l=(forcedLevel===undefined)?getLevel():forcedLevel;
-  current=TOPIC.makeTask(l);
+  let l=(forcedLevel===undefined)?playLevel():forcedLevel;
+  const opt=(forcedLevel!==undefined&&TOPIC.raceOption)?TOPIC.raceOption:getOpt();   /* Zeitrennen: festgelegte Auswahl des Themas */
+  /* nie zweimal hintereinander genau dieselbe Aufgabe */
+  const sig=t=>[t.cat,t.mode,t.kind,t.shape,t.answer,t.text].join('|');
+  let tries=0;
+  do{current=TOPIC.makeTask(l,opt);tries++;}while(lastSig!==null&&sig(current)===lastSig&&tries<30);
+  lastSig=sig(current);
   current.wrong=0;
-  document.getElementById('task').textContent=current.text;
+  let taskEl=document.getElementById('task');
+  if(current.html)taskEl.innerHTML=current.html;   /* optional: Aufgabe mit Grafik / gestapelten Brüchen */
+  else taskEl.textContent=current.text;
   answer.value='';
+  answer.style.display=current.noInput?'none':'';   /* Aufgaben zum Anklicken brauchen keine Antwortzeile */
+  if(current.interactive&&TOPIC.mount)TOPIC.mount(taskEl,current);
 }
 
 /* Pop-ups kommen nacheinander (Warteschlange); jedes Enter / jeder Klick auf Weiter zeigt das nächste */
@@ -753,6 +1405,14 @@ function loseXP(){
   xp-=XP_LOSS;
 }
 
+/* Einmalige Cookies (insgesamt, nicht pro Kategorie): beim ersten Erreichen von Level 3 und beim ersten vollen Balken im höchsten Level */
+let cookieFlags={lv:false,max:false};
+const LEVEL_COOKIE_AT=2;   /* Index von Level 3 */
+function levelCookies(){
+  let f=cookieFlags;
+  if(!f.lv&&getLevel()>=LEVEL_COOKIE_AT){f.lv=true;giveCookie('Du hast zum ersten Mal <b>Level '+(LEVEL_COOKIE_AT+1)+'</b> erreicht.');}
+  if(!f.max&&xp>=MAX_XP){f.max=true;giveCookie('Du hast das <b>höchste Level</b> voll geschafft!');}
+}
 function giveCookie(why){
   cookies=walletAdd(1);
   cookieShow.textContent=cookies;
@@ -764,21 +1424,26 @@ function checkAnswer(){
   let before=getLevel();
   if(TOPIC.check(answer.value,current)){
     /* Ab der Hilfestellung (2. Fehlversuch) gibt es keine XP mehr */
-    let gain=current.wrong>=2?0:Math.round(XP_RIGHT*xpMultiplier(streak));   /* streak = Serie VOR dieser Aufgabe */
-    xp=Math.min(MAX_XP,xp+gain);schutz=0;solved++;streak++;lossActive=false;
+    let gain=(practiceLevel!==null||current.wrong>=2)?0:Math.round(XP_RIGHT*xpMultiplier(streak));   /* streak = Serie VOR dieser Aufgabe */
+    let practice=(practiceLevel!==null);   /* Übungslevel: XP, Zähler (gelöst/Serie), Achievements und Cookies pausieren */
+    xp=Math.min(MAX_XP,xp+gain);schutz=0;lossActive=false;
+    if(!practice){solved++;streak++;}
     feedback.innerHTML='✅ Richtig!';
-    MEDAL_AT.forEach((n,i)=>{if(solved===n&&MEDAL_NAMES[i])addAch(MEDAL_NAMES[i]);});
-    STREAK_ACHS.forEach(x=>{if(streak===x[0])addAch(x[1]);});
-    if(solved%COOKIE_TOTAL===0)giveCookie('Du hast insgesamt <b>'+solved+'</b> Aufgaben gelöst.');
-    if(streak%COOKIE_STREAK===0)giveCookie('Du hast <b>'+streak+'</b> Aufgaben am Stück richtig gelöst.');
+    if(!practice){
+      MEDAL_AT.forEach((n,i)=>{if(solved===n&&MEDAL_NAMES[i])addAch(MEDAL_NAMES[i]);});
+      STREAK_ACHS.forEach(x=>{if(streak===x[0])addAch(x[1]);});
+      if(solved%COOKIE_TOTAL===0)giveCookie('Du hast insgesamt <b>'+solved+'</b> Aufgaben gelöst.');
+      if(streak%COOKIE_STREAK===0)giveCookie('Du hast <b>'+streak+'</b> Aufgaben am Stück richtig gelöst.');
+    }
     let after=getLevel();
+    if(!practice)levelCookies();
     newTask();
     if(after>before){showPopup('🎉 Levelaufstieg!','Du hast das Level <b>'+lvlName(after)+'</b> erreicht.<br><br>🙌 Hol dir ein High Five oder eine Ghetto-Faust von der Lehrperson!');}
   }else{
-    streak=0;
+    if(practiceLevel===null)streak=0;   /* im Übungslevel pausiert auch die Serie */
     current.wrong++;
     /* 1. und 2. Fehlversuch: je die Hälfte der XP einer richtigen Antwort weg; danach nichts mehr */
-    if(current.wrong<=2){
+    if(current.wrong<=2&&practiceLevel===null){
       let xpBefore=xp;loseXP();
       if(xp<xpBefore){if(!lossActive){lossTo=xpBefore;lossActive=true;}lossFrom=xp;}
     }
@@ -898,6 +1563,12 @@ function finishRace(){
 }
 
 answer.addEventListener('keydown',e=>{if(e.key==='Enter')checkAnswer();});
+/* Aufgaben zum Anklicken: Enter prüft auch ohne Antwortzeile (nicht, wenn ein Pop-up oder das Spiel offen ist oder ein Knopf fokussiert ist) */
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter'||e.repeat||gameOpen||!current||!current.noInput)return;
+  if(popup.style.display==='flex'||(e.target&&(e.target===answer||e.target.tagName==='BUTTON')))return;   /* Enter in der Antwortzeile hat schon geprüft (sonst würde die neue Klick-Aufgabe sofort mitgeprüft) */
+  checkAnswer();
+});
 
 /* ---------- Spiel (Belohnung für Cookies) ---------- */
 let gameOpen=false,triesLeft=0,curGame=GAMES.flappy,gameBests={};
@@ -979,14 +1650,23 @@ function closeGame(btn){
 },true));
 
 /* ---------- Speichern / Laden ---------- */
-function saveProgress(){
+async function saveProgress(){
   cookies=walletGet();
-  let data={name:nameInput.value,solved,xp,cw:1,gb:gameBests,streak,cookies,gameBest,achs,records};
-  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  let data={v:1,name:nameInput.value,solved,xp,xps:(xpMap[curOpt]=xp,xpMap),cf:cookieFlags,cw:1,gb:gameBests,streak,cookies,gameBest,achs,records,opt:getOpt()};
+  let text=JSON.stringify(data,null,2);
   let clean=nameInput.value.trim().replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,'_');
+  let fname=clean?'lernstand_'+clean+'.json':'lernstand.json';
+  /* Auf der veröffentlichten Seite erlaubt nur die Download-Funktion des Viewers das Speichern einer Datei */
+  try{
+    if(window.claude&&window.claude.use){
+      let dl=await window.claude.use('downloads');
+      if(dl){await dl.save({filename:fname,data:text});return;}
+    }
+  }catch(e){if(e&&e.code==='declined')return;}
+  let blob=new Blob([text],{type:'application/json'});
   let a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download=clean?'lernstand_'+clean+'.json':'lernstand.json';
+  a.download=fname;
   a.click();
 }
 
@@ -994,6 +1674,19 @@ function saveProgress(){
 function applyData(d,fromFile){
   nameInput.value=d.name||'';
   solved=d.solved||0;xp=Math.max(0,Math.min(MAX_XP,(typeof d.xp==="number")?d.xp:solved*10));streak=d.streak||0;schutz=0;cookies=adoptCookies(d,fromFile);gameBest=Math.max(0,parseInt(d.gameBest)||0);gameBests={};if(d.gb&&typeof d.gb==='object')for(const k in d.gb){if(GAMES[k])gameBests[k]=Math.max(0,parseInt(d.gb[k])||0);}popupQueue=[];lossActive=false;achs=d.achs||[];
+  if(TOPIC.options&&d.opt&&[...topicOpt.options].some(o=>o.value===d.opt))topicOpt.value=d.opt;
+  /* XP pro Auswahl: neue Dateien haben xps; ältere Dateien nur ein einzelnes xp (gilt dann für die gewählte Auswahl) */
+  curOpt=TOPIC.options?topicOpt.value:'_';practiceLevel=null;
+  /* cf: neu {lv,max}; ältere Dateien hatten es pro Kategorie ({laenge:{lv,max},…}) -> zusammenfassen */
+  cookieFlags={lv:false,max:false};
+  if(d.cf&&typeof d.cf==='object'){
+    if('lv' in d.cf||'max' in d.cf){cookieFlags.lv=!!d.cf.lv;cookieFlags.max=!!d.cf.max;}
+    else for(const k in d.cf){if(d.cf[k]&&d.cf[k].lv)cookieFlags.lv=true;if(d.cf[k]&&d.cf[k].max)cookieFlags.max=true;}
+  }
+  if(d.xps&&typeof d.xps==='object'){
+    xpMap={};for(const k in d.xps)xpMap[k]=Math.max(0,Math.min(MAX_XP,parseInt(d.xps[k])||0));
+    xp=xpMap[curOpt]||0;
+  }else{xpMap={};xpMap[curOpt]=xp;}
   records=LEVELS.map((_,i)=>Math.max(0,parseInt(d.records&&d.records[i])||0));
 }
 
@@ -1018,7 +1711,7 @@ const AUTO_KEY='trainer_'+TOPIC.id;
 function autoSave(){
   cookies=walletGet();
   try{
-    localStorage.setItem(AUTO_KEY,JSON.stringify({name:nameInput.value,solved,xp,cw:1,gb:gameBests,streak,cookies,gameBest,achs,records}));
+    localStorage.setItem(AUTO_KEY,JSON.stringify({name:nameInput.value,solved,xp,xps:(xpMap[curOpt]=xp,xpMap),cf:cookieFlags,cw:1,gb:gameBests,streak,cookies,gameBest,achs,records,opt:getOpt()}));
   }catch(e){}   /* z. B. InPrivate-Fenster oder blockierter Speicher: still ignorieren */
 }
 function autoLoad(){
@@ -1030,6 +1723,7 @@ function autoLoad(){
   return false;
 }
 nameInput.addEventListener('input',autoSave);
+try{localStorage.setItem('__test','1');localStorage.removeItem('__test');}catch(e){storeWarn.style.display='block';}
 
 autoLoad();
 renderRecords();

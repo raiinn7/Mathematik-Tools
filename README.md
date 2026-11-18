@@ -8,7 +8,7 @@
 | LU B Grössen | Masseinheiten Trainer | `lu-b-groessen/` |
 | LU C Brüche | Brüche Trainer | `lu-c-brueche/` |
 | LU D Zahlen | Zahlen runden Trainer | `lu-d-zahlen/` |
-| LU E Dezimalzahlen | Komma Trainer | `lu-e-dezimalzahlen/` |
+| LU E Dezimalzahlen | Rechenregeln Trainer | `lu-e-dezimalzahlen/` |
 | LU F Konstruktionen | – | `lu-f-konstruktionen/` |
 | LU G Koordinaten | – | `lu-g-koordinaten/` |
 | LU H Terme | – | `lu-h-terme/` |
