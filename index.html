@@ -87,6 +87,8 @@ var LU = [
 ];
 /* Gemeinsamer Cookie-Stand: wird von allen Trainern unter derselben Adresse geschrieben */
 var WALLET_KEY = 'mathe_wallet';
+/* Einmaliger Cookie-Reset (Version 1): setzt nur den Cookie-Stand auf 0, Level/XP/Achievements/Spiele/Rekorde bleiben. Eigener Merker, damit er nur einmal pro Browser läuft. */
+(function(){try{if(localStorage.getItem('mathe_reset_v1'))return;var w=JSON.parse(localStorage.getItem('mathe_wallet'))||{};w.balance=0;localStorage.setItem('mathe_wallet',JSON.stringify(w));localStorage.setItem('mathe_reset_v1','1');}catch(e){}})();
 var memWallet = { balance: 0, games: [], records: {} };   /* Reserve, falls der Browser-Speicher blockiert ist */
 function readWallet() {
   try {
