@@ -88,12 +88,27 @@ var LU = [
 /* Gemeinsamer Cookie-Stand: wird von allen Trainern unter derselben Adresse geschrieben */
 var WALLET_KEY = 'mathe_wallet';
 /* Einmaliger Cookie-Reset (Version 1): setzt nur den Cookie-Stand auf 0, Level/XP/Achievements/Spiele/Rekorde bleiben. Eigener Merker, damit er nur einmal pro Browser läuft. */
-(function(){try{if(localStorage.getItem('mathe_reset_v1'))return;var w=JSON.parse(localStorage.getItem('mathe_wallet'))||{};w.balance=0;localStorage.setItem('mathe_wallet',JSON.stringify(w));localStorage.setItem('mathe_reset_v1','1');}catch(e){}})();
+(function(){try{if(localStorage.getItem('mathe_reset_v1'))return;var w=JSON.parse(localStorage.getItem('mathe_wallet'))||{};w.balance=0;delete w.sig;localStorage.removeItem('mathe_sig_v1');localStorage.setItem('mathe_wallet',JSON.stringify(w));localStorage.setItem('mathe_reset_v1','1');}catch(e){}})();
+/* Siegel auf dem Cookie-Stand: Wird der Wert von Hand geändert, passt das Siegel nicht mehr und der Stand wird auf 0 zurückgesetzt. */
+var SIG_SECRET='mT7#qL2vR9xKz!3e',SIG_MARK='mathe_sig_v1',SIG_LEGACY_MAX=30;
+function walletSig(b,g){var s=SIG_SECRET+'|'+b+'|'+g.slice().sort().join(','),h1=0xdeadbeef,h2=0x41c6ce57,i,c;for(i=0;i<s.length;i++){c=s.charCodeAt(i);h1=Math.imul(h1^c,2654435761);h2=Math.imul(h2^c,1597334677);}h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);return (4294967296*(2097151&h2)+(h1>>>0)).toString(36);}
+function walletCheck(w){
+  try{
+    var b=Math.max(0,Math.floor(Number(w.balance)||0)),g=Array.isArray(w.games)?w.games:[],ok,hasSig=(typeof w.sig==='string');
+    if(hasSig)ok=(w.sig===walletSig(b,g));
+    else ok=(!localStorage.getItem(SIG_MARK)&&b<=SIG_LEGACY_MAX);   /* alter Stand ohne Siegel: einmalig übernehmen, wenn klein */
+    if(!ok){w={balance:0,games:[],records:(w.records&&typeof w.records==='object')?w.records:{}};b=0;g=[];}
+    if(!ok||!hasSig){w.sig=walletSig(b,g);localStorage.setItem(WALLET_KEY,JSON.stringify(w));}
+    if(!localStorage.getItem(SIG_MARK))localStorage.setItem(SIG_MARK,'1');
+  }catch(e){}
+  return w;
+}
 var memWallet = { balance: 0, games: [], records: {} };   /* Reserve, falls der Browser-Speicher blockiert ist */
 function readWallet() {
   try {
     var w = JSON.parse(localStorage.getItem(WALLET_KEY));
     if (w && typeof w === 'object') {
+      w = walletCheck(w);
       memWallet = { balance: Math.max(0, Math.floor(Number(w.balance) || 0)), games: Array.isArray(w.games) ? w.games.slice() : [], records: (w.records && typeof w.records === 'object') ? w.records : {} };   /* records: Spiel-Rekorde, werden von den Trainern geschrieben */
     }
   } catch (e) {}
@@ -101,6 +116,7 @@ function readWallet() {
 }
 function writeWallet(w) {
   memWallet = w;
+  try { w.sig = walletSig(Math.max(0, Math.floor(Number(w.balance) || 0)), Array.isArray(w.games) ? w.games : []); } catch (e) {}
   try { localStorage.setItem(WALLET_KEY, JSON.stringify(w)); } catch (e) {}
 }
 
