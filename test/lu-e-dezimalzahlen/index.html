@@ -39,7 +39,7 @@ h1{font-size:26px;margin:4px 0 6px}
 .gpbtn{display:flex!important;align-items:center;gap:12px;text-align:left;padding:12px!important;font-size:16px!important}
 .gpbtn .gpi{font-size:30px}.gpbtn small{display:block;font-weight:normal;color:#667;font-size:12px}
 .gshop{margin-top:6px;font-size:14px;text-align:center}
-</style><style id="themeCss"></style></head><body><div class="container"><div class="top"><div class="main"><h1 id="topicTitle"></h1><div class="sub" id="topicSubtitle"></div><div id="storeWarn" style="display:none;background:#fff3cd;border:1px solid #e0b100;border-radius:8px;padding:8px 12px;margin:0 0 12px;font-size:14px">⚠️ Dein Browser speichert den Lernstand nicht (z. B. in einem InPrivate-Fenster). Dein Fortschritt geht beim Schliessen verloren.</div>Name: <input id="name"><span id="optRow" style="display:none;margin-left:18px">Kategorie: <select id="topicOpt" style="font-size:15px;padding:4px"></select></span><p id="level"></p><div class="progress"><div id="fill" class="fill"></div><div id="loss" class="loss"></div></div><p>Richtig gelöst: <span id="correct">0</span></p><div id="raceBar" class="racebar">⏱️ Noch <span id="raceTime">60</span> s &nbsp;|&nbsp; Richtig: <span id="raceCount">0</span></div><div id="task" class="task"></div><input id="answer" class="answer"><div class="keypad num" id="keypad"><button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="del" class="kdel">⌫</button><button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k=",">,</button><button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="ok" class="kok">Prüfen</button><button data-k="0" class="kzero">0</button></div><button class="btn check" onclick="checkAnswer()">Prüfen</button><div id="feedback"></div></div><div class="ach"><div class="cookies" title="Cookies">🍪 <b id="cookieShow">0</b></div><h3>🏆 Achievements</h3><div class="achwrap"><ul id="achSizer" aria-hidden="true"></ul><ul id="achievements"></ul></div><div id="recordBox"><h3>🏅 Rekorde</h3><ul id="recordList"></ul></div></div></div><div class="footer"><select id="lvlJump" class="btn small" title="Test: XP der gewählten Kategorie auf ein Level setzen" onchange="jumpLevel(this)"></select><select id="lvlSel" class="btn small" onchange="lvlSelChange()"></select><button id="gameBtn" class="btn small" onclick="openGame()"></button><button id="raceBtn" class="btn small" onclick="startRace()">⏱️ Zeitrennen</button></div></div><div id="popup" class="popup"><div class="box"><h2 id="popupTitle"></h2><p id="popupText"></p><button onclick="closePopup()">Weiter</button></div></div><div id="gameOverlay" class="gameov"><div class="gamebox"><h2 id="gameTitle"></h2><div id="gameRoot"></div><div class="gamehint" id="gameHint">Leertaste (oder Klick / Tippen) = fliegen · Esc = beenden</div><div id="gameResult"></div><div class="gamebtns"><button id="gameAgain" class="btn" onclick="gameAgainClick(this)"></button><button id="gameSwitch" class="btn" onclick="showGamePicker()" style="display:none">🎮 Anderes Spiel</button><button class="btn" onclick="closeGame(this)">Schliessen</button></div></div></div>
+.exrow{display:block;padding:7px 4px;font-size:16px;cursor:pointer}.exrow input{width:18px;height:18px;vertical-align:-3px;margin-right:6px}.exlinks{font-size:13px;margin:6px 0 12px}.exlinks a{color:#1565c0;cursor:pointer;text-decoration:underline;margin-right:12px}.exbar{background:#5e35b1}.exc{border:1px solid #d5dde5;border-radius:10px;padding:8px 10px;margin:8px 0;cursor:pointer;background:#fafcfe}.exc:hover{background:#eef4fb}.exc.exdone{cursor:default;background:#f3faf3}.exwrong{border:1px solid #f0c4c4;background:#fff8f8;border-radius:10px;padding:10px;margin:10px 0;text-align:center}.exhelp{text-align:left;font-size:14px;border-top:1px dashed #d9b3b3;margin-top:8px;padding-top:8px}</style><style id="themeCss"></style></head><body><div class="container"><div class="top"><div class="main"><h1 id="topicTitle"></h1><div class="sub" id="topicSubtitle"></div><div id="storeWarn" style="display:none;background:#fff3cd;border:1px solid #e0b100;border-radius:8px;padding:8px 12px;margin:0 0 12px;font-size:14px">⚠️ Dein Browser speichert den Lernstand nicht (z. B. in einem InPrivate-Fenster). Dein Fortschritt geht beim Schliessen verloren.</div>Name: <input id="name"><span id="optRow" style="display:none;margin-left:18px">Kategorie: <select id="topicOpt" style="font-size:15px;padding:4px"></select></span><p id="level"></p><div class="progress"><div id="fill" class="fill"></div><div id="loss" class="loss"></div></div><p>Richtig gelöst: <span id="correct">0</span></p><div id="examBar" class="racebar exbar">📝 Prüfung &nbsp;|&nbsp; Aufgabe <span id="examNo">1</span> / <span id="examTotal">20</span></div><div id="raceBar" class="racebar">⏱️ Noch <span id="raceTime">60</span> s &nbsp;|&nbsp; Richtig: <span id="raceCount">0</span></div><div id="task" class="task"></div><input id="answer" class="answer"><div class="keypad num" id="keypad"><button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="del" class="kdel">⌫</button><button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k=",">,</button><button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="ok" class="kok">Prüfen</button><button data-k="0" class="kzero">0</button></div><button class="btn check" onclick="checkAnswer()">Prüfen</button><div id="feedback"></div></div><div class="ach"><div class="cookies" title="Cookies">🍪 <b id="cookieShow">0</b></div><h3>🏆 Achievements</h3><div class="achwrap"><ul id="achSizer" aria-hidden="true"></ul><ul id="achievements"></ul></div><div id="recordBox"><h3>🏅 Rekorde</h3><ul id="recordList"></ul></div></div></div><div class="footer"><select id="lvlJump" class="btn small" title="Test: XP der gewählten Kategorie auf ein Level setzen" onchange="jumpLevel(this)"></select><select id="lvlSel" class="btn small" onchange="lvlSelChange()"></select><button id="gameBtn" class="btn small" onclick="openGame()"></button><button id="raceBtn" class="btn small" onclick="startRace()">⏱️ Zeitrennen</button><button id="examBtn" class="btn small" onclick="examBtnClick()">📝 Prüfungsmodus</button><button id="examHistBtn" class="btn small" onclick="examHistory()" disabled>📋 Prüfungsergebnisse</button></div></div><div id="popup" class="popup"><div class="box"><h2 id="popupTitle"></h2><p id="popupText"></p><button onclick="closePopup()">Weiter</button></div></div><div id="examSetup" class="popup"><div class="box" style="max-width:420px;text-align:left"><h2 style="text-align:center;margin-top:0">📝 Prüfungsmodus</h2><p style="font-size:14px">20 Aufgaben aus allen Schwierigkeitsstufen (Level 2 bis 5), jede Aufgabe nur <b>ein</b> Versuch, ohne Hilfe. Kein XP und keine Cookies. Am Ende siehst du, wie du in jeder Kategorie abgeschnitten hast.</p><b>Welche Kategorien möchtest du prüfen?</b><div class="exlinks"><a onclick="examSetupAll(true)">alle</a><a onclick="examSetupAll(false)">keine</a></div><div id="examCats"></div><div id="examHint" style="color:#c62828;font-size:14px;min-height:18px"></div><div style="display:flex;gap:10px;justify-content:center;margin-top:8px"><button id="examStartBtn" class="btn" onclick="examStart()">Starten</button><button class="btn" onclick="examSetupClose()">Abbrechen</button></div></div></div><div id="gameOverlay" class="gameov"><div class="gamebox"><h2 id="gameTitle"></h2><div id="gameRoot"></div><div class="gamehint" id="gameHint">Leertaste (oder Klick / Tippen) = fliegen · Esc = beenden</div><div id="gameResult"></div><div class="gamebtns"><button id="gameAgain" class="btn" onclick="gameAgainClick(this)"></button><button id="gameSwitch" class="btn" onclick="showGamePicker()" style="display:none">🎮 Anderes Spiel</button><button class="btn" onclick="closeGame(this)">Schliessen</button></div></div></div>
 
 <!-- ╔══════════════════════════════════════════════════════════════════════╗
      ║  1) THEMEN-BLOCK  –  hier steht ALLES, was zum Thema gehört          ║
@@ -265,7 +265,7 @@ const TOPIC=(function(){
   }
   function helpPotenz(t){
     let k=t.kind,h='<b>Hilfsbeispiel:</b>',e2,b2,d2,m2;
-    function other(v,lo,hi){let x;do{x=ri(lo,hi);}while(x===v&&hi>lo);return x;}
+    function other(v,lo,hi){if(HX)return v;let x;do{x=ri(lo,hi);}while(x===v&&hi>lo);return x;}
     if(k==='z2n'){
       e2=other(t.e,2,Math.max(3,Math.min(6,t.e+2)));
       return h+'<div class="ex">'+pw(10,e2)+' = '+Array(e2).fill(10).join(' · ')+' = '+fmt(ipow(10,e2))+'</div>Der <b>Exponent</b> sagt, wie viele Zehner multipliziert werden. Bei Zehnerpotenzen ist er gleichzeitig die <b>Anzahl Nullen</b>: '+e2+' Nullen.';
@@ -292,10 +292,10 @@ const TOPIC=(function(){
       return h+'<div class="ex">'+fmt(d2*ipow(10,e2))+' = '+d2+' · '+pw(10,e2)+'</div>Zähle die Nullen hinter der '+d2+': Es sind <b>'+e2+'</b>. Das ist der Exponent.';
     }
     if(k==='vfd'){
-      m2=ri(11,99);if(m2%10===0)m2++;e2=other(t.e,2,5);
+      m2=HX?t.m:ri(11,99);if(!HX&&m2%10===0)m2++;e2=other(t.e,2,5);
       return h+'<div class="ex">'+(m2/10).toFixed(1)+' · '+pw(10,e2)+' = '+fmt(m2*ipow(10,e2-1))+'</div>Mal '+pw(10,e2)+' heisst: Das Komma wandert <b>'+e2+' Stellen nach rechts</b>. Fehlende Stellen füllst du mit Nullen auf.';
     }
-    m2=ri(11,99);if(m2%10===0)m2++;e2=other(t.e,2,5);
+    m2=HX?t.m:ri(11,99);if(!HX&&m2%10===0)m2++;e2=other(t.e,2,5);
     return h+'<div class="ex">'+fmt(m2*ipow(10,e2-1))+' = '+(m2/10).toFixed(1)+' · '+pw(10,e2)+'</div>Setze das Komma so, dass nur eine Ziffer davor steht. Zähle, über wie viele Stellen es gewandert ist: <b>'+e2+'</b>. Das ist der Exponent.';
   }
 
@@ -342,7 +342,7 @@ const TOPIC=(function(){
     let left=[a,b,c],right=pick([[c,b,a],[b,a,c],[c,a,b],[b,c,a]]);
     let slot=ri(0,2),ans=right[slot];
     let r=right.map((x,i)=>i===slot?'?':x);
-    let t={cat:'komm',kind:'sw3',op:op};
+    let t={cat:'komm',kind:'sw3',op:op,left:left,right:right};
     t.text=left.join(' '+op+' ')+' = '+r.join(' '+op+' ');
     t.html=left.join(' '+op+' ')+' = '+r.map(x=>x==='?'?QM:x).join(' '+op+' ');
     t.answer=String(ans);
@@ -445,6 +445,36 @@ const TOPIC=(function(){
   function helpKomm(t){
     const h='<b>Hilfsbeispiel:</b>';
     const rule='<br><span class="legend">Kommutativgesetz (Vertauschungsgesetz): Bei <b>Plus</b> und <b>Mal</b> darfst du die Zahlen vertauschen. Das Ergebnis bleibt gleich.</span>';
+    if(HX){
+      const R2=rule;
+      const nn=v=>normalize(String(Math.round(v*1000)/1000));
+      if(t.kind==='sw'){
+        let a=t.a,b=t.b,r=t.op==='+'?nn(+a+ +b):nn(a*b);
+        return h+'<div class="ex">'+a+' '+t.op+' '+b+' = '+b+' '+t.op+' '+a+'</div><div class="ex">'+r+' = '+r+'</div>Auf beiden Seiten kommen die gleichen Zahlen vor, nur in anderer Reihenfolge. Die fehlende Zahl ist <b>'+t.answer+'</b>.'+R2;
+      }
+      if(t.kind==='sw3'&&t.left){
+        let r=t.op==='+'?nn(t.left.reduce((x,y)=>x+y,0)):nn(t.left.reduce((x,y)=>x*y,1));
+        return h+'<div class="ex">'+t.left.join(' '+t.op+' ')+' = '+t.right.join(' '+t.op+' ')+'</div><div class="ex">'+r+' = '+r+'</div>Auf beiden Seiten kommen die gleichen drei Zahlen vor, nur in anderer Reihenfolge. Die fehlende Zahl ist <b>'+t.answer+'</b>.'+R2;
+      }
+      if(t.kind==='vorteil'&&t.pair){
+        let p=t.pair,x=t.x;
+        if(t.op==='·')return h+'<div class="ex">'+p[0]+' · '+x+' · '+p[1]+' = '+p[0]+' · '+p[1]+' · '+x+' = '+(p[0]*p[1])+' · '+x+' = '+t.answer+'</div>Suche zwei Zahlen, die zusammen ein einfaches Produkt ergeben ('+p[0]+' · '+p[1]+' = '+(p[0]*p[1])+'), und rechne sie zuerst.'+R2;
+        let s=nn(+p[0]+ +p[1]);
+        return h+'<div class="ex">'+p[0]+' + '+x+' + '+p[1]+' = '+p[0]+' + '+p[1]+' + '+x+' = '+s+' + '+x+' = '+t.answer+'</div>Suche zwei Zahlen, die zusammen eine glatte Zahl ergeben ('+p[0]+' + '+p[1]+' = '+s+'), und rechne sie zuerst.'+R2;
+      }
+      if(t.kind==='umf'){
+        let L=['A','B','C'];
+        return h+'<div class="ex">'+t.orig+' = '+t.total+'</div>'+t.opts.map((o,i)=>'<div class="ex">'+L[i]+': '+o+' = '+t.vals[i]+(L[i]===t.answer?' &nbsp;❌ falsch':' &nbsp;✅')+'</div>').join('')
+          +'Das <b>Vorzeichen gehört zur Zahl dahinter</b> und wandert mit. Bei <b>'+t.answer+'</b> sind die Zahlen vertauscht, aber die Vorzeichen blieben auf ihren Plätzen stehen. Darum kommt ein anderes Ergebnis heraus.'+R2;
+      }
+      if(t.kind==='yn'){
+        let a=+t.a,b=+t.b,o=t.op,lines;
+        if(o==='+'||o==='·'){let r=o==='+'?a+b:a*b;lines='<div class="ex">'+a+' '+o+' '+b+' = '+r+'<br>'+b+' '+o+' '+a+' = '+r+'</div>Beide Rechnungen geben das gleiche Ergebnis: Bei <b>Plus</b> und <b>Mal</b> darf man vertauschen. Richtig ist <b>Ja</b>.';}
+        else if(o==='−'){lines='<div class="ex">'+a+' − '+b+' = '+(a-b)+'<br>'+b+' − '+a+' = geht in den natürlichen Zahlen nicht</div>Bei <b>Minus</b> darf man nicht vertauschen. Richtig ist <b>Nein</b>.';}
+        else{lines='<div class="ex">'+a+' ÷ '+b+' = '+(a/b)+'<br>'+b+' ÷ '+a+' = geht nicht auf (kein ganzes Ergebnis)</div>Bei <b>Geteilt</b> darf man nicht vertauschen. Richtig ist <b>Nein</b>.';}
+        return h+lines;
+      }
+    }
     if(t.kind==='sw'||t.kind==='sw3'){
       let a,b,r;
       if(t.op==='+'){a=ri(10,60);b=ri(10,60);while(a===b)b=ri(10,60);r=a+b;}
@@ -650,6 +680,13 @@ const TOPIC=(function(){
     return t;
   }
   function helpRang(t){
+    if(HX&&t.expr){
+      let pre='';
+      if(t.kind==='first'&&t.opts)pre='<div>Zuerst rechnest du: <b>'+t.opts[+t.answer]+'</b></div>';
+      else if(t.kind==='rule')pre='<div>Als Nächstes ist dran: <b>'+({k:'die Klammer',p:'Punkt (· ÷)',l:'von links nach rechts'})[t.answer]+'</b></div>';
+      else if(t.kind==='klam'&&t.opts)pre='<div>Richtig ist Variante <b>'+t.answer+'</b>: '+fmtExpr(t.opts['ABC'.indexOf(t.answer)])+' = '+t.total+'</div>';
+      return '<b>Hilfsbeispiel:</b>'+pre+'<div class="helpcalc">'+stepHtml(t.expr)+'</div>'+RANG_RULE;
+    }
     let li=t.tpl?Math.max(0,RANG_T.findIndex(a=>a.indexOf(t.tpl)>=0)):1;
     let tpl=(t.kind==='calc')?pick(RANG_T[li]):pick(['A+B\u00b7C','A\u2212B\u00b7C','(A+B)\u00b7C','A\u00b7B+C']);
     let g=null;for(let k=0;k<50&&!g;k++)g=fillTpl(tpl,Math.max(1,li));
@@ -734,7 +771,7 @@ const TOPIC=(function(){
     return '<pre class="col">'+pad(A)+'\n'+op+' '+pad(B).slice(2)+'\n'+'-'.repeat(W)+'\n'+pad(Rs)+'</pre>';
   }
   function helpDez(t){
-    let ex=null;for(let k=0;k<50;k++){ex=genDez(t.kind,t.lvl,t);if(ex.text!==t.text)break;}
+    let ex=null;if(HX)ex=t;else for(let k=0;k<50;k++){ex=genDez(t.kind,t.lvl,t);if(ex.text!==t.text)break;}
     const h='<b>Hilfsbeispiel:</b>';
     if(t.kind==='as'){
       return h+'<div class="ex">'+ex.a+' '+ex.op+' '+ex.b+'</div>'+colLines(ex.A,ex.B,ex.op,ex.P,ex.R)+
@@ -774,7 +811,7 @@ const TOPIC=(function(){
     return t;
   }
   function helpKomma(task){
-    let a=helpNumber(task.n);
+    let a=HX?task.n:helpNumber(task.n);
     let v=shiftView(a,task.shift);
     let q=task.op==='×'?'Wie wurde das Komma verschoben?':'In welche Richtung wurde das Komma verschoben?';
     if(task.kind==='factor')q='Um wie viele Stellen und in welche Richtung ist das Komma gewandert? Daran erkennst du die Stufenzahl (10, 100 oder 1000).';
@@ -807,6 +844,8 @@ const TOPIC=(function(){
     let v=normalizeInput(raw);   /* Potenzen und Kommutativgesetz: nur Zahlen */
     return v!==null&&v===normalize(String(t.answer));
   }
+  let HX=false;   /* true: Lösungsweg mit den Zahlen der Aufgabe selbst (Prüfungsauswertung) statt Hilfsbeispiel */
+  function helpExact(t){HX=true;try{return String(help(t)).split('Hilfsbeispiel:').join('Lösungsweg:');}finally{HX=false;}}
   function help(t){
     if(t.cat==='potenz')return helpPotenz(t);
     if(t.cat==='dez')return helpDez(t);
@@ -836,7 +875,8 @@ const TOPIC=(function(){
     makeTask:makeTask,
     mount:mount,
     check:check,
-    help:help
+    help:help,
+    helpExact:helpExact
   };
 })();
 </script>
@@ -1263,6 +1303,7 @@ const COOKIE_TOTAL=50,COOKIE_STREAK=25;
 const RACE_LEVEL=TOPIC.raceLevel;
 const RACE_SECONDS=60;
 let race={active:false,phase:'',end:0,count:0,level:0,timer:null};
+let exam={active:false};   /* Prüfungsmodus */
 let records=LEVELS.map(()=>0);
 /* Zeit-Rekorde: bei kategoriegebundenem Zeitrennen (kein raceOption) pro Kategorie, sonst ein gemeinsamer Satz */
 let recMap={};
@@ -1279,7 +1320,7 @@ const nameInput=document.getElementById('name');
 function getLevel(){return Math.min(LAST,Math.floor(xp/LEVEL_XP));}
 
 function setSubtitle(){let k=TOPIC.options&&typeof topicOpt!=='undefined'?topicOpt.value:null;document.getElementById('topicSubtitle').textContent=(TOPIC.subtitles&&TOPIC.subtitles[k])||TOPIC.subtitle;}
-function update(){setSubtitle();if(window.lvlJump)lvlJump.value=getLevel();if(lvlSelFor!==getLevel())buildLvlSel();autoSave();updateGameBtn();let l=getLevel();level.innerHTML='<b>Level '+(l+1)+' - '+lvlName(l)+'</b>'+(practiceLevel!==null?' &nbsp;·&nbsp; 📘 Üben in '+lvlName(practiceLevel)+' (ohne XP)':'');correct.textContent=solved;cookieShow.textContent=cookies;let start=l*LEVEL_XP;fill.style.width=((xp-start)/LEVEL_XP*100)+'%';
+function update(){examUpdateBtn();setSubtitle();if(window.lvlJump)lvlJump.value=getLevel();if(lvlSelFor!==getLevel())buildLvlSel();autoSave();updateGameBtn();let l=getLevel();level.innerHTML='<b>Level '+(l+1)+' - '+lvlName(l)+'</b>'+(practiceLevel!==null?' &nbsp;·&nbsp; 📘 Üben in '+lvlName(practiceLevel)+' (ohne XP)':'');correct.textContent=solved;cookieShow.textContent=cookies;let start=l*LEVEL_XP;fill.style.width=((xp-start)/LEVEL_XP*100)+'%';
   /* roter Abschnitt: so viel XP wurde bei Fehlern verloren (bleibt bis zur nächsten richtigen Antwort) */
   if(lossActive){
     let a=Math.max(0,Math.min(1,(lossFrom-start)/LEVEL_XP)),b=Math.max(0,Math.min(1,(lossTo-start)/LEVEL_XP));
@@ -1313,7 +1354,7 @@ function lvlSelChange(){
   let v=parseInt(lvlSel.value);
   practiceLevel=(v===getLevel())?null:v;
   lvlSel.blur();
-  if(race.active)return;
+  if(race.active||exam.active)return;
   update();newTask();answer.focus();
 }
 if(TOPIC.options){
@@ -1322,7 +1363,7 @@ if(TOPIC.options){
   optRow.style.display='inline';
   topicOpt.addEventListener('change',()=>{
     topicOpt.blur();
-    if(race.active){topicOpt.value=curOpt;return;}
+    if(race.active||exam.active){topicOpt.value=curOpt;return;}
     xpMap[curOpt]=xp;recMap[recKey()]=records;curOpt=topicOpt.value;xp=xpMap[curOpt]||0;
     records=recMap[recKey()]||(recMap[recKey()]=LEVELS.map(()=>0));
     schutz=0;lossActive=false;practiceLevel=null;
@@ -1423,6 +1464,7 @@ function giveCookie(why){
 }
 
 function checkAnswer(){
+  if(exam.active){examAnswer();return;}
   if(race.active){if(race.phase==='run')raceAnswer();return;}
   let before=getLevel();
   if(TOPIC.check(answer.value,current)){
@@ -1489,6 +1531,7 @@ function renderRecords(){
 }
 
 function startRace(){
+  if(exam.active)return;
   if(race.active){endRaceUI();return;}   /* Button ist während des Rennens "Abbrechen" */
   race={active:true,phase:'count',end:0,count:0,level:RACE_LEVEL,timer:null};
   raceCount.textContent=0;
@@ -1565,6 +1608,203 @@ function finishRace(){
   showPopup(isRecord?'🏆 Neuer Zeit-Rekord!':'⏱️ Zeit abgelaufen!',txt);
 }
 
+/* ---------- Prüfungsmodus ----------
+   20 Aufgaben, nur ein Versuch, keine Hilfe, kein XP, keine Cookies. Schwierigkeit: 20 % Level 5, 20 % Level 4, 30 % Level 3, 30 % Level 2.
+   Die Schüler wählen die Kategorien. Die Level werden so auf die Kategorien verteilt, dass jede Kategorie etwa gleich schwer geprüft wird. */
+const EXAM_LEVELS=[[4,4],[3,4],[2,6],[1,6]];   /* [Level-Index, Anzahl]: Level 5 ×4, Level 4 ×4, Level 3 ×6, Level 2 ×6 */
+function examCats(){return TOPIC.options.choices.filter(c=>c.v!=='mix');}
+function examPlan(cats){
+  let levels=[];EXAM_LEVELS.forEach(x=>{for(let i=0;i<x[1];i++)levels.push(x[0]);});   /* absteigend sortiert */
+  let N=levels.length,cnt={},sum={};cats.forEach(c=>{cnt[c]=0;sum[c]=0;});
+  /* 1) verteilen: immer an die Kategorie mit den wenigsten Aufgaben, bei Gleichstand an die mit der kleinsten Level-Summe (Rest zufällig) */
+  let slots=levels.map(l=>{
+    let best=Math.min.apply(null,cats.map(c=>cnt[c]));
+    let cand=cats.filter(c=>cnt[c]===best);
+    let ms=Math.min.apply(null,cand.map(c=>sum[c]));
+    cand=cand.filter(c=>sum[c]===ms);
+    let c=cand[Math.floor(Math.random()*cand.length)];
+    cnt[c]++;sum[c]+=l;return {cat:c,l:l};
+  });
+  /* 2) feinschleifen: Level zwischen Aufgaben verschiedener Kategorien tauschen, solange die Durchschnitte näher zusammenrücken */
+  let avg=levels.reduce((a,b)=>a+b,0)/N;
+  const cost=()=>cats.reduce((a,c)=>a+Math.pow(sum[c]-cnt[c]*avg,2),0);
+  let improved=true,guard=0;
+  while(improved&&guard++<50){
+    improved=false;
+    for(let i=0;i<N;i++)for(let j=i+1;j<N;j++){
+      let a=slots[i],b=slots[j];
+      if(a.cat===b.cat||a.l===b.l)continue;
+      let before=cost();
+      sum[a.cat]+=b.l-a.l;sum[b.cat]+=a.l-b.l;
+      if(cost()<before-1e-9){let t=a.l;a.l=b.l;b.l=t;improved=true;}
+      else{sum[a.cat]-=b.l-a.l;sum[b.cat]-=a.l-b.l;}
+    }
+  }
+  /* Reihenfolge mischen, dazu: nie zwei Aufgaben derselben Kategorie und desselben Levels direkt hintereinander ist nicht nötig – einfach mischen */
+  for(let i=slots.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));let t=slots[i];slots[i]=slots[j];slots[j]=t;}
+  return slots;
+}
+function examBtnClick(){
+  if(exam.active){
+    if(confirm('Prüfung wirklich abbrechen? Das Ergebnis geht verloren.'))examEnd();
+    return;
+  }
+  if(race.active||gameOpen)return;
+  let box=document.getElementById('examCats');
+  box.innerHTML=examCats().map(c=>'<label class="exrow"><input type="checkbox" value="'+c.v+'" checked onchange="examSetupCheck()"> '+c.label+'</label>').join('');
+  examSetupCheck();
+  examSetup.style.display='flex';
+}
+function examSetupSel(){return Array.prototype.slice.call(document.querySelectorAll('#examCats input:checked')).map(i=>i.value);}
+function examSetupCheck(){let n=examSetupSel().length;examStartBtn.disabled=!n;examHint.textContent=n?'':'Wähle mindestens eine Kategorie.';}
+function examSetupAll(on){document.querySelectorAll('#examCats input').forEach(i=>{i.checked=on;});examSetupCheck();}
+function examSetupClose(){examSetup.style.display='none';}
+function examStart(){
+  let cats=examSetupSel();
+  if(!cats.length)return;
+  examSetup.style.display='none';
+  exam={active:true,cats:cats,plan:examPlan(cats),idx:0,res:[],seen:{}};
+  examBtn.textContent='✖ Prüfung abbrechen';
+  raceBtn.disabled=true;
+  examBar.style.display='block';
+  updateGameBtn();
+  examShow();
+}
+function examShow(){
+  let p=exam.plan[exam.idx];
+  examNo.textContent=exam.idx+1;examTotal.textContent=exam.plan.length;
+  const sig=t=>[t.cat,t.mode,t.kind,t.shape,t.answer,t.text].join('|');
+  let t,tries=0;
+  do{t=TOPIC.makeTask(p.l,p.cat);tries++;}while(exam.seen[sig(t)]&&tries<40);
+  exam.seen[sig(t)]=1;
+  current=t;current.wrong=0;
+  let taskEl=document.getElementById('task');
+  if(current.html)taskEl.innerHTML=current.html;else taskEl.textContent=current.text;
+  feedback.innerHTML='';
+  answer.value='';
+  answer.style.display=current.noInput?'none':'';
+  if(current.interactive&&TOPIC.mount)TOPIC.mount(taskEl,current);
+  if(!current.noInput)answer.focus();
+}
+function examAnswer(){
+  if(!current.noInput&&!answer.value.trim())return;   /* leere Eingabe (z. B. versehentliches Enter) überspringt nichts */
+  let ok=false;try{ok=!!TOPIC.check(answer.value,current);}catch(e){}
+  let p=exam.plan[exam.idx],r={cat:p.cat,l:p.l,ok:ok};
+  if(!ok){   /* falsche Aufgabe samt Erklärung merken, damit man sie später ansehen kann */
+    r.html=current.html||null;r.text=current.text||'';
+    r.ans=current.noInput?'':answer.value.trim().replace(/[<>&]/g,'');
+    r.sol=(current.noInput||current.answer==null)?'':String(current.answer).replace(/[<>&]/g,'').replace(/^(-?\d+)\.(\d+)$/,'$1,$2');   /* richtige Antwort */
+    try{r.help=(TOPIC.helpExact?TOPIC.helpExact(current):TOPIC.help(current))||'';}catch(e){r.help='';}
+  }
+  exam.res.push(r);
+  exam.idx++;
+  if(exam.idx>=exam.plan.length){examFinish();return;}
+  examShow();
+}
+function examEnd(){
+  exam={active:false};
+  examBar.style.display='none';
+  examBtn.textContent='📝 Prüfungsmodus';
+  raceBtn.disabled=false;
+  answer.disabled=false;
+  feedback.innerHTML='';
+  updateGameBtn();
+  newTask();
+}
+/* ---------- gespeicherte Prüfungsergebnisse (pro Trainer, die letzten EXAM_KEEP) ---------- */
+const EXAM_KEEP=12;
+let examList=null;
+function examKey(){return AUTO_KEY+'_exams';}
+function examsGet(){
+  try{
+    if(examList)return examList;
+    let a=null;try{a=JSON.parse(localStorage.getItem(examKey()));}catch(e){if(e instanceof ReferenceError)throw e;}
+    examList=Array.isArray(a)?a:[];
+    return examList;
+  }catch(e){return [];}   /* ReferenceError: Skript noch nicht fertig geladen (AUTO_KEY / examList) -> später nochmals */
+}
+function examsSave(){
+  let a=examsGet();
+  for(;;){
+    try{localStorage.setItem(examKey(),JSON.stringify(a));return;}
+    catch(e){if(a.length<=1)return;a.pop();}   /* Speicher voll: älteste Prüfung weglassen */
+  }
+}
+function examUpdateBtn(){
+  let n=examsGet().length;
+  if(typeof examHistBtn==='undefined'||!examHistBtn)return;
+  examHistBtn.textContent='📋 Prüfungsergebnisse'+(n?' ('+n+')':'');
+  examHistBtn.disabled=!n;
+}
+function examPct(a,b){return b?Math.round(a/b*100):0;}
+function examCol(pc){return pc>=80?'#2e7d32':pc>=50?'#f9a825':'#c62828';}
+function examDate(ts){let d=new Date(ts);return d.toLocaleDateString('de-CH')+', '+d.toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});}
+const EX_WRAP='<div style="max-height:64vh;overflow-y:auto;text-align:left;font-size:15px;padding-right:4px">';
+/* Pop-up-Inhalt ersetzen (wenn schon offen) oder öffnen */
+function examPopup(title,html){
+  if(popup.style.display==='flex'){popupTitle.textContent=title;popupText.innerHTML=html;popupText.scrollTop=0;}
+  else showPopup(title,html);
+}
+/* view: 'list' | 'detail' (i) | 'cat' (i, Kategorie) */
+function examGo(view,i,c){
+  let L=examsGet();
+  if(view==='list'){
+    examPopup('📋 Meine Prüfungen',EX_WRAP+L.map((e,k)=>{
+      let pc=examPct(e.right,e.total);
+      return '<div class="exc" onclick="examGo(\'detail\','+k+')"><div style="display:flex;justify-content:space-between;gap:10px"><span>'+examDate(e.t)+'</span><b style="color:'+examCol(pc)+'">'+e.right+' / '+e.total+' ('+pc+' %)</b></div>'
+        +'<div style="font-size:12px;color:#666">'+e.cats.length+' Kategorie'+(e.cats.length===1?'':'n')+' ›</div></div>';
+    }).join('')+'</div>');
+    return;
+  }
+  let e=L[i];if(!e)return;
+  if(view==='detail'){
+    let pc=examPct(e.right,e.total);
+    examPopup('📝 Prüfung',EX_WRAP
+      +'<div class="exlinks"><a onclick="examGo(\'list\')">← Alle Prüfungen</a></div>'
+      +'<div style="text-align:center;margin-bottom:10px">'+(e.name?('<b>'+e.name+'</b> · '):'')+examDate(e.t)+'</div>'
+      +'<div style="text-align:center;font-size:28px;font-weight:bold;margin-bottom:12px;color:'+examCol(pc)+'">'+e.right+' / '+e.total+' richtig ('+pc+' %)</div>'
+      +e.cats.map(r=>{
+        let p=examPct(r.ok,r.n),wrong=r.n-r.ok;
+        return '<div class="exc'+(wrong?'':' exdone')+'"'+(wrong?' data-c="'+r.c+'" onclick="examGo(\'cat\','+i+',this.dataset.c)"':'')+'><div style="display:flex;justify-content:space-between;gap:10px"><span>'+r.label+'</span><b>'+r.ok+' / '+r.n+'</b></div>'
+          +'<div style="background:#e0e6eb;border-radius:6px;height:12px;overflow:hidden"><div style="width:'+p+'%;height:100%;background:'+examCol(p)+'"></div></div>'
+          +'<div style="font-size:12px;color:#666;display:flex;justify-content:space-between"><span>Schwierigkeit: Level '+(r.lo===r.hi?r.lo:r.lo+'–'+r.hi)+' (Ø '+r.avg.toFixed(1).replace('.',',')+')</span><span>'+(wrong?wrong+' falsch – ansehen ›':'✅ alles richtig')+'</span></div></div>';
+      }).join('')
+      +(e.weak?'<p style="margin-top:12px;text-align:center">📘 Am meisten Übung brauchst du bei: <b>'+e.weak+'</b></p>':'')
+      +'</div>');
+    return;
+  }
+  if(view==='cat'){
+    let r=e.cats.filter(x=>x.c===c)[0],w=e.wrong.filter(x=>x.c===c);
+    examPopup(r?r.label:'Falsche Aufgaben',EX_WRAP
+      +'<div class="exlinks"><a onclick="examGo(\'detail\','+i+')">← Zurück zur Übersicht</a></div>'
+      +w.map((x,k)=>'<div class="exwrong"><div style="font-size:12px;color:#666;margin-bottom:4px">Aufgabe '+(k+1)+' von '+w.length+' · Level '+(x.l+1)+'</div>'
+        +'<div class="task" style="font-size:19px;margin:6px 0">'+(x.html||String(x.text||'').replace(/[<>&]/g,''))+'</div>'
+        +(x.ans?'<div style="margin:6px 0">Deine Antwort: <b style="color:#c62828">'+x.ans+'</b></div>':'')
+        +(x.sol?'<div style="margin:6px 0">Richtig wäre: <b style="color:#2e7d32">'+x.sol+'</b></div>':'')
+        +(x.help?'<div class="exhelp">'+x.help+'</div>':'')+'</div>').join('')
+      +'</div>');
+  }
+}
+function examHistory(){if(!examsGet().length)return;examGo('list');}
+function examFinish(){
+  let res=exam.res,cats=exam.cats,labels={};
+  examCats().forEach(c=>{labels[c.v]=c.label;});
+  let total=res.length,right=res.filter(r=>r.ok).length;
+  let rows=cats.map(c=>{
+    let r=res.filter(x=>x.cat===c),ok=r.filter(x=>x.ok).length;
+    let lv=r.map(x=>x.l+1),lo=Math.min.apply(null,lv),hi=Math.max.apply(null,lv);
+    return {c:c,label:labels[c],n:r.length,ok:ok,lo:lo,hi:hi,avg:lv.reduce((a,b)=>a+b,0)/lv.length};
+  });
+  let weak=rows.filter(r=>r.ok<r.n).sort((a,b)=>examPct(a.ok,a.n)-examPct(b.ok,b.n));
+  let rec={t:Date.now(),name:nameInput.value.replace(/[<>&]/g,''),right:right,total:total,cats:rows,
+    weak:(rows.length>1&&weak.length&&examPct(weak[0].ok,weak[0].n)<80)?weak[0].label:'',
+    wrong:res.filter(r=>!r.ok).map(r=>({c:r.cat,l:r.l,html:r.html,text:r.text,ans:r.ans,sol:r.sol,help:r.help}))};
+  let L=examsGet();L.unshift(rec);if(L.length>EXAM_KEEP)L.length=EXAM_KEEP;examsSave();
+  examEnd();
+  examUpdateBtn();
+  examGo('detail',0);
+}
+
 answer.addEventListener('keydown',e=>{if(e.key==='Enter')checkAnswer();});
 /* Aufgaben zum Anklicken: Enter prüft auch ohne Antwortzeile (nicht, wenn ein Pop-up oder das Spiel offen ist oder ein Knopf fokussiert ist) */
 document.addEventListener('keydown',e=>{
@@ -1579,9 +1819,9 @@ function ownedGames(){let own=walletGames();return GAMES_ORDER.filter(function(i
 function triesText(){return triesLeft>0?'noch '+triesLeft+' Versuch'+(triesLeft===1?'':'e'):GAME.cost+' 🍪 = '+GAME.tries+' Versuche';}
 function updateGameBtn(){
   gameBtn.textContent='🎮 Spielen ('+(triesLeft>0?'noch '+triesLeft+' Versuch'+(triesLeft===1?'':'e'):GAME.cost+' 🍪')+')';
-  let ok=(triesLeft>0||cookies>=GAME.cost)&&!race.active;
+  let ok=(triesLeft>0||cookies>=GAME.cost)&&!race.active&&!exam.active;
   gameBtn.disabled=!ok;
-  gameBtn.title=ok?'Spiel starten':(race.active?'Nicht während des Zeitrennens':'Du brauchst '+GAME.cost+' Cookie'+(GAME.cost===1?'':'s'));
+  gameBtn.title=ok?'Spiel starten':((race.active||exam.active)?'Nicht während Zeitrennen oder Prüfung':'Du brauchst '+GAME.cost+' Cookie'+(GAME.cost===1?'':'s'));
 }
 function beginRound(){   /* zieht bei Bedarf 1 Cookie ab (= neue Versuche) und startet einen Versuch */
   if(triesLeft<=0){
@@ -1598,7 +1838,7 @@ function beginRound(){   /* zieht bei Bedarf 1 Cookie ab (= neue Versuche) und s
   return true;
 }
 function openGame(){
-  if(gameOpen||race.active)return;
+  if(gameOpen||race.active||exam.active)return;
   cookies=walletGet();
   if(triesLeft<=0&&cookies<GAME.cost)return;
   gameOpen=true;
