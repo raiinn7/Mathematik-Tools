@@ -803,7 +803,8 @@ const TOPIC=(function(){
   const CATS={
     komma:{icon:'🔢',name:'Komma verschieben'},
     dez:{icon:'➕',name:'Rechnen mit Dezimalzahlen'},
-    strahl:{icon:'📏',name:'Zahlenstrahl'}
+    strahl:{icon:'📏',name:'Zahlenstrahl'},
+    stelle:{icon:'🧮',name:'Stellenwerttafel'}
   };
   const CAT_KEYS=Object.keys(CATS);
 
@@ -979,12 +980,263 @@ const TOPIC=(function(){
     return h;
   }
 
+
+  /* ======================================================================
+     NEU: Kategorie Stellenwerttafel
+     Stellen als Exponent e: 5=HT(Hunderttausender) … 0=E(iner), -1=z(ehntel), -2=h(undertstel), -3=t(ausendstel)
+     Werte werden intern in Tausendsteln (ganze Zahlen) gerechnet, damit keine Rundungsfehler entstehen.
+     Aufgabenarten (kind):
+       read   Tafel mit Ziffern -> Zahl schreiben
+       readdots Tafel mit Punkten -> Zahl schreiben (Punkte zählen)
+       dots   Zahl gegeben -> Zahl mit Punkten in die Tafel legen (1er/5er-Punkt hineinziehen, antippen = löschen)
+       change Tafel mit Punkten -> Punkte so verändern, dass die Zahl um 1, 0.1, 0.01 … grösser/kleiner wird (teils mit Übertrag)
+       f2d    Bruch gegeben -> Dezimalzahl schreiben (zurzeit in keinem Level)
+       d2f    Dezimalzahl gegeben -> Bruch schreiben (zurzeit in keinem Level)
+       fill   Zahl gegeben -> Ziffern selbst in die Tafel eintragen (zurzeit in keinem Level)
+     ====================================================================== */
+  const SW_E=[5,4,3,2,1,0,-1,-2,-3];
+  const SW_S={5:'HT',4:'ZT',3:'T',2:'H',1:'Z',0:'E','-1':'z','-2':'h','-3':'t'};
+  const SW_N={5:'Hunderttausender',4:'Zehntausender',3:'Tausender',2:'Hunderter',1:'Zehner',0:'Einer','-1':'Zehntel','-2':'Hundertstel','-3':'Tausendstel'};
+  const SW_LEVELS=[
+    {hi:[0,0,0,-1],lo:[-2],zero:0.15,cols:[0,-1,-2],kinds:[['read',1]]},                       /* L1: Zahl aus der Tafel ablesen – Einer, Zehntel, Hundertstel */
+    {hi:[0,0,0,-1],lo:[-2],zero:0.15,cols:[0,-1,-2],kinds:[['dots',1]]},                       /* L2: Zahl mit Punkten legen – Einer, Zehntel, Hundertstel */
+    {hi:[0,1,2,3],lo:[-1,-2,-3],zero:0.2,cols:[3,2,1,0,-1,-2,-3],kinds:[['readdots',1],['dots',1]]}, /* L3: Tausender bis Tausendstel – Zahl aus Punkten ablesen oder mit Punkten legen */
+    {hi:[0,1,2],lo:[-1,-2,-3],zero:0.15,cols:[3,2,1,0,-1,-2,-3],kinds:[['change',1]]},          /* L4: Zahl in der Tafel mit Punkten verändern (z. B. um 0.1 grösser), teils mit Übertrag */
+    {hi:[1,2,3,4,4,5,5],lo:[-1,-2,-3],zero:0.2,cols:[5,4,3,2,1,0,-1,-2,-3],kinds:[['readdots',1],['dots',1]]}   /* L5: wie L3 bis Hunderttausender, aber die Zahl steht als Punkte in der Tafel */
+  ];
+  function wpick(a){let s=0;a.forEach(x=>s+=x[1]);let r=Math.random()*s;for(let x of a){r-=x[1];if(r<0)return x[0];}return a[0][0];}
+  function swP10(e){return ipow(10,e+3);}   /* Wert einer Stelle in Tausendsteln */
+  function gcd(a,b){while(b){[a,b]=[b,a%b];}return a;}
+  /* Dezimalzahl-Text, ganze Zahl ab 5 Stellen mit ’ gruppiert (123’456.78) */
+  function swFmt(s){let p=s.split('.');return fmt(p[0])+(p[1]?'.'+p[1]:'');}
+  /* Zufallszahl als {e:Ziffer}: höchste Stelle (ausser bei Zahlen < 1) und tiefste Stelle nie 0 */
+  function swNum(l){
+    let L=SW_LEVELS[l],hi=pick(L.hi),lo=pick(L.lo);
+    if(hi<lo)hi=lo;
+    let d={};
+    for(let e=Math.max(hi,0);e>=lo;e--){
+      if(e>hi){d[e]=0;continue;}   /* Zahl kleiner als 1: Einer sind 0 */
+      d[e]=(e===hi||e===lo)?ri(1,9):(Math.random()<L.zero?0:ri(0,9));
+    }
+    return d;
+  }
+  function swVal(d){let v=0;for(let e in d)v+=d[e]*swP10(+e);return v;}
+  function swStr(d){return dfmt(swVal(d),3);}
+  function swDigits(v){   /* Wert in Tausendsteln -> {e:Ziffer} von der höchsten Stelle (mind. Einer) bis zur letzten Nicht-Null nach dem Komma */
+    let s=sfmt(v,3),p=s.split('.'),d={},ip=p[0],dp=p[1].replace(/0+$/,'');
+    for(let i=0;i<ip.length;i++)d[ip.length-1-i]=+ip[i];
+    for(let i=0;i<dp.length;i++)d[-1-i]=+dp[i];
+    return d;
+  }
+  /* Stellenwerttafel als HTML. cells: {e:Inhalt}; cols: Spalten (Exponenten); dots: Punkte statt Ziffern */
+  function swDots(n){let o='';for(let i=0;i<n;i++)o+='<span class="dot"></span>';return o;}
+  function swTable(cells,cols,dots,inp){
+    cols=cols||[3,2,1,0,-1,-2,-3];
+    let h='<table class="swt'+(dots?' swd':'')+(cols.length>7?' sw9':'')+'" style="--n:'+cols.length+'"><tr>',b='<tr>';
+    cols.forEach(e=>{
+      let k=e===-1?' class="kc"':'';
+      h+='<th'+k+' title="'+SW_N[e]+'">'+SW_S[e]+'</th>';
+      let c=dots?'<div class="dz" data-e="'+e+'">'+swDots(cells[e]||0)+'</div>':inp?'<input class="swin" data-e="'+e+'" inputmode="numeric" autocomplete="off" aria-label="'+SW_N[e]+'">':(cells[e]===undefined?'':cells[e]);
+      b+='<td'+k+'>'+c+'</td>';
+    });
+    return h+'</tr>'+b+'</tr></table><div class="swleg">'+cols.map(e=>SW_S[e]+' = '+SW_N[e]).join(' · ')+'</div>';
+  }
+  /* Brüche für Level 4: Zehnerbrüche (Nenner 10, 100, 1000) und einfache Brüche (Nenner 2, 4, 5, 8, 20, 25, 50) */
+  function swFrac(){
+    let n,d;
+    if(Math.random()<0.6){
+      d=pick([10,100,1000]);
+      let max=d===10?29:(d===100?199:999);
+      do{n=ri(1,max);}while(n%10===0||(Math.random()<0.75&&n>=d));   /* meist kleiner als 1, manchmal grösser (23/10 = 2.3) */
+    }else{
+      d=pick([2,4,5,8,20,25,50]);
+      do{n=ri(1,d===2?5:(d<=8?2*d-1:d-1));}while(gcd(n,d)!==1);
+    }
+    return {n:n,d:d,v:n*1000/d};
+  }
+  const SW_U={2:'100',1:'10',0:'1','-1':'0.1','-2':'0.01','-3':'0.001'};
+  /* Level 4: Startzahl, Stelle e, Anzahl k und Richtung; ca. 40 % mit Übertrag (genau eine Stelle weiter) */
+  function swChange(l,ref){
+    let wantCarry=ref?ref.carry:Math.random()<0.4;
+    for(let i=0;i<500;i++){
+      let d=swNum(l),ks=Object.keys(d).map(Number),lo=Math.min(...ks),hi=Math.max(...ks);
+      let e=(Math.random()<0.2&&lo>-3)?lo-1:ri(lo,Math.min(hi,2));
+      if(ref&&e!==ref.e)continue;
+      let k=ref?ref.k:pick([1,1,1,2,3]),up=ref?ref.up:Math.random()<0.5,x=d[e]||0;
+      let carry=up?(x+k>9):(x-k<0);
+      if(carry!==wantCarry)continue;
+      if(carry){   /* Übertrag nur in die nächste Stelle, und die muss es in der Tafel geben */
+        if(e+1>3)continue;
+        let y=d[e+1]||0;
+        if(up?(y+1>9):(y-1<0))continue;
+      }
+      let v=swVal(d),R=v+(up?1:-1)*k*swP10(e);
+      if(R<=0||R>=10000*1000)continue;
+      if(ref&&ref.v===v)continue;
+      return {d:d,v:v,e:e,k:k,up:up,carry:carry,R:R,rd:swDigits(R)};
+    }
+  }
+  function genStelle(l,kind,ref){
+    for(let k=0;k<300;k++){
+      let t={cat:'stelle',level:l,kind:kind};
+      if(kind==='change'){
+        let g=swChange(l,ref);if(!g)continue;
+        Object.assign(t,g);t.cols=SW_LEVELS[l].cols;t.start=swCells(g.d);t.answer=dfmt(g.R,3);
+        return t;
+      }
+      if(kind==='f2d'||kind==='d2f'){
+        let f=swFrac();t.n=f.n;t.den=f.d;t.v=f.v;t.dec=dfmt(f.v,3);t.d=swDigits(f.v);
+        t.answer=kind==='f2d'?t.dec:t.n+'/'+t.den;
+        if(ref&&(ref.dec===t.dec))continue;
+        return t;
+      }
+      t.cols=SW_LEVELS[l].cols;
+      t.d=swNum(l);
+      t.answer=swStr(t.d);
+      if(ref&&ref.answer===t.answer)continue;
+      return t;
+    }
+  }
+  function makeStelle(l){
+    let kind=wpick(SW_LEVELS[l].kinds);
+    let t=genStelle(l,kind);
+    if(kind==='read'){
+      let cells={};for(let e in t.d)cells[e]=t.d[e];
+      t.text='Stellenwerttafel: welche Zahl steht in der Tafel?';
+      t.html='<div class="zq">Welche Zahl steht in der Stellenwerttafel?</div>'+swTable(cells,t.cols);
+    }
+    if(kind==='change'){
+      let amt=t.k===1?SW_U[t.e]:dfmt(t.k*swP10(t.e),3);
+      let what=t.k+' '+SW_N[t.e];
+      t.text='Mache die Zahl in der Tafel um '+amt+' '+(t.up?'grösser':'kleiner');
+      t.html='<div class="zq">Verändere die Punkte so, dass die Zahl um <b>'+amt+'</b> ('+what+') <b>'+(t.up?'grösser':'kleiner')+'</b> wird.</div>'
+        +'<div class="swsrc"><span class="srcdot" title="1 Punkt in die Tafel ziehen"></span><span class="srcdot5 srcdot2" title="2 Punkte auf einmal in die Tafel ziehen"><i></i><i></i></span><span class="srcdot5" title="5 Punkte auf einmal in die Tafel ziehen"><i></i><i></i><i></i><i></i><i></i></span><span>Ziehe Punkte hinein.<br>Punkt antippen oder hinausziehen = löschen.</span><button type="button" class="swclr swrst">↺ Von vorne</button></div>'
+        +swTable(t.start,t.cols,true)+'<div class="hint">In einer Spalte haben höchstens 9 Punkte Platz.</div>';
+      t.interactive=true;t.noInput=true;t.state={c:swCells(t.start)};
+    }
+    if(kind==='readdots'){
+      let cells={};for(let e in t.d)cells[e]=t.d[e];
+      t.text='Stellenwerttafel mit Punkten: welche Zahl ist das?';
+      t.html='<div class="zq">Welche Zahl ist mit den Punkten in der Stellenwerttafel gelegt?</div>'+swTable(cells,t.cols,true);
+    }
+    if(kind==='dots'){
+      t.text='Lege '+swStr(t.d)+' mit Punkten in die Stellenwerttafel';
+      t.html='<div class="zq">Lege die Zahl mit Punkten in die Stellenwerttafel.</div><div class="swnum">'+swFmt(swStr(t.d))+'</div>'
+        +'<div class="swsrc"><span class="srcdot" title="1 Punkt in die Tafel ziehen"></span><span class="srcdot5 srcdot2" title="2 Punkte auf einmal in die Tafel ziehen"><i></i><i></i></span><span class="srcdot5" title="5 Punkte auf einmal in die Tafel ziehen"><i></i><i></i><i></i><i></i><i></i></span><span>Ziehe 1, 2 oder 5 Punkte in die Spalten.<br>Punkt antippen oder hinausziehen = löschen.</span><button type="button" class="swclr">🗑️ Alle löschen</button></div>'
+        +swTable({},t.cols,true);
+      t.interactive=true;t.noInput=true;t.state={c:{}};
+    }
+    if(kind==='fill'){
+      t.text='Trage '+swStr(t.d)+' in die Stellenwerttafel ein';
+      t.html='<div class="zq">Trage die Zahl in die Stellenwerttafel ein.</div><div class="swnum">'+swFmt(swStr(t.d))+'</div>'+swTable({},t.cols,false,true)+'<div class="hint">Tippe in jedes Feld eine Ziffer. Felder, die du nicht brauchst, bleiben leer.</div>';
+      t.interactive=true;t.noInput=true;t.state={c:null};
+    }
+    if(kind==='f2d'){
+      t.text='Schreibe '+t.n+'/'+t.den+' als Dezimalzahl';
+      t.html='<div class="zq">Schreibe den Bruch als <b>Dezimalzahl</b>.</div><div class="swnum">'+frHtml(t.n,t.den)+' = ?</div>';
+    }
+    if(kind==='d2f'){
+      t.text='Schreibe '+t.dec+' als Bruch';
+      t.html='<div class="zq">Schreibe die Dezimalzahl als <b>Bruch</b>.</div><div class="swnum">'+t.dec+' = '
+        +'<span class="frin"><input class="fin" data-k="n" inputmode="numeric" autocomplete="off" aria-label="Zähler"><span class="frl"></span><input class="fin" data-k="d" inputmode="numeric" autocomplete="off" aria-label="Nenner"></span></div>'
+        +'<div class="hint">Oben den Zähler, unten den Nenner eintragen. Jeder gleichwertige Bruch ist richtig.</div>';
+      t.interactive=true;t.noInput=true;t.state={c:null};
+    }
+    return t;
+  }
+  /* eingetragene Tafel prüfen: belegte Felder lückenlos, Einer belegt, Wert = gesuchte Zahl (Nullen ganz vorne/hinten sind erlaubt) */
+  function swFillOk(t){
+    let c=t.state.c;if(!c)return false;
+    let used=SW_E.filter(e=>c[e]!==undefined&&c[e]!=='');
+    if(!used.length||!c[0])return false;
+    let hi=used[0],lo=used[used.length-1];
+    for(let e=hi;e>=lo;e--)if(!c[e])return false;   /* keine leeren Felder zwischen Ziffern */
+    let v=0;used.forEach(e=>v+=(+c[e])*swP10(e));
+    return dfmt(v,3)===t.answer;
+  }
+  /* gelegte Punkte prüfen: in jeder Spalte so viele Punkte wie die Ziffer (0 = leer) */
+  function swDotsOk(t){
+    let c=t.state.c||{};
+    return SW_E.every(e=>(c[e]||0)===(t.d[e]||0));
+  }
+  /* Bruch prüfen: Zähler/Nenner ganze Zahlen, Nenner > 0, gleicher Wert wie die Dezimalzahl */
+  function swFracOk(t){
+    let c=t.state.c;if(!c)return false;
+    if(!/^\d+$/.test(c.n||'')||!/^\d+$/.test(c.d||''))return false;
+    let n=+c.n,d=+c.d;
+    return d>0&&n*1000===t.v*d;
+  }
+  function swCells(d){let c={};for(let e in d)c[e]=d[e];return c;}
+  function swFracCols(d){let ks=Object.keys(d).map(Number);let lo=Math.min(-1,...ks),hi=Math.max(0,...ks);let c=[];for(let e=hi;e>=lo;e--)c.push(e);return c;}
+  function helpStelle(t){
+    let x=t;
+    if(!HX){let e=genStelle(t.level,t.kind,t);if(e)x=e;}
+    let h='<b>Hilfsbeispiel:</b>';
+    if(x.kind==='f2d'||x.kind==='d2f'){
+      let ex=(x.den===10||x.den===100||x.den===1000);
+      let nd=Object.keys(x.d).filter(e=>+e<0).length;          /* Nachkommastellen */
+      let N=ipow(10,Math.max(nd,1)),Z=x.v*N/1000;              /* Zehnerbruch Z/N */
+      let unit={10:'Zehntel',100:'Hundertstel',1000:'Tausendstel'}[N];
+      let tab=swTable(swCells(x.d),swFracCols(x.d));
+      if(x.kind==='f2d'){
+        let l1=ex?'<b>1.</b> Der Nenner ist <b>'+x.den+'</b>: Der Bruch bedeutet <b>'+x.n+' '+unit+'</b>.<br>'
+                 :'<b>1.</b> Erweitere den Bruch, sodass unten 10, 100 oder 1000 steht: '+frHtml(x.n,x.den)+' = '+frHtml(x.n+' · '+(N/x.den),x.den+' · '+(N/x.den))+' = '+frHtml(Z,N)+', also <b>'+Z+' '+unit+'</b>.<br>';
+        return h+'<div class="swnum">'+frHtml(x.n,x.den)+' = ?</div><div class="helpline">'+l1
+          +'<b>2.</b> Trage es in die Stellenwerttafel ein: Die letzte Ziffer kommt in die Spalte <b>'+SW_S[-nd]+'</b> ('+unit+').</div>'
+          +'<div class="helpcalc">'+tab+'</div><div class="helpline"><b>3.</b> Die Dezimalzahl ist <b>'+x.dec+'</b>.</div>';
+      }
+      let g=gcd(Z,N),kz=(g>1)?' Du kannst auch kürzen: '+frHtml(Z,N)+' = '+frHtml(Z/g,N/g)+'.':'';
+      return h+'<div class="swnum">'+x.dec+' = ?</div><div class="helpcalc">'+tab+'</div><div class="helpline">'
+        +'<b>1.</b> Die letzte Ziffer steht bei den <b>'+unit+'n</b>. Darum ist der Nenner <b>'+N+'</b>.<br>'
+        +'<b>2.</b> Lies die Zahl ohne Komma als Zähler: '+x.dec+' = <b>'+Z+' '+unit+'</b> = '+frHtml(Z,N)+'.<br>'
+        +'<b>3.</b>'+(kz||' Der Bruch ist '+frHtml(Z,N)+'.')+'</div>';
+    }
+    if(x.kind==='dots'){
+      let parts=x.cols.filter(e=>x.d[e]!==undefined).map(e=>(x.d[e]===0?'<b>0</b> bei '+SW_S[e]+' (leer lassen)':'<b>'+x.d[e]+'</b> bei '+SW_S[e]));
+      return h+'<div class="swnum">'+swFmt(x.answer)+'</div><div class="helpcalc">'+swTable(swCells(x.d),x.cols,true)+'</div><div class="helpline">'
+        +'<b>1.</b> Suche das <b>Komma</b>. Die Ziffer direkt <b>vor</b> dem Komma gehört zu den Einern (E).<br>'
+        +'<b>2.</b> Jede Ziffer sagt, <b>wie viele Punkte</b> in ihre Spalte kommen.<br>'
+        +'<b>3.</b> Hier: '+parts.join(', ')+'.<br>'
+        +'<b>Tipp:</b> Für 5 oder mehr Punkte ziehst du zuerst den <b>5er-Punkt</b> hinein. Den Rest legst du mit dem <b>2er-Punkt</b> und einzelnen Punkten (z. B. 8 = 5 + 2 + 1).</div>';
+    }
+    if(x.kind==='change'){
+      let N=SW_N[x.e],S=SW_S[x.e],amt=x.k===1?SW_U[x.e]:dfmt(x.k*swP10(x.e),3),o=x.d[x.e]||0;
+      let h1='<b>1.</b> Die Tafel zeigt <b>'+swFmt(dfmt(x.v,3))+'</b>. Um '+amt+' '+(x.up?'grösser':'kleiner')+' heisst: <b>'+x.k+' Punkt'+(x.k>1?'e':'')+' '+(x.up?'mehr':'weniger')+'</b> in der Spalte <b>'+S+'</b> ('+N+').<br>';
+      let h2;
+      if(!x.carry)h2='<b>2.</b> Bei '+S+' sind es dann '+o+(x.up?' + ':' − ')+x.k+' = <b>'+(x.up?o+x.k:o-x.k)+'</b> Punkte.<br>';
+      else if(x.up)h2='<b>2.</b> Bei '+S+' wären es '+o+' + '+x.k+' = '+(o+x.k)+' Punkte – zu viele! <b>10 '+N+' = 1 '+SW_N[x.e+1]+'</b>: Nimm 10 Punkte bei '+S+' weg und lege dafür <b>1 Punkt bei '+SW_S[x.e+1]+'</b>. Bei '+S+' bleiben '+(o+x.k-10)+'.<br>';
+      else h2='<b>2.</b> Bei '+S+' hat es nur '+o+' Punkt'+(o===1?'':'e')+' – zu wenig, um '+x.k+' wegzunehmen. <b>1 '+SW_N[x.e+1]+' = 10 '+N+'</b>: Nimm 1 Punkt bei '+SW_S[x.e+1]+' weg und lege dafür 10 Punkte bei '+S+'. Jetzt hat es '+(o+10)+', davon nimmst du '+x.k+' weg: Es bleiben <b>'+(o+10-x.k)+'</b>.<br>';
+      return h+'<div class="helpcalc">'+swTable(swCells(x.d),x.cols,true)+'</div><div class="helpline">'+h1+h2
+        +'<b>3.</b> So sieht die Tafel danach aus. Die neue Zahl ist <b>'+swFmt(dfmt(x.R,3))+'</b>.</div>'
+        +'<div class="helpcalc">'+swTable(swCells(x.rd),x.cols,true)+'</div>';
+    }
+    if(x.kind==='readdots'){
+      let digs={};x.cols.forEach(e=>{if(x.d[e]!==undefined)digs[e]=x.d[e];});
+      return h+'<div class="helpcalc">'+swTable(swCells(x.d),x.cols,true)+'</div><div class="helpline">'
+        +'<b>1.</b> Zähle die Punkte in jeder Spalte. Eine Reihe hat <b>5 Punkte</b>, das hilft beim Zählen.<br>'
+        +'<b>2.</b> Die Anzahl Punkte ist die Ziffer. Eine <b>leere Spalte zwischen</b> anderen Spalten ist eine <b>0</b>:</div>'
+        +'<div class="helpcalc">'+swTable(digs,x.cols)+'</div><div class="helpline">'
+        +'<b>3.</b> Nach der Einer-Spalte (E) kommt das Komma. Die Zahl ist <b>'+swFmt(x.answer)+'</b>.</div>';
+    }
+    if(x.kind==='fill'){
+      return h+'<div class="swnum">'+swFmt(x.answer)+'</div><div class="helpcalc">'+swTable(swCells(x.d),x.cols)+'</div><div class="helpline">'
+        +'<b>1.</b> Suche das <b>Komma</b>. Die Ziffer direkt <b>vor</b> dem Komma kommt in die Spalte <b>E</b> (Einer).<br>'
+        +'<b>2.</b> Die Ziffern davor kommen nach links in die nächsten Spalten, die Ziffern <b>nach</b> dem Komma in z, h, t.<br>'
+        +'<b>3.</b> Eine <b>0 zwischen</b> anderen Ziffern musst du auch eintragen.</div>';
+    }
+    return h+'<div class="helpcalc">'+swTable(swCells(x.d),x.cols)+'</div><div class="helpline">'
+      +'<b>1.</b> Lies die Ziffern von links nach rechts.<br>'
+      +'<b>2.</b> Nach der <b>Einer</b>-Spalte (E) kommt das <b>Komma</b> (rote Linie).<br>'
+      +'<b>3.</b> Die Zahl ist <b>'+swFmt(x.answer)+'</b>.</div>';
+  }
+
   const rFree={};
   function makeTask(l,opt){
     let cat=CATS[opt]?opt:pick(CAT_KEYS);
     if(cat==='komma')return makeKommaTask(l);
     if(cat==='dez')return makeDez(l);
     if(cat==='strahl')return makeStrahl(l);
+    if(cat==='stelle')return makeStelle(l);
     return makeKommaTask(l);
   }
   function mount(el,t){
@@ -1008,15 +1260,104 @@ const TOPIC=(function(){
         if(e.key==='ArrowLeft'||e.key==='ArrowRight'){setI((st.i===undefined?(e.key==='ArrowRight'?-1:g.n+1):st.i)+(e.key==='ArrowRight'?1:-1));e.preventDefault();}
       });
     }
-    el.querySelectorAll('.yn button,.exq button').forEach(function(b){
+    let sd=el.querySelector('table.swd');
+    if(sd&&el.querySelector('.srcdot')){   /* nur bei Aufgaben zum Punkte-Legen */   /* Punkte legen: aus dem Vorrat in eine Spalte ziehen, zwischen Spalten verschieben, antippen oder hinausziehen = löschen */
+      const MAXD=9;
+      const zone=e=>sd.querySelector('.dz[data-e="'+e+'"]');
+      const draw=()=>sd.querySelectorAll('.dz').forEach(z=>{z.innerHTML=swDots(st.c[z.getAttribute('data-e')]||0);});
+      const add=(e,k)=>{k=k||1;let n=st.c[e]||0;if(n+k>MAXD){let z=zone(e);z.classList.remove('full');void z.offsetWidth;z.classList.add('full');return false;}st.c[e]=n+k;return true;};
+      const sub=e=>{if(st.c[e])st.c[e]--;};
+      let drag=null;
+      function zoneAt(x,y){let t=document.elementFromPoint(x,y);let z=t&&t.closest?t.closest('.dz'):null;return z&&sd.contains(z)?z:null;}
+      function start(ev,from){
+        drag={from:from,x:ev.clientX,y:ev.clientY,moved:false,g:null,over:null,id:ev.pointerId};
+        ev.preventDefault();ev.stopPropagation();
+      }
+      function move(ev){
+        if(!drag||ev.pointerId!==drag.id)return;
+        if(!drag.moved&&Math.hypot(ev.clientX-drag.x,ev.clientY-drag.y)<6)return;
+        if(!drag.moved){
+          drag.moved=true;
+          let gk=drag.from==='src5'?5:(drag.from==='src2'?2:1);
+          drag.g=document.createElement('div');drag.g.className='dotghost'+(gk>1?' g5':'');if(gk>1){drag.g.innerHTML='<i></i>'.repeat(gk);drag.g.style.gridTemplateColumns='repeat('+gk+',12px)';}document.body.appendChild(drag.g);
+          if(typeof drag.from==='number'){sub(drag.from);draw();}   /* Punkt aus der Spalte "aufheben" */
+        }
+        drag.g.style.left=ev.clientX+'px';drag.g.style.top=ev.clientY+'px';
+        let z=zoneAt(ev.clientX,ev.clientY);
+        if(z!==drag.over){if(drag.over)drag.over.classList.remove('over');if(z)z.classList.add('over');drag.over=z;}
+      }
+      function end(ev){
+        if(!drag||ev.pointerId!==drag.id)return;
+        let d=drag;drag=null;
+        if(d.g)d.g.remove();
+        if(d.over)d.over.classList.remove('over');
+        if(!d.moved){   /* nur angetippt */
+          if(typeof d.from==='number'){sub(d.from);draw();}   /* Punkt antippen = löschen */
+          return;
+        }
+        let z=zoneAt(ev.clientX,ev.clientY);
+        if(z){let e=+z.getAttribute('data-e');if(!add(e,d.from==='src5'?5:(d.from==='src2'?2:1))&&typeof d.from==='number')st.c[d.from]=(st.c[d.from]||0)+1;}   /* Spalte voll: Punkt zurück */
+        draw();   /* ausserhalb der Tafel losgelassen: Punkt ist gelöscht */
+      }
+      el.querySelector('.srcdot').addEventListener('pointerdown',ev=>start(ev,'src'));
+      el.querySelector('.srcdot5:not(.srcdot2)').addEventListener('pointerdown',ev=>start(ev,'src5'));
+      el.querySelector('.srcdot2').addEventListener('pointerdown',ev=>start(ev,'src2'));   /* 2er-Punkt: legt 2 Punkte auf einmal */   /* 5er-Punkt: legt 5 Punkte auf einmal */
+      sd.addEventListener('pointerdown',function(ev){
+        let dot=ev.target.closest('.dot'),z=ev.target.closest('.dz');
+        if(dot&&z)start(ev,+z.getAttribute('data-e'));
+      });
+      document.addEventListener('pointermove',move);
+      document.addEventListener('pointerup',end);
+      document.addEventListener('pointercancel',end);
+      el.querySelector('.swclr').addEventListener('click',function(){st.c=this.classList.contains('swrst')?Object.assign({},t.start):{};draw();this.blur();});   /* Level 4: zurück zur Startzahl */
+      /* alte Listener entfernen, sobald die Aufgabe nicht mehr angezeigt wird */
+      const obs=new MutationObserver(()=>{if(!document.body.contains(sd)){document.removeEventListener('pointermove',move);document.removeEventListener('pointerup',end);document.removeEventListener('pointercancel',end);obs.disconnect();}});
+      obs.observe(el,{childList:true});
+    }
+    let fi=[...el.querySelectorAll('input.fin')];
+    if(fi.length){   /* Bruch eingeben: Zähler und Nenner, nur Ziffern */
+      const upd=()=>{st.c={n:fi[0].value,d:fi[1].value};};
+      fi.forEach(function(inp,k){
+        inp.addEventListener('input',function(){inp.value=inp.value.replace(/\D/g,'').slice(0,6);upd();});
+        inp.addEventListener('keydown',function(e){
+          if((e.key==='ArrowDown'||e.key==='Tab'&&!e.shiftKey)&&k===0){fi[1].focus();e.preventDefault();}
+          if((e.key==='ArrowUp'||e.key==='Tab'&&e.shiftKey)&&k===1){fi[0].focus();e.preventDefault();}
+        });
+      });
+      upd();
+      if(!window.matchMedia('(pointer:coarse)').matches)setTimeout(()=>fi[0].focus(),0);
+    }
+    let ins=[...el.querySelectorAll('input.swin')];
+    if(ins.length){   /* Stellenwerttafel ausfüllen: eine Ziffer pro Feld, danach automatisch ins nächste Feld */
+      const upd=()=>{let c={};ins.forEach(i=>c[i.getAttribute('data-e')]=i.value);st.c=c;};
+      ins.forEach(function(inp,k){
+        inp.addEventListener('input',function(){
+          let d=inp.value.replace(/\D/g,'');inp.value=d.slice(-1);upd();
+          if(inp.value&&ins[k+1])ins[k+1].focus();
+        });
+        inp.addEventListener('keydown',function(e){
+          if(e.key==='Backspace'&&!inp.value&&ins[k-1]){ins[k-1].focus();ins[k-1].value='';upd();e.preventDefault();}
+          if(e.key==='ArrowLeft'&&ins[k-1]){ins[k-1].focus();e.preventDefault();}
+          if(e.key==='ArrowRight'&&ins[k+1]){ins[k+1].focus();e.preventDefault();}
+        });
+        inp.addEventListener('focus',function(){inp.select();});
+      });
+      upd();
+      if(!window.matchMedia('(pointer:coarse)').matches)setTimeout(()=>ins[0].focus(),0);
+    }
+    el.querySelectorAll('.yn button,.exq button,.swt button').forEach(function(b){
       b.addEventListener('click',function(){
         st.c=b.getAttribute('data-v');
-        el.querySelectorAll('.yn button,.exq button').forEach(function(x){x.classList.toggle('sel',x===b);});
+        el.querySelectorAll('.yn button,.exq button,.swt button').forEach(function(x){x.classList.toggle('sel',x===b);});
         b.blur();
       });
     });
   }
   function check(raw,t){
+    if(t.cat==='stelle'&&t.kind==='fill')return swFillOk(t);
+    if(t.cat==='stelle'&&t.kind==='dots')return swDotsOk(t);
+    if(t.cat==='stelle'&&t.kind==='d2f')return swFracOk(t);
+    if(t.cat==='stelle'&&t.kind==='change'){let c=t.state.c||{};return SW_E.every(e=>(c[e]||0)===(t.rd[e]||0));}
     if(t.noInput)return t.state.c===t.answer;
     if(t.cat==='strahl'&&(t.kind==='frac'||t.kind==='pct')){let v=normalizeInput(raw);return t.state.c===t.answer&&v!==null&&v===t.answer;}   /* Marke UND Dezimalzahl müssen stimmen */
     if(t.cat==='komma'){let v=normalizeInput(raw);return v!==null&&v===t.answer;}
@@ -1029,6 +1370,7 @@ const TOPIC=(function(){
     if(t.cat==='potenz')return helpPotenz(t);
     if(t.cat==='dez')return helpDez(t);
     if(t.cat==='strahl')return t.kind==='frac'?helpFrac(t):(t.kind==='pct'?helpPct(t):helpStrahl(t));
+    if(t.cat==='stelle')return helpStelle(t);
     if(t.cat==='komm')return helpKomm(t);
     if(t.cat==='rang')return helpRang(t);
     return helpKomma(t);
@@ -1042,7 +1384,8 @@ const TOPIC=(function(){
       komma:'Dezimalzahlen mit 10, 100 und 1000 multiplizieren und dividieren',
       dez:'Dezimalzahlen addieren, subtrahieren, multiplizieren und dividieren',
       strahl:'Dezimalzahlen am Zahlenstrahl ablesen und einzeichnen',
-      mix:'Alle Kategorien gemischt: Komma verschieben, Rechnen mit Dezimalzahlen und Zahlenstrahl'
+      stelle:'Dezimalzahlen in der Stellenwerttafel lesen, legen und verändern',
+      mix:'Alle Kategorien gemischt: Komma verschieben, Rechnen mit Dezimalzahlen, Zahlenstrahl und Stellenwerttafel'
     },
     levels:LEVELS,
     raceLevel:2,
@@ -1051,7 +1394,7 @@ const TOPIC=(function(){
       choices:CAT_KEYS.map(k=>({v:k,label:CATS[k].icon+' '+CATS[k].name})).concat([{v:'mix',label:'🎲 Gemischt'}]),
       default:'komma'
     },
-    css:'.helpcalc{font-size:30px;font-weight:bold;margin:12px 0 6px}.cOld{color:#d32f2f;font-weight:bold}.cNew{color:#2e7d32;font-weight:bold}.helpcalc .cOld,.helpcalc .cNew{font-size:1.5em}.cross{background:#fff176;border-radius:4px;padding:0 2px}.legend{font-size:14px;color:#444}.pw{font-size:1.1em}.pw sup,.task sup{font-size:.6em;font-weight:bold}.qm{display:inline-block;min-width:30px;border-bottom:3px solid #c62828;color:#c62828;font-weight:bold;text-align:center}.hint{font-size:14px;font-weight:normal;color:#555;margin-top:8px}.ex{font-size:26px;font-weight:bold;margin:8px 0}.yn{display:flex;gap:16px;justify-content:center;margin-top:12px}.yn button{font-size:22px;font-weight:bold;padding:10px 34px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.yn.opts{flex-direction:column;align-items:stretch;max-width:420px;margin-left:auto;margin-right:auto}.yn.opts button{font-size:22px;padding:10px 16px;text-align:left}.col{font-family:ui-monospace,Consolas,monospace;font-size:24px;line-height:1.3;text-align:left;display:inline-block;margin:8px 0;background:#f5f5f5;padding:6px 14px;border-radius:8px}.exq button{font:inherit;font-size:28px;font-weight:bold;min-width:46px;height:46px;margin:0 4px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.exq button.sel,.yn button.sel{background:#1976d2;border-color:#1976d2;color:#fff}.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 4px;line-height:1.1;font-size:28px;font-weight:bold}.fr .fn{border-bottom:3px solid currentColor;padding:0 6px}.fr .fd{padding:0 6px}.zq{font-size:22px;font-weight:normal;margin-bottom:6px}.zs{width:100%;max-width:700px;height:auto;display:block;margin:6px auto;user-select:none}svg.zs{touch-action:none;cursor:pointer;outline:none}.zh{cursor:grab}.zh polygon,.zh circle,.zh text{fill:#9e9e9e}.zh line{stroke:#9e9e9e}.zh.on polygon,.zh.on circle,.zh.on text{fill:#1976d2}.zh.on line{stroke:#1976d2}.helpcalc .zs{max-width:520px}',
+    css:'.helpcalc{font-size:30px;font-weight:bold;margin:12px 0 6px}.cOld{color:#d32f2f;font-weight:bold}.cNew{color:#2e7d32;font-weight:bold}.helpcalc .cOld,.helpcalc .cNew{font-size:1.5em}.cross{background:#fff176;border-radius:4px;padding:0 2px}.legend{font-size:14px;color:#444}.pw{font-size:1.1em}.pw sup,.task sup{font-size:.6em;font-weight:bold}.qm{display:inline-block;min-width:30px;border-bottom:3px solid #c62828;color:#c62828;font-weight:bold;text-align:center}.hint{font-size:14px;font-weight:normal;color:#555;margin-top:8px}.ex{font-size:26px;font-weight:bold;margin:8px 0}.yn{display:flex;gap:16px;justify-content:center;margin-top:12px}.yn button{font-size:22px;font-weight:bold;padding:10px 34px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.yn.opts{flex-direction:column;align-items:stretch;max-width:420px;margin-left:auto;margin-right:auto}.yn.opts button{font-size:22px;padding:10px 16px;text-align:left}.col{font-family:ui-monospace,Consolas,monospace;font-size:24px;line-height:1.3;text-align:left;display:inline-block;margin:8px 0;background:#f5f5f5;padding:6px 14px;border-radius:8px}.exq button{font:inherit;font-size:28px;font-weight:bold;min-width:46px;height:46px;margin:0 4px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.exq button.sel,.yn button.sel{background:#1976d2;border-color:#1976d2;color:#fff}.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 4px;line-height:1.1;font-size:28px;font-weight:bold}.fr .fn{border-bottom:3px solid currentColor;padding:0 6px}.fr .fd{padding:0 6px}.zq{font-size:22px;font-weight:normal;margin-bottom:6px}.zs{width:100%;max-width:700px;height:auto;display:block;margin:6px auto;user-select:none}svg.zs{touch-action:none;cursor:pointer;outline:none}.zh{cursor:grab}.zh polygon,.zh circle,.zh text{fill:#9e9e9e}.zh line{stroke:#9e9e9e}.zh.on polygon,.zh.on circle,.zh.on text{fill:#1976d2}.zh.on line{stroke:#1976d2}.helpcalc .zs{max-width:520px}.swt{border-collapse:collapse;margin:10px auto;font-size:28px;font-weight:bold;width:100%;table-layout:fixed;max-width:calc(var(--n,7)*58px)}.swt.swd{max-width:calc(var(--n,7)*84px)}.helpcalc .swt{max-width:calc(var(--n,7)*44px)}.helpcalc .swt.swd{max-width:calc(var(--n,7)*66px)}.swt.sw9 th{font-size:20px}.swt th,.swt td{border:2px solid #90a4ae;height:50px;text-align:center;padding:0;overflow:hidden}.helpcalc .swt th,.helpcalc .swt td{height:38px}.swt th{background:#e3f2fd;font-size:22px}.swt .kc{border-left:5px solid #d32f2f}.swt td.mk{background:#fff176}.swt th button{font:inherit;width:100%;height:100%;min-height:46px;border:0;background:none;cursor:pointer;color:inherit}.swt th button:hover{background:#bbdefb}.swt th button.sel{background:#1976d2;color:#fff}.swleg{font-size:13px;font-weight:normal;color:#555;text-align:center}.swnum{font-size:34px;font-weight:bold;letter-spacing:2px;margin:6px 0}.swin{width:100%;height:100%;min-height:46px;box-sizing:border-box;border:0;text-align:center;font:inherit;background:#fffde7;color:#1b2733;padding:0}.swin:focus{outline:3px solid #1976d2;outline-offset:-3px;background:#fff}.swt.swd td{vertical-align:top}.dz{display:grid;grid-template-columns:repeat(5,minmax(0,13px));gap:3px;justify-content:center;align-content:start;min-height:66px;padding:6px 2px;touch-action:none;box-sizing:border-box}.dz.over{background:#bbdefb}.dz.full{animation:swfull .35s}@keyframes swfull{0%,100%{background:none}50%{background:#ffcdd2}}.dot{width:100%;max-width:13px;aspect-ratio:1/1;border-radius:50%;background:#1976d2;cursor:grab;touch-action:none}.helpcalc .dz{cursor:default;min-height:0}@media(max-width:700px){.swt{font-size:22px}.swt th{font-size:16px}.swt.sw9{font-size:17px}.swt.sw9 th{font-size:13px}.swt th,.swt td{height:42px}.dz{gap:2px;padding:4px 1px}}.swsrc{display:flex;align-items:center;justify-content:center;gap:14px;margin:8px 0;font-size:15px;font-weight:normal;text-align:left;color:#444;flex-wrap:wrap}.srcdot{width:46px;height:46px;border-radius:50%;background:#1976d2;cursor:grab;touch-action:none;box-shadow:0 2px 6px rgba(0,0,0,.3),inset 0 -4px 0 rgba(0,0,0,.15)}.srcdot5{display:grid;grid-template-columns:repeat(5,12px);gap:3px;padding:9px 10px;border-radius:24px;background:#e3f2fd;border:2px solid #1976d2;cursor:grab;touch-action:none;box-shadow:0 2px 6px rgba(0,0,0,.25)}.srcdot5.srcdot2{grid-template-columns:repeat(2,12px)}.srcdot5 i,.dotghost.g5 i{display:block;width:12px;height:12px;border-radius:50%;background:#1976d2;pointer-events:none}.dotghost.g5{display:grid;grid-template-columns:repeat(5,12px);gap:3px;width:auto;height:auto;padding:5px 7px;margin:-11px 0 0 -40px;border-radius:14px;background:rgba(227,242,253,.9);border:2px solid #1976d2}.swclr{font-size:14px;padding:6px 10px;border-radius:8px;border:1px solid #b0bec5;background:#fff;cursor:pointer}.dotghost{position:fixed;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:#1976d2;opacity:.85;pointer-events:none;z-index:50;box-shadow:0 2px 6px rgba(0,0,0,.35)}.frin{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;gap:4px}.frin .fin{width:90px;font-size:28px;font-weight:bold;text-align:center;padding:4px;border:2px solid #90a4ae;border-radius:8px}.frin .fin:focus{outline:none;border-color:#1976d2}.frl{display:block;width:100px;border-top:3px solid currentColor}.swmk{background:#fff176;border-bottom:4px solid #d32f2f;padding:0 3px}.helpcalc .swt{font-size:22px}',
     makeTask:makeTask,
     mount:mount,
     check:check,
