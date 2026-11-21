@@ -803,7 +803,8 @@ const TOPIC=(function(){
   const CATS={
     komma:{icon:'🔢',name:'Komma verschieben'},
     dez:{icon:'➕',name:'Rechnen mit Dezimalzahlen'},
-    strahl:{icon:'📏',name:'Zahlenstrahl'}
+    strahl:{icon:'📏',name:'Zahlenstrahl'},
+    stelle:{icon:'🧮',name:'Stellenwerttafel'}
   };
   const CAT_KEYS=Object.keys(CATS);
 
@@ -979,12 +980,182 @@ const TOPIC=(function(){
     return h;
   }
 
+
+  /* ======================================================================
+     NEU: Kategorie Stellenwerttafel
+     Stellen als Exponent e: 3=T(ausender) … 0=E(iner), -1=z(ehntel), -2=h(undertstel), -3=t(ausendstel)
+     Werte werden intern in Tausendsteln (ganze Zahlen) gerechnet, damit keine Rundungsfehler entstehen.
+     Aufgabenarten (kind):
+       read   Tafel mit Ziffern -> Zahl schreiben
+       digit  Zahl gegeben -> welche Ziffer steht bei den …?
+       col    Zahl gegeben -> in welche Spalte gehört die markierte Ziffer? (anklicken)
+       value  Zahl mit markierter Ziffer -> welchen Wert hat die Ziffer? (z. B. 0.07)
+       bundle Bündel wie 3 Z + 4 h oder 14 z in der Tafel -> Zahl schreiben (Level 4/5)
+     ====================================================================== */
+  const SW_E=[3,2,1,0,-1,-2,-3];
+  const SW_S={3:'T',2:'H',1:'Z',0:'E','-1':'z','-2':'h','-3':'t'};
+  const SW_N={3:'Tausender',2:'Hunderter',1:'Zehner',0:'Einer','-1':'Zehntel','-2':'Hundertstel','-3':'Tausendstel'};
+  const SW_U={3:'1000',2:'100',1:'10',0:'1','-1':'0.1','-2':'0.01','-3':'0.001'};
+  const SW_LEVELS=[
+    {hi:[0,1],lo:[-1],zero:0,kinds:[['read',5],['digit',3],['col',2]]},                          /* L1: Zehner, Einer, Zehntel */
+    {hi:[1,2],lo:[-1,-2],zero:0.1,kinds:[['read',3],['digit',2],['col',2],['value',3]]},         /* L2: bis Hundertstel */
+    {hi:[0,1,2,3],lo:[-1,-2,-3],zero:0.25,kinds:[['read',3],['digit',2],['col',2],['value',3]]}, /* L3: bis Tausendstel, Nullen in der Zahl */
+    {hi:[-1,0,1,2,3],lo:[-1,-2,-3],zero:0.3,kinds:[['read',2],['col',2],['value',3],['bundle',3]]},   /* L4: auch Zahlen < 1, Bündel ohne Übertrag */
+    {hi:[-1,0,1,2,3],lo:[-1,-2,-3],zero:0.3,kinds:[['read',2],['col',2],['value',2],['bundle',4]]}    /* L5: Bündel mit Übertrag (z. B. 14 z) */
+  ];
+  function wpick(a){let s=0;a.forEach(x=>s+=x[1]);let r=Math.random()*s;for(let x of a){r-=x[1];if(r<0)return x[0];}return a[0][0];}
+  function p10(e){return ipow(10,e+3);}   /* Wert einer Stelle in Tausendsteln */
+  /* Zufallszahl als {e:Ziffer}: höchste Stelle (ausser bei Zahlen < 1) und tiefste Stelle nie 0 */
+  function swNum(l){
+    let L=SW_LEVELS[l],hi=pick(L.hi),lo=pick(L.lo);
+    if(hi<lo)hi=lo;
+    let d={};
+    for(let e=Math.max(hi,0);e>=lo;e--){
+      if(e>hi){d[e]=0;continue;}   /* Zahl kleiner als 1: Einer (und evtl. Zehntel) sind 0 */
+      d[e]=(e===hi||e===lo)?ri(1,9):(Math.random()<L.zero?0:ri(0,9));
+    }
+    return d;
+  }
+  function swVal(d){let v=0;for(let e in d)v+=d[e]*p10(+e);return v;}
+  function swStr(d){return dfmt(swVal(d),3);}
+  /* Zahl als Text, eine Stelle e optional hervorgehoben */
+  function swMarked(d,e){
+    let ks=Object.keys(d).map(Number).sort((a,b)=>b-a),o='';
+    ks.forEach(k=>{if(k===-1)o+='.';let c=String(d[k]);o+=(k===e)?'<span class="swmk">'+c+'</span>':c;});
+    return o;
+  }
+  /* Stellenwerttafel als HTML. cells: {e:Inhalt}; mark: hervorgehobene Stelle; btn: Spaltenköpfe zum Anklicken */
+  function swTable(cells,mark,btn){
+    let h='<table class="swt"><tr>',b='<tr>';
+    SW_E.forEach(e=>{
+      let k=e===-1?' class="kc"':'';
+      h+='<th'+k+' title="'+SW_N[e]+'">'+(btn?'<button data-v="'+e+'">'+SW_S[e]+'</button>':SW_S[e])+'</th>';
+      let c=cells[e]===undefined?'':cells[e];
+      b+='<td class="'+(e===-1?'kc':'')+(e===mark?' mk':'')+'">'+c+'</td>';
+    });
+    return h+'</tr>'+b+'</tr></table><div class="swleg">T = Tausender · H = Hunderter · Z = Zehner · E = Einer · z = Zehntel · h = Hundertstel · t = Tausendstel</div>';
+  }
+  /* eine Stelle der Zahl auswählen (bei 'col' muss die Ziffer in der Zahl eindeutig sein) */
+  function swPlace(d,kind){
+    let ks=Object.keys(d).map(Number);
+    if(kind==='col')ks=ks.filter(e=>ks.filter(f=>d[f]===d[e]).length===1&&d[e]!==0);
+    if(kind==='value')ks=ks.filter(e=>d[e]!==0);
+    if(kind==='digit'){let nz=ks.filter(e=>d[e]!==0);if(Math.random()<0.85)ks=nz;}
+    return ks.length?pick(ks):null;
+  }
+  /* Bündel: Level 4 einzelne Ziffern in gemischter Reihenfolge, Level 5 mit Übertrag (z. B. 14 z) */
+  function swBundle(l){
+    let n=ri(2,3),es=shuffle(SW_E).slice(0,n),b={};
+    if(l>=4){   /* Level 5 (Index 4): mindestens eine Stelle mit 10 bis 25, aber nicht bei den Tausendern */
+      es.forEach(e=>b[e]=ri(1,9));
+      let cand=es.filter(e=>e<3);if(!cand.length){es[0]=-1;b={};es.forEach(e=>b[e]=ri(1,9));cand=[-1];}
+      b[pick(cand)]=ri(10,25);
+    }else es.forEach(e=>b[e]=ri(1,9));
+    return b;
+  }
+  function swBundleText(b,order){return order.map(e=>b[e]+' '+SW_S[e]).join(' + ');}
+  function genStelle(l,kind,ref){
+    for(let k=0;k<300;k++){
+      let t={cat:'stelle',level:l,kind:kind};
+      if(kind==='bundle'){
+        t.b=swBundle(l);t.order=shuffle(Object.keys(t.b).map(Number));t.table=(l>=4&&Math.random()<0.6);
+        t.answer=dfmt(swVal(t.b),3);
+      }else{
+        t.d=swNum(l);
+        if(kind!=='read'){t.e=swPlace(t.d,kind);if(t.e===null)continue;}
+        if(kind==='read')t.answer=swStr(t.d);
+        if(kind==='digit')t.answer=String(t.d[t.e]);
+        if(kind==='col')t.answer=String(t.e);
+        if(kind==='value')t.answer=dfmt(t.d[t.e]*p10(t.e),3);
+      }
+      if(ref&&ref.answer===t.answer)continue;
+      return t;
+    }
+  }
+  function makeStelle(l){
+    let kind=wpick(SW_LEVELS[l].kinds);
+    let t=genStelle(l,kind);
+    let cells={};
+    if(kind==='read'){
+      for(let e in t.d)cells[e]=t.d[e];
+      t.text='Stellenwerttafel: welche Zahl steht in der Tafel?';
+      t.html='<div class="zq">Welche Zahl steht in der Stellenwerttafel?</div>'+swTable(cells);
+    }
+    if(kind==='digit'){
+      t.text='Welche Ziffer steht in '+swStr(t.d)+' bei den '+SW_N[t.e]+'n?';
+      t.html='<div class="zq">Welche Ziffer steht in der Zahl</div><div class="swnum">'+swMarked(t.d)+'</div><div class="zq">bei den <b>'+SW_N[t.e]+'n'+'</b>?</div>';
+    }
+    if(kind==='col'){
+      t.text='In welche Spalte gehört die Ziffer '+t.d[t.e]+' von '+swStr(t.d)+'?';
+      t.html='<div class="zq">In welche Spalte der Stellenwerttafel gehört die markierte Ziffer?</div><div class="swnum">'+swMarked(t.d,t.e)+'</div>'+swTable({},null,true)+'<div class="hint">Klicke auf den richtigen Spaltenkopf.</div>';
+      t.interactive=true;t.noInput=true;t.state={c:null};
+    }
+    if(kind==='value'){
+      t.text='Welchen Wert hat die markierte Ziffer in '+swStr(t.d)+'?';
+      t.html='<div class="zq">Welchen <b>Wert</b> hat die markierte Ziffer?</div><div class="swnum">'+swMarked(t.d,t.e)+'</div><div class="hint">Beispiel: In 3.45 hat die 4 den Wert 0.4.</div>';
+    }
+    if(kind==='bundle'){
+      if(t.table){
+        for(let e in t.b)cells[e]=t.b[e];
+        t.text='Stellenwerttafel mit Bündeln: welche Zahl ist das?';
+        t.html='<div class="zq">Welche Zahl ist das? Achtung: In einer Spalte können mehr als 9 stehen.</div>'+swTable(cells);
+      }else{
+        t.text=swBundleText(t.b,t.order)+' = ?';
+        t.html='<div class="zq">Welche Zahl ist das?</div><div class="swnum">'+swBundleText(t.b,t.order)+'</div>';
+      }
+    }
+    return t;
+  }
+  function swCells(d){let c={};for(let e in d)c[e]=d[e];return c;}
+  function helpStelle(t){
+    let x=t;
+    if(!HX){let e=genStelle(t.level,t.kind,t);if(e){x=e;if(t.kind==='bundle')x.table=t.table;}}   /* Bündel: Beispiel in derselben Form (Tafel oder Text) */
+    let h='<b>Hilfsbeispiel:</b>';
+    if(x.kind==='bundle'){
+      let lines=[],ks=Object.keys(x.b).map(Number).sort((a,b)=>b-a);
+      ks.forEach(e=>{
+        let n=x.b[e],v=dfmt(n*p10(e),3);
+        lines.push(n+' '+SW_N[e]+' = '+n+' · '+SW_U[e]+' = <b>'+v+'</b>'+(n>9&&e<3?' &nbsp;(10 '+SW_N[e]+' = 1 '+SW_N[e+1]+')':''));
+      });
+      return h+'<div class="helpcalc">'+(x.table?swTable(swCells(x.b)):swBundleText(x.b,x.order))+'</div><div class="helpline">'
+        +'Rechne jede Stelle einzeln aus und zähle zusammen:<br>'+lines.join('<br>')+'<br>'
+        +'Zusammen: '+ks.map(e=>dfmt(x.b[e]*p10(e),3)).join(' + ')+' = <b>'+x.answer+'</b></div>';
+    }
+    let tab=swTable(swCells(x.d),x.kind==='read'?null:x.e);
+    if(x.kind==='read'){
+      return h+'<div class="helpcalc">'+tab+'</div><div class="helpline">'
+        +'<b>1.</b> Lies die Ziffern von links nach rechts.<br>'
+        +'<b>2.</b> Nach der <b>Einer</b>-Spalte (E) kommt das <b>Komma</b> (rote Linie).<br>'
+        +'<b>3.</b> Die Zahl ist <b>'+x.answer+'</b>.</div>';
+    }
+    let z=x.d[x.e];
+    let pos=x.e>=0?'vor dem Komma':'nach dem Komma';
+    let n=x.e>=0?(x.e+1):(-x.e);
+    let where='Die '+n+'. Stelle '+pos+' sind die <b>'+SW_N[x.e]+'</b>.';
+    if(x.kind==='digit'){
+      return h+'<div class="helpcalc">'+tab+'</div><div class="helpline">'
+        +'<b>1.</b> Trage die Zahl '+swStr(x.d)+' in die Tafel ein: Die Einer stehen direkt vor dem Komma.<br>'
+        +'<b>2.</b> '+where+'<br><b>3.</b> Dort steht die Ziffer <b>'+z+'</b>.</div>';
+    }
+    if(x.kind==='col'){
+      return h+'<div class="helpcalc">'+tab+'</div><div class="helpline">'
+        +'<b>1.</b> Die Ziffer direkt <b>vor dem Komma</b> sind die Einer (E), direkt <b>nach dem Komma</b> die Zehntel (z).<br>'
+        +'<b>2.</b> Zähle vom Komma aus: Die markierte '+z+' ist die '+n+'. Stelle '+pos+'.<br>'
+        +'<b>3.</b> Sie gehört in die Spalte <b>'+SW_S[x.e]+' ('+SW_N[x.e]+')</b>.</div>';
+    }
+    return h+'<div class="helpcalc">'+tab+'</div><div class="helpline">'
+      +'<b>1.</b> '+where+'<br>'
+      +'<b>2.</b> Ein '+SW_N[x.e]+' ist <b>'+SW_U[x.e]+'</b>.<br>'
+      +'<b>3.</b> Die Ziffer '+z+' bedeutet: '+z+' · '+SW_U[x.e]+' = <b>'+x.answer+'</b>.</div>';
+  }
+
   const rFree={};
   function makeTask(l,opt){
     let cat=CATS[opt]?opt:pick(CAT_KEYS);
     if(cat==='komma')return makeKommaTask(l);
     if(cat==='dez')return makeDez(l);
     if(cat==='strahl')return makeStrahl(l);
+    if(cat==='stelle')return makeStelle(l);
     return makeKommaTask(l);
   }
   function mount(el,t){
@@ -1008,10 +1179,10 @@ const TOPIC=(function(){
         if(e.key==='ArrowLeft'||e.key==='ArrowRight'){setI((st.i===undefined?(e.key==='ArrowRight'?-1:g.n+1):st.i)+(e.key==='ArrowRight'?1:-1));e.preventDefault();}
       });
     }
-    el.querySelectorAll('.yn button,.exq button').forEach(function(b){
+    el.querySelectorAll('.yn button,.exq button,.swt button').forEach(function(b){
       b.addEventListener('click',function(){
         st.c=b.getAttribute('data-v');
-        el.querySelectorAll('.yn button,.exq button').forEach(function(x){x.classList.toggle('sel',x===b);});
+        el.querySelectorAll('.yn button,.exq button,.swt button').forEach(function(x){x.classList.toggle('sel',x===b);});
         b.blur();
       });
     });
@@ -1029,6 +1200,7 @@ const TOPIC=(function(){
     if(t.cat==='potenz')return helpPotenz(t);
     if(t.cat==='dez')return helpDez(t);
     if(t.cat==='strahl')return t.kind==='frac'?helpFrac(t):(t.kind==='pct'?helpPct(t):helpStrahl(t));
+    if(t.cat==='stelle')return helpStelle(t);
     if(t.cat==='komm')return helpKomm(t);
     if(t.cat==='rang')return helpRang(t);
     return helpKomma(t);
@@ -1042,7 +1214,8 @@ const TOPIC=(function(){
       komma:'Dezimalzahlen mit 10, 100 und 1000 multiplizieren und dividieren',
       dez:'Dezimalzahlen addieren, subtrahieren, multiplizieren und dividieren',
       strahl:'Dezimalzahlen am Zahlenstrahl ablesen und einzeichnen',
-      mix:'Alle Kategorien gemischt: Komma verschieben, Rechnen mit Dezimalzahlen und Zahlenstrahl'
+      stelle:'Dezimalzahlen in der Stellenwerttafel lesen, einordnen und bündeln',
+      mix:'Alle Kategorien gemischt: Komma verschieben, Rechnen mit Dezimalzahlen, Zahlenstrahl und Stellenwerttafel'
     },
     levels:LEVELS,
     raceLevel:2,
@@ -1051,7 +1224,7 @@ const TOPIC=(function(){
       choices:CAT_KEYS.map(k=>({v:k,label:CATS[k].icon+' '+CATS[k].name})).concat([{v:'mix',label:'🎲 Gemischt'}]),
       default:'komma'
     },
-    css:'.helpcalc{font-size:30px;font-weight:bold;margin:12px 0 6px}.cOld{color:#d32f2f;font-weight:bold}.cNew{color:#2e7d32;font-weight:bold}.helpcalc .cOld,.helpcalc .cNew{font-size:1.5em}.cross{background:#fff176;border-radius:4px;padding:0 2px}.legend{font-size:14px;color:#444}.pw{font-size:1.1em}.pw sup,.task sup{font-size:.6em;font-weight:bold}.qm{display:inline-block;min-width:30px;border-bottom:3px solid #c62828;color:#c62828;font-weight:bold;text-align:center}.hint{font-size:14px;font-weight:normal;color:#555;margin-top:8px}.ex{font-size:26px;font-weight:bold;margin:8px 0}.yn{display:flex;gap:16px;justify-content:center;margin-top:12px}.yn button{font-size:22px;font-weight:bold;padding:10px 34px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.yn.opts{flex-direction:column;align-items:stretch;max-width:420px;margin-left:auto;margin-right:auto}.yn.opts button{font-size:22px;padding:10px 16px;text-align:left}.col{font-family:ui-monospace,Consolas,monospace;font-size:24px;line-height:1.3;text-align:left;display:inline-block;margin:8px 0;background:#f5f5f5;padding:6px 14px;border-radius:8px}.exq button{font:inherit;font-size:28px;font-weight:bold;min-width:46px;height:46px;margin:0 4px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.exq button.sel,.yn button.sel{background:#1976d2;border-color:#1976d2;color:#fff}.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 4px;line-height:1.1;font-size:28px;font-weight:bold}.fr .fn{border-bottom:3px solid currentColor;padding:0 6px}.fr .fd{padding:0 6px}.zq{font-size:22px;font-weight:normal;margin-bottom:6px}.zs{width:100%;max-width:700px;height:auto;display:block;margin:6px auto;user-select:none}svg.zs{touch-action:none;cursor:pointer;outline:none}.zh{cursor:grab}.zh polygon,.zh circle,.zh text{fill:#9e9e9e}.zh line{stroke:#9e9e9e}.zh.on polygon,.zh.on circle,.zh.on text{fill:#1976d2}.zh.on line{stroke:#1976d2}.helpcalc .zs{max-width:520px}',
+    css:'.helpcalc{font-size:30px;font-weight:bold;margin:12px 0 6px}.cOld{color:#d32f2f;font-weight:bold}.cNew{color:#2e7d32;font-weight:bold}.helpcalc .cOld,.helpcalc .cNew{font-size:1.5em}.cross{background:#fff176;border-radius:4px;padding:0 2px}.legend{font-size:14px;color:#444}.pw{font-size:1.1em}.pw sup,.task sup{font-size:.6em;font-weight:bold}.qm{display:inline-block;min-width:30px;border-bottom:3px solid #c62828;color:#c62828;font-weight:bold;text-align:center}.hint{font-size:14px;font-weight:normal;color:#555;margin-top:8px}.ex{font-size:26px;font-weight:bold;margin:8px 0}.yn{display:flex;gap:16px;justify-content:center;margin-top:12px}.yn button{font-size:22px;font-weight:bold;padding:10px 34px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.yn.opts{flex-direction:column;align-items:stretch;max-width:420px;margin-left:auto;margin-right:auto}.yn.opts button{font-size:22px;padding:10px 16px;text-align:left}.col{font-family:ui-monospace,Consolas,monospace;font-size:24px;line-height:1.3;text-align:left;display:inline-block;margin:8px 0;background:#f5f5f5;padding:6px 14px;border-radius:8px}.exq button{font:inherit;font-size:28px;font-weight:bold;min-width:46px;height:46px;margin:0 4px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.exq button.sel,.yn button.sel{background:#1976d2;border-color:#1976d2;color:#fff}.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 4px;line-height:1.1;font-size:28px;font-weight:bold}.fr .fn{border-bottom:3px solid currentColor;padding:0 6px}.fr .fd{padding:0 6px}.zq{font-size:22px;font-weight:normal;margin-bottom:6px}.zs{width:100%;max-width:700px;height:auto;display:block;margin:6px auto;user-select:none}svg.zs{touch-action:none;cursor:pointer;outline:none}.zh{cursor:grab}.zh polygon,.zh circle,.zh text{fill:#9e9e9e}.zh line{stroke:#9e9e9e}.zh.on polygon,.zh.on circle,.zh.on text{fill:#1976d2}.zh.on line{stroke:#1976d2}.helpcalc .zs{max-width:520px}.swt{border-collapse:collapse;margin:10px auto;font-size:28px;font-weight:bold}.swt th,.swt td{border:2px solid #90a4ae;width:58px;height:50px;text-align:center;padding:0}.swt th{background:#e3f2fd;font-size:22px}.swt .kc{border-left:5px solid #d32f2f}.swt td.mk{background:#fff176}.swt th button{font:inherit;width:100%;height:100%;min-height:46px;border:0;background:none;cursor:pointer;color:inherit}.swt th button:hover{background:#bbdefb}.swt th button.sel{background:#1976d2;color:#fff}.swleg{font-size:13px;font-weight:normal;color:#555;text-align:center}.swnum{font-size:34px;font-weight:bold;letter-spacing:2px;margin:6px 0}.swmk{background:#fff176;border-bottom:4px solid #d32f2f;padding:0 3px}.helpcalc .swt{font-size:22px}.helpcalc .swt th,.helpcalc .swt td{width:44px;height:38px}@media(max-width:520px){.swt{font-size:22px}.swt th,.swt td{width:40px;height:42px}}',
     makeTask:makeTask,
     mount:mount,
     check:check,
