@@ -1003,7 +1003,7 @@ const TOPIC=(function(){
     {hi:[1,2,3,4,4,5,5],lo:[-1,-2,-3],zero:0.2,cols:[5,4,3,2,1,0,-1,-2,-3],kinds:[['read',1],['dots',1]]}   /* L5: wie L3, zusätzlich Zehn- und Hunderttausender */
   ];
   function wpick(a){let s=0;a.forEach(x=>s+=x[1]);let r=Math.random()*s;for(let x of a){r-=x[1];if(r<0)return x[0];}return a[0][0];}
-  function p10(e){return ipow(10,e+3);}   /* Wert einer Stelle in Tausendsteln */
+  function swP10(e){return ipow(10,e+3);}   /* Wert einer Stelle in Tausendsteln */
   function gcd(a,b){while(b){[a,b]=[b,a%b];}return a;}
   /* Dezimalzahl-Text, ganze Zahl ab 5 Stellen mit ’ gruppiert (123’456.78) */
   function swFmt(s){let p=s.split('.');return fmt(p[0])+(p[1]?'.'+p[1]:'');}
@@ -1018,7 +1018,7 @@ const TOPIC=(function(){
     }
     return d;
   }
-  function swVal(d){let v=0;for(let e in d)v+=d[e]*p10(+e);return v;}
+  function swVal(d){let v=0;for(let e in d)v+=d[e]*swP10(+e);return v;}
   function swStr(d){return dfmt(swVal(d),3);}
   function swDigits(v){   /* Wert in Tausendsteln -> {e:Ziffer} von der höchsten Stelle (mind. Einer) bis zur letzten Nicht-Null nach dem Komma */
     let s=sfmt(v,3),p=s.split('.'),d={},ip=p[0],dp=p[1].replace(/0+$/,'');
@@ -1108,7 +1108,7 @@ const TOPIC=(function(){
     if(!used.length||!c[0])return false;
     let hi=used[0],lo=used[used.length-1];
     for(let e=hi;e>=lo;e--)if(!c[e])return false;   /* keine leeren Felder zwischen Ziffern */
-    let v=0;used.forEach(e=>v+=(+c[e])*p10(e));
+    let v=0;used.forEach(e=>v+=(+c[e])*swP10(e));
     return dfmt(v,3)===t.answer;
   }
   /* gelegte Punkte prüfen: in jeder Spalte so viele Punkte wie die Ziffer (0 = leer) */
