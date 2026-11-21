@@ -987,7 +987,8 @@ const TOPIC=(function(){
      Werte werden intern in Tausendsteln (ganze Zahlen) gerechnet, damit keine Rundungsfehler entstehen.
      Aufgabenarten (kind):
        read   Tafel mit Ziffern -> Zahl schreiben
-       fill   Zahl gegeben -> Ziffern selbst in die Tafel eintragen
+       fill   Zahl gegeben -> Ziffern selbst in die Tafel eintragen (zurzeit in keinem Level)
+       dots   Zahl gegeben -> Zahl mit Punkten in die Tafel legen (Punkte hineinziehen, antippen = löschen)
        digit  Zahl gegeben -> welche Ziffer steht bei den …?
        col    Zahl gegeben -> in welche Spalte gehört die markierte Ziffer? (anklicken)
        value  Zahl mit markierter Ziffer -> welchen Wert hat die Ziffer? (z. B. 0.07)
@@ -999,7 +1000,7 @@ const TOPIC=(function(){
   const SW_U={3:'1000',2:'100',1:'10',0:'1','-1':'0.1','-2':'0.01','-3':'0.001'};
   const SW_LEVELS=[
     {hi:[0,1],lo:[-1],zero:0,kinds:[['read',1]]},                                                /* L1: nur Zahl aus der Tafel ablesen (Zehner, Einer, Zehntel) */
-    {hi:[1,2],lo:[-1,-2],zero:0.1,kinds:[['fill',1]]},                                           /* L2: nur Zahl selbst in die Tafel eintragen (bis Hundertstel) */
+    {hi:[1,2],lo:[-1,-2],zero:0.1,kinds:[['dots',1]]},                                           /* L2: nur Zahl mit Punkten in die Tafel legen (bis Hundertstel) */
     {hi:[0,1,2,3],lo:[-1,-2,-3],zero:0.25,kinds:[['read',3],['digit',2],['col',2],['value',3]]}, /* L3: bis Tausendstel, Nullen in der Zahl */
     {hi:[-1,0,1,2,3],lo:[-1,-2,-3],zero:0.3,kinds:[['read',2],['col',2],['value',3],['bundle',3]]},   /* L4: auch Zahlen < 1, Bündel ohne Übertrag */
     {hi:[-1,0,1,2,3],lo:[-1,-2,-3],zero:0.3,kinds:[['read',2],['col',2],['value',2],['bundle',4]]}    /* L5: Bündel mit Übertrag (z. B. 14 z) */
@@ -1026,12 +1027,13 @@ const TOPIC=(function(){
     return o;
   }
   /* Stellenwerttafel als HTML. cells: {e:Inhalt}; mark: hervorgehobene Stelle; btn: Spaltenköpfe zum Anklicken */
-  function swTable(cells,mark,btn,inp){
-    let h='<table class="swt"><tr>',b='<tr>';
+  function swDots(n){let o='';for(let i=0;i<n;i++)o+='<span class="dot"></span>';return o;}
+  function swTable(cells,mark,btn,inp,dots){
+    let h='<table class="swt'+(dots?' swd':'')+'"><tr>',b='<tr>';
     SW_E.forEach(e=>{
       let k=e===-1?' class="kc"':'';
       h+='<th'+k+' title="'+SW_N[e]+'">'+(btn?'<button data-v="'+e+'">'+SW_S[e]+'</button>':SW_S[e])+'</th>';
-      let c=inp?'<input class="swin" data-e="'+e+'" inputmode="numeric" autocomplete="off" aria-label="'+SW_N[e]+'">':(cells[e]===undefined?'':cells[e]);
+      let c=dots?'<div class="dz" data-e="'+e+'">'+swDots(cells[e]||0)+'</div>':inp?'<input class="swin" data-e="'+e+'" inputmode="numeric" autocomplete="off" aria-label="'+SW_N[e]+'">':(cells[e]===undefined?'':cells[e]);
       b+='<td class="'+(e===-1?'kc':'')+(e===mark?' mk':'')+'">'+c+'</td>';
     });
     return h+'</tr>'+b+'</tr></table><div class="swleg">T = Tausender · H = Hunderter · Z = Zehner · E = Einer · z = Zehntel · h = Hundertstel · t = Tausendstel</div>';
@@ -1064,7 +1066,7 @@ const TOPIC=(function(){
       }else{
         t.d=swNum(l);
         if(kind==='digit'||kind==='col'||kind==='value'){t.e=swPlace(t.d,kind);if(t.e===null)continue;}
-        if(kind==='read'||kind==='fill')t.answer=swStr(t.d);
+        if(kind==='read'||kind==='fill'||kind==='dots')t.answer=swStr(t.d);
         if(kind==='digit')t.answer=String(t.d[t.e]);
         if(kind==='col')t.answer=String(t.e);
         if(kind==='value')t.answer=dfmt(t.d[t.e]*p10(t.e),3);
@@ -1081,6 +1083,13 @@ const TOPIC=(function(){
       for(let e in t.d)cells[e]=t.d[e];
       t.text='Stellenwerttafel: welche Zahl steht in der Tafel?';
       t.html='<div class="zq">Welche Zahl steht in der Stellenwerttafel?</div>'+swTable(cells);
+    }
+    if(kind==='dots'){
+      t.text='Lege '+swStr(t.d)+' mit Punkten in die Stellenwerttafel';
+      t.html='<div class="zq">Lege die Zahl mit Punkten in die Stellenwerttafel.</div><div class="swnum">'+swStr(t.d)+'</div>'
+        +'<div class="swsrc"><span class="srcdot" title="Punkt in die Tafel ziehen"></span><span>Ziehe Punkte in die Spalten.<br>Punkt antippen oder hinausziehen = löschen.</span><button type="button" class="swclr">🗑️ Alle löschen</button></div>'
+        +swTable({},null,false,false,true);
+      t.interactive=true;t.noInput=true;t.state={c:{}};
     }
     if(kind==='fill'){
       t.text='Trage '+swStr(t.d)+' in die Stellenwerttafel ein';
@@ -1122,6 +1131,11 @@ const TOPIC=(function(){
     let v=0;used.forEach(e=>v+=(+c[e])*p10(e));
     return dfmt(v,3)===t.answer;
   }
+  /* gelegte Punkte prüfen: in jeder Spalte so viele Punkte wie die Ziffer (0 = leer) */
+  function swDotsOk(t){
+    let c=t.state.c||{};
+    return SW_E.every(e=>(c[e]||0)===(t.d[e]||0));
+  }
   function swCells(d){let c={};for(let e in d)c[e]=d[e];return c;}
   function helpStelle(t){
     let x=t;
@@ -1138,6 +1152,13 @@ const TOPIC=(function(){
         +'Zusammen: '+ks.map(e=>dfmt(x.b[e]*p10(e),3)).join(' + ')+' = <b>'+x.answer+'</b></div>';
     }
     let tab=swTable(swCells(x.d),x.kind==='read'?null:x.e);
+    if(x.kind==='dots'){
+      let parts=SW_E.filter(e=>x.d[e]!==undefined).map(e=>(x.d[e]===0?'<b>0</b> bei '+SW_S[e]+' (leer lassen)':'<b>'+x.d[e]+'</b> bei '+SW_S[e]));
+      return h+'<div class="swnum">'+x.answer+'</div><div class="helpcalc">'+swTable(swCells(x.d),null,false,false,true)+'</div><div class="helpline">'
+        +'<b>1.</b> Suche das <b>Komma</b>. Die Ziffer direkt <b>vor</b> dem Komma gehört zu den Einern (E).<br>'
+        +'<b>2.</b> Jede Ziffer sagt, <b>wie viele Punkte</b> in ihre Spalte kommen.<br>'
+        +'<b>3.</b> Hier: '+parts.join(', ')+'.</div>';
+    }
     if(x.kind==='fill'){
       return h+'<div class="swnum">'+x.answer+'</div><div class="helpcalc">'+tab+'</div><div class="helpline">'
         +'<b>1.</b> Suche das <b>Komma</b>. Die Ziffer direkt <b>vor</b> dem Komma kommt in die Spalte <b>E</b> (Einer).<br>'
@@ -1202,6 +1223,57 @@ const TOPIC=(function(){
         if(e.key==='ArrowLeft'||e.key==='ArrowRight'){setI((st.i===undefined?(e.key==='ArrowRight'?-1:g.n+1):st.i)+(e.key==='ArrowRight'?1:-1));e.preventDefault();}
       });
     }
+    let sd=el.querySelector('table.swd');
+    if(sd){   /* Punkte legen: aus dem Vorrat in eine Spalte ziehen, zwischen Spalten verschieben, antippen oder hinausziehen = löschen */
+      const MAXD=9;
+      const zone=e=>sd.querySelector('.dz[data-e="'+e+'"]');
+      const draw=()=>SW_E.forEach(e=>{zone(e).innerHTML=swDots(st.c[e]||0);});
+      const add=e=>{let n=st.c[e]||0;if(n>=MAXD){let z=zone(e);z.classList.remove('full');void z.offsetWidth;z.classList.add('full');return false;}st.c[e]=n+1;return true;};
+      const sub=e=>{if(st.c[e])st.c[e]--;};
+      let drag=null;
+      function zoneAt(x,y){let t=document.elementFromPoint(x,y);let z=t&&t.closest?t.closest('.dz'):null;return z&&sd.contains(z)?z:null;}
+      function start(ev,from){
+        drag={from:from,x:ev.clientX,y:ev.clientY,moved:false,g:null,over:null,id:ev.pointerId};
+        ev.preventDefault();ev.stopPropagation();
+      }
+      function move(ev){
+        if(!drag||ev.pointerId!==drag.id)return;
+        if(!drag.moved&&Math.hypot(ev.clientX-drag.x,ev.clientY-drag.y)<6)return;
+        if(!drag.moved){
+          drag.moved=true;
+          drag.g=document.createElement('div');drag.g.className='dotghost';document.body.appendChild(drag.g);
+          if(drag.from!=='src'){sub(drag.from);draw();}   /* Punkt aus der Spalte "aufheben" */
+        }
+        drag.g.style.left=ev.clientX+'px';drag.g.style.top=ev.clientY+'px';
+        let z=zoneAt(ev.clientX,ev.clientY);
+        if(z!==drag.over){if(drag.over)drag.over.classList.remove('over');if(z)z.classList.add('over');drag.over=z;}
+      }
+      function end(ev){
+        if(!drag||ev.pointerId!==drag.id)return;
+        let d=drag;drag=null;
+        if(d.g)d.g.remove();
+        if(d.over)d.over.classList.remove('over');
+        if(!d.moved){   /* nur angetippt */
+          if(d.from!=='src'){sub(d.from);draw();}           /* Punkt antippen = löschen */
+          return;
+        }
+        let z=zoneAt(ev.clientX,ev.clientY);
+        if(z){let e=+z.getAttribute('data-e');if(!add(e)&&d.from!=='src')st.c[d.from]=(st.c[d.from]||0)+1;}   /* Spalte voll: Punkt zurück */
+        draw();   /* ausserhalb der Tafel losgelassen: Punkt ist gelöscht */
+      }
+      el.querySelector('.srcdot').addEventListener('pointerdown',ev=>start(ev,'src'));
+      sd.addEventListener('pointerdown',function(ev){
+        let dot=ev.target.closest('.dot'),z=ev.target.closest('.dz');
+        if(dot&&z)start(ev,+z.getAttribute('data-e'));
+      });
+      document.addEventListener('pointermove',move);
+      document.addEventListener('pointerup',end);
+      document.addEventListener('pointercancel',end);
+      el.querySelector('.swclr').addEventListener('click',function(){st.c={};draw();this.blur();});
+      /* alte Listener entfernen, sobald die Aufgabe nicht mehr angezeigt wird */
+      const obs=new MutationObserver(()=>{if(!document.body.contains(sd)){document.removeEventListener('pointermove',move);document.removeEventListener('pointerup',end);document.removeEventListener('pointercancel',end);obs.disconnect();}});
+      obs.observe(el,{childList:true});
+    }
     let ins=[...el.querySelectorAll('input.swin')];
     if(ins.length){   /* Stellenwerttafel ausfüllen: eine Ziffer pro Feld, danach automatisch ins nächste Feld */
       const upd=()=>{let c={};ins.forEach(i=>c[i.getAttribute('data-e')]=i.value);st.c=c;};
@@ -1230,6 +1302,7 @@ const TOPIC=(function(){
   }
   function check(raw,t){
     if(t.cat==='stelle'&&t.kind==='fill')return swFillOk(t);
+    if(t.cat==='stelle'&&t.kind==='dots')return swDotsOk(t);
     if(t.noInput)return t.state.c===t.answer;
     if(t.cat==='strahl'&&(t.kind==='frac'||t.kind==='pct')){let v=normalizeInput(raw);return t.state.c===t.answer&&v!==null&&v===t.answer;}   /* Marke UND Dezimalzahl müssen stimmen */
     if(t.cat==='komma'){let v=normalizeInput(raw);return v!==null&&v===t.answer;}
@@ -1266,7 +1339,7 @@ const TOPIC=(function(){
       choices:CAT_KEYS.map(k=>({v:k,label:CATS[k].icon+' '+CATS[k].name})).concat([{v:'mix',label:'🎲 Gemischt'}]),
       default:'komma'
     },
-    css:'.helpcalc{font-size:30px;font-weight:bold;margin:12px 0 6px}.cOld{color:#d32f2f;font-weight:bold}.cNew{color:#2e7d32;font-weight:bold}.helpcalc .cOld,.helpcalc .cNew{font-size:1.5em}.cross{background:#fff176;border-radius:4px;padding:0 2px}.legend{font-size:14px;color:#444}.pw{font-size:1.1em}.pw sup,.task sup{font-size:.6em;font-weight:bold}.qm{display:inline-block;min-width:30px;border-bottom:3px solid #c62828;color:#c62828;font-weight:bold;text-align:center}.hint{font-size:14px;font-weight:normal;color:#555;margin-top:8px}.ex{font-size:26px;font-weight:bold;margin:8px 0}.yn{display:flex;gap:16px;justify-content:center;margin-top:12px}.yn button{font-size:22px;font-weight:bold;padding:10px 34px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.yn.opts{flex-direction:column;align-items:stretch;max-width:420px;margin-left:auto;margin-right:auto}.yn.opts button{font-size:22px;padding:10px 16px;text-align:left}.col{font-family:ui-monospace,Consolas,monospace;font-size:24px;line-height:1.3;text-align:left;display:inline-block;margin:8px 0;background:#f5f5f5;padding:6px 14px;border-radius:8px}.exq button{font:inherit;font-size:28px;font-weight:bold;min-width:46px;height:46px;margin:0 4px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.exq button.sel,.yn button.sel{background:#1976d2;border-color:#1976d2;color:#fff}.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 4px;line-height:1.1;font-size:28px;font-weight:bold}.fr .fn{border-bottom:3px solid currentColor;padding:0 6px}.fr .fd{padding:0 6px}.zq{font-size:22px;font-weight:normal;margin-bottom:6px}.zs{width:100%;max-width:700px;height:auto;display:block;margin:6px auto;user-select:none}svg.zs{touch-action:none;cursor:pointer;outline:none}.zh{cursor:grab}.zh polygon,.zh circle,.zh text{fill:#9e9e9e}.zh line{stroke:#9e9e9e}.zh.on polygon,.zh.on circle,.zh.on text{fill:#1976d2}.zh.on line{stroke:#1976d2}.helpcalc .zs{max-width:520px}.swt{border-collapse:collapse;margin:10px auto;font-size:28px;font-weight:bold}.swt th,.swt td{border:2px solid #90a4ae;width:58px;height:50px;text-align:center;padding:0}.swt th{background:#e3f2fd;font-size:22px}.swt .kc{border-left:5px solid #d32f2f}.swt td.mk{background:#fff176}.swt th button{font:inherit;width:100%;height:100%;min-height:46px;border:0;background:none;cursor:pointer;color:inherit}.swt th button:hover{background:#bbdefb}.swt th button.sel{background:#1976d2;color:#fff}.swleg{font-size:13px;font-weight:normal;color:#555;text-align:center}.swnum{font-size:34px;font-weight:bold;letter-spacing:2px;margin:6px 0}.swin{width:100%;height:100%;min-height:46px;box-sizing:border-box;border:0;text-align:center;font:inherit;background:#fffde7;color:#1b2733;padding:0}.swin:focus{outline:3px solid #1976d2;outline-offset:-3px;background:#fff}.swmk{background:#fff176;border-bottom:4px solid #d32f2f;padding:0 3px}.helpcalc .swt{font-size:22px}.helpcalc .swt th,.helpcalc .swt td{width:44px;height:38px}@media(max-width:520px){.swt{font-size:22px}.swt th,.swt td{width:40px;height:42px}}',
+    css:'.helpcalc{font-size:30px;font-weight:bold;margin:12px 0 6px}.cOld{color:#d32f2f;font-weight:bold}.cNew{color:#2e7d32;font-weight:bold}.helpcalc .cOld,.helpcalc .cNew{font-size:1.5em}.cross{background:#fff176;border-radius:4px;padding:0 2px}.legend{font-size:14px;color:#444}.pw{font-size:1.1em}.pw sup,.task sup{font-size:.6em;font-weight:bold}.qm{display:inline-block;min-width:30px;border-bottom:3px solid #c62828;color:#c62828;font-weight:bold;text-align:center}.hint{font-size:14px;font-weight:normal;color:#555;margin-top:8px}.ex{font-size:26px;font-weight:bold;margin:8px 0}.yn{display:flex;gap:16px;justify-content:center;margin-top:12px}.yn button{font-size:22px;font-weight:bold;padding:10px 34px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.yn.opts{flex-direction:column;align-items:stretch;max-width:420px;margin-left:auto;margin-right:auto}.yn.opts button{font-size:22px;padding:10px 16px;text-align:left}.col{font-family:ui-monospace,Consolas,monospace;font-size:24px;line-height:1.3;text-align:left;display:inline-block;margin:8px 0;background:#f5f5f5;padding:6px 14px;border-radius:8px}.exq button{font:inherit;font-size:28px;font-weight:bold;min-width:46px;height:46px;margin:0 4px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.exq button.sel,.yn button.sel{background:#1976d2;border-color:#1976d2;color:#fff}.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 4px;line-height:1.1;font-size:28px;font-weight:bold}.fr .fn{border-bottom:3px solid currentColor;padding:0 6px}.fr .fd{padding:0 6px}.zq{font-size:22px;font-weight:normal;margin-bottom:6px}.zs{width:100%;max-width:700px;height:auto;display:block;margin:6px auto;user-select:none}svg.zs{touch-action:none;cursor:pointer;outline:none}.zh{cursor:grab}.zh polygon,.zh circle,.zh text{fill:#9e9e9e}.zh line{stroke:#9e9e9e}.zh.on polygon,.zh.on circle,.zh.on text{fill:#1976d2}.zh.on line{stroke:#1976d2}.helpcalc .zs{max-width:520px}.swt{border-collapse:collapse;margin:10px auto;font-size:28px;font-weight:bold}.swt th,.swt td{border:2px solid #90a4ae;width:58px;height:50px;text-align:center;padding:0}.swt th{background:#e3f2fd;font-size:22px}.swt .kc{border-left:5px solid #d32f2f}.swt td.mk{background:#fff176}.swt th button{font:inherit;width:100%;height:100%;min-height:46px;border:0;background:none;cursor:pointer;color:inherit}.swt th button:hover{background:#bbdefb}.swt th button.sel{background:#1976d2;color:#fff}.swleg{font-size:13px;font-weight:normal;color:#555;text-align:center}.swnum{font-size:34px;font-weight:bold;letter-spacing:2px;margin:6px 0}.swin{width:100%;height:100%;min-height:46px;box-sizing:border-box;border:0;text-align:center;font:inherit;background:#fffde7;color:#1b2733;padding:0}.swin:focus{outline:3px solid #1976d2;outline-offset:-3px;background:#fff}.swt.swd td{vertical-align:top}.dz{display:grid;grid-template-columns:repeat(3,14px);gap:4px;justify-content:center;align-content:start;min-height:66px;padding:6px 2px;touch-action:none;box-sizing:border-box}.dz.over{background:#bbdefb}.dz.full{animation:swfull .35s}@keyframes swfull{0%,100%{background:none}50%{background:#ffcdd2}}.dot{width:14px;height:14px;border-radius:50%;background:#1976d2;cursor:grab;touch-action:none}.helpcalc .dz{cursor:default;min-height:0}.swsrc{display:flex;align-items:center;justify-content:center;gap:14px;margin:8px 0;font-size:15px;font-weight:normal;text-align:left;color:#444;flex-wrap:wrap}.srcdot{width:46px;height:46px;border-radius:50%;background:#1976d2;cursor:grab;touch-action:none;box-shadow:0 2px 6px rgba(0,0,0,.3),inset 0 -4px 0 rgba(0,0,0,.15)}.swclr{font-size:14px;padding:6px 10px;border-radius:8px;border:1px solid #b0bec5;background:#fff;cursor:pointer}.dotghost{position:fixed;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:#1976d2;opacity:.85;pointer-events:none;z-index:50;box-shadow:0 2px 6px rgba(0,0,0,.35)}.swmk{background:#fff176;border-bottom:4px solid #d32f2f;padding:0 3px}.helpcalc .swt{font-size:22px}.helpcalc .swt th,.helpcalc .swt td{width:44px;height:38px}@media(max-width:520px){.swt{font-size:22px}.swt th,.swt td{width:40px;height:42px}}',
     makeTask:makeTask,
     mount:mount,
     check:check,
