@@ -987,6 +987,7 @@ const TOPIC=(function(){
      Werte werden intern in Tausendsteln (ganze Zahlen) gerechnet, damit keine Rundungsfehler entstehen.
      Aufgabenarten (kind):
        read   Tafel mit Ziffern -> Zahl schreiben
+       readdots Tafel mit Punkten -> Zahl schreiben (Punkte zählen)
        dots   Zahl gegeben -> Zahl mit Punkten in die Tafel legen (1er/5er-Punkt hineinziehen, antippen = löschen)
        f2d    Bruch gegeben -> Dezimalzahl schreiben
        d2f    Dezimalzahl gegeben -> Bruch schreiben (Zähler und Nenner, jeder gleichwertige Bruch zählt)
@@ -1000,7 +1001,7 @@ const TOPIC=(function(){
     {hi:[0,0,0,-1],lo:[-2],zero:0.15,cols:[0,-1,-2],kinds:[['dots',1]]},                       /* L2: Zahl mit Punkten legen – Einer, Zehntel, Hundertstel */
     {hi:[0,1,2,3],lo:[-1,-2,-3],zero:0.2,cols:[3,2,1,0,-1,-2,-3],kinds:[['read',1],['dots',1]]}, /* L3: Mischung L1 + L2, Tausender bis Tausendstel */
     {fr:true,kinds:[['f2d',1],['d2f',1]]},                                                     /* L4: Brüche <-> Dezimalzahlen */
-    {hi:[1,2,3,4,4,5,5],lo:[-1,-2,-3],zero:0.2,cols:[5,4,3,2,1,0,-1,-2,-3],kinds:[['read',1],['dots',1]]}   /* L5: wie L3, zusätzlich Zehn- und Hunderttausender */
+    {hi:[1,2,3,4,4,5,5],lo:[-1,-2,-3],zero:0.2,cols:[5,4,3,2,1,0,-1,-2,-3],kinds:[['readdots',1],['dots',1]]}   /* L5: wie L3 bis Hunderttausender, aber die Zahl steht als Punkte in der Tafel */
   ];
   function wpick(a){let s=0;a.forEach(x=>s+=x[1]);let r=Math.random()*s;for(let x of a){r-=x[1];if(r<0)return x[0];}return a[0][0];}
   function swP10(e){return ipow(10,e+3);}   /* Wert einer Stelle in Tausendsteln */
@@ -1075,6 +1076,11 @@ const TOPIC=(function(){
       let cells={};for(let e in t.d)cells[e]=t.d[e];
       t.text='Stellenwerttafel: welche Zahl steht in der Tafel?';
       t.html='<div class="zq">Welche Zahl steht in der Stellenwerttafel?</div>'+swTable(cells,t.cols);
+    }
+    if(kind==='readdots'){
+      let cells={};for(let e in t.d)cells[e]=t.d[e];
+      t.text='Stellenwerttafel mit Punkten: welche Zahl ist das?';
+      t.html='<div class="zq">Welche Zahl ist mit den Punkten in der Stellenwerttafel gelegt?</div>'+swTable(cells,t.cols,true);
     }
     if(kind==='dots'){
       t.text='Lege '+swStr(t.d)+' mit Punkten in die Stellenwerttafel';
@@ -1156,6 +1162,14 @@ const TOPIC=(function(){
         +'<b>3.</b> Hier: '+parts.join(', ')+'.<br>'
         +'<b>Tipp:</b> Für 5 oder mehr Punkte ziehst du zuerst den <b>5er-Punkt</b> hinein, dann die restlichen einzeln.</div>';
     }
+    if(x.kind==='readdots'){
+      let digs={};x.cols.forEach(e=>{if(x.d[e]!==undefined)digs[e]=x.d[e];});
+      return h+'<div class="helpcalc">'+swTable(swCells(x.d),x.cols,true)+'</div><div class="helpline">'
+        +'<b>1.</b> Zähle die Punkte in jeder Spalte. Eine Reihe hat <b>5 Punkte</b>, das hilft beim Zählen.<br>'
+        +'<b>2.</b> Die Anzahl Punkte ist die Ziffer. Eine <b>leere Spalte zwischen</b> anderen Spalten ist eine <b>0</b>:</div>'
+        +'<div class="helpcalc">'+swTable(digs,x.cols)+'</div><div class="helpline">'
+        +'<b>3.</b> Nach der Einer-Spalte (E) kommt das Komma. Die Zahl ist <b>'+swFmt(x.answer)+'</b>.</div>';
+    }
     if(x.kind==='fill'){
       return h+'<div class="swnum">'+swFmt(x.answer)+'</div><div class="helpcalc">'+swTable(swCells(x.d),x.cols)+'</div><div class="helpline">'
         +'<b>1.</b> Suche das <b>Komma</b>. Die Ziffer direkt <b>vor</b> dem Komma kommt in die Spalte <b>E</b> (Einer).<br>'
@@ -1199,7 +1213,7 @@ const TOPIC=(function(){
       });
     }
     let sd=el.querySelector('table.swd');
-    if(sd){   /* Punkte legen: aus dem Vorrat in eine Spalte ziehen, zwischen Spalten verschieben, antippen oder hinausziehen = löschen */
+    if(sd&&el.querySelector('.srcdot')){   /* nur bei Aufgaben zum Punkte-Legen */   /* Punkte legen: aus dem Vorrat in eine Spalte ziehen, zwischen Spalten verschieben, antippen oder hinausziehen = löschen */
       const MAXD=9;
       const zone=e=>sd.querySelector('.dz[data-e="'+e+'"]');
       const draw=()=>sd.querySelectorAll('.dz').forEach(z=>{z.innerHTML=swDots(st.c[z.getAttribute('data-e')]||0);});
