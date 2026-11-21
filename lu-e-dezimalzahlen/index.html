@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Komma Trainer</title><style>body{font-family:Arial,sans-serif;background:#eef4f8;color:#1b2733;margin:0;padding:20px}.container{color:#1b2733}.container{max-width:1100px;margin:auto;background:#fff;padding:25px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.1)}.top{display:flex;gap:20px;align-items:flex-start}.main{flex:1}.ach{position:relative;width:320px;background:#f8f9fa;padding:12px;border-radius:12px}.cookies{position:absolute;top:10px;right:12px;font-size:18px;background:#fff;border-radius:14px;padding:3px 12px;box-shadow:0 1px 3px rgba(0,0,0,.18)}.ach li.gap{margin-top:12px}.ach ul{padding-left:20px}.achwrap{display:grid}.achwrap>ul{grid-area:1/1}#achSizer{visibility:hidden;pointer-events:none}#recordBox{display:none}#recordBox h3{margin-top:22px}.sub{color:#555;margin:-6px 0 14px}.task{font-size:30px;font-weight:bold;text-align:center;margin:30px 0}.progress{height:26px;background:#ddd;border-radius:20px;overflow:hidden;position:relative}.loss{position:absolute;top:0;height:100%;background:#e53935;display:none}.fill{height:100%;background:#4caf50;width:0}.answer{font-size:24px;padding:10px;width:220px}.btn{padding:10px 16px}.answer,.check{vertical-align:middle}.check{font-size:20px;font-weight:bold;padding:11px 26px;margin-left:0.5cm;cursor:pointer}.footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}.btn.small{font-size:12px;padding:4px 10px}.popup{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center}.box{background:white;padding:25px;border-radius:15px;text-align:center;max-width:500px}.racebar{display:none;background:#ff9800;color:#fff;font-size:28px;font-weight:bold;text-align:center;padding:10px;border-radius:12px;margin:10px 0}.racebar.low{background:#d32f2f}.gameov{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:20}.gamebox{background:#fff;border-radius:16px;padding:19px 24px;text-align:center;max-width:96vw;max-height:96vh;overflow:auto}.gamebox h2{margin:0 0 8px}.gamebox canvas{border-radius:10px;max-width:100%;touch-action:none;cursor:pointer}.gamehint{font-size:13px;color:#555;margin:6px 0}#gameResult{min-height:24px;font-size:18px;margin:6px 0}.gamebtns{display:flex;gap:10px;justify-content:center}@media(max-width:900px){.top{flex-direction:column;align-items:stretch}.ach{width:auto}}
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dezimalzahl Trainer</title><style>body{font-family:Arial,sans-serif;background:#eef4f8;color:#1b2733;margin:0;padding:20px}.container{color:#1b2733}.container{max-width:1100px;margin:auto;background:#fff;padding:25px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.1)}.top{display:flex;gap:20px;align-items:flex-start}.main{flex:1}.ach{position:relative;width:320px;background:#f8f9fa;padding:12px;border-radius:12px}.cookies{position:absolute;top:10px;right:12px;font-size:18px;background:#fff;border-radius:14px;padding:3px 12px;box-shadow:0 1px 3px rgba(0,0,0,.18)}.ach li.gap{margin-top:12px}.ach ul{padding-left:20px}.achwrap{display:grid}.achwrap>ul{grid-area:1/1}#achSizer{visibility:hidden;pointer-events:none}#recordBox{display:none}#recordBox h3{margin-top:22px}.sub{color:#555;margin:-6px 0 14px}.task{font-size:30px;font-weight:bold;text-align:center;margin:30px 0}.progress{height:26px;background:#ddd;border-radius:20px;overflow:hidden;position:relative}.loss{position:absolute;top:0;height:100%;background:#e53935;display:none}.fill{height:100%;background:#4caf50;width:0}.answer{font-size:24px;padding:10px;width:220px}.btn{padding:10px 16px}.answer,.check{vertical-align:middle}.check{font-size:20px;font-weight:bold;padding:11px 26px;margin-left:0.5cm;cursor:pointer}.footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}.btn.small{font-size:12px;padding:4px 10px}.popup{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center}.box{background:white;padding:25px;border-radius:15px;text-align:center;max-width:500px}.racebar{display:none;background:#ff9800;color:#fff;font-size:28px;font-weight:bold;text-align:center;padding:10px;border-radius:12px;margin:10px 0}.racebar.low{background:#d32f2f}.gameov{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:20}.gamebox{background:#fff;border-radius:16px;padding:19px 24px;text-align:center;max-width:96vw;max-height:96vh;overflow:auto}.gamebox h2{margin:0 0 8px}.gamebox canvas{border-radius:10px;max-width:100%;touch-action:none;cursor:pointer}.gamehint{font-size:13px;color:#555;margin:6px 0}#gameResult{min-height:24px;font-size:18px;margin:6px 0}.gamebtns{display:flex;gap:10px;justify-content:center}@media(max-width:900px){.top{flex-direction:column;align-items:stretch}.ach{width:auto}}
 /* ---- Smartphone-Ansicht (Laptop bleibt unverändert) ---- */
 .keypad{display:none}
 @media(max-width:700px){
@@ -47,7 +47,7 @@ h1{font-size:26px;margin:4px 0 6px}
      ╚══════════════════════════════════════════════════════════════════════╝ -->
 <script>
 /* =========================================================================
-   THEMA: Komma Trainer – Komma verschieben und Rechnen mit Dezimalzahlen
+   THEMA: Dezimalzahl Trainer – Komma verschieben und Rechnen mit Dezimalzahlen
 
    Aufbau wie beim Komma- und Masseinheiten-Trainer: Nur dieser Block gehört zum Thema.
    Die ENGINE weiter unten (Oberfläche, Levels/XP, Cookies, Achievements, Zeitrennen, Speichern/Laden)
@@ -791,7 +791,8 @@ const TOPIC=(function(){
   ];
   const CATS={
     komma:{icon:'🔢',name:'Komma verschieben'},
-    dez:{icon:'➕',name:'Rechnen mit Dezimalzahlen'}
+    dez:{icon:'➕',name:'Rechnen mit Dezimalzahlen'},
+    strahl:{icon:'📏',name:'Zahlenstrahl'}
   };
   const CAT_KEYS=Object.keys(CATS);
 
@@ -820,16 +821,182 @@ const TOPIC=(function(){
       +'<div class="legend"><span class="cOld">Komma vorher</span> · <span class="cNew">Komma nachher</span> · <span class="cross">Stellen, über die das Komma gewandert ist</span></div><br>'+q;
   }
 
+  /* ======================================================================
+     NEU: Kategorie Zahlenstrahl (ablesen und einzeichnen)
+     g = {P:Nachkommastellen, s:Start (ganzzahlig, in Einheiten 10^-P), n:Anzahl Teile, st:Einheiten pro Teil, i:Teilstrich der Zielzahl}
+     ====================================================================== */
+  /* Varianten (M = grösste ganze Zahl, bei der ein Abschnitt starten darf; big/med = Position der langen/mittleren Striche) */
+  const ZS_V={
+    z1:M=>({P:1,n:10,st:1,s:ri(0,M)*10,big:5,med:0}),                  /* Zehntel */
+    z2:M=>({P:2,n:10,st:1,s:ri(0,M*10+9)*10,big:5,med:0}),             /* Hundertstel (Abschnitt von 0.1) */
+    z3a:M=>({P:2,n:20,st:5,s:ri(0,M)*100,big:10,med:2,hund:1}),               /* Zehntel und Hundertstel: Schritte von 0.05 */
+    z3b:M=>({P:2,n:20,st:1,s:ri(0,M*10+8)*10,big:10,med:5,hund:1}),           /* Zehntel und Hundertstel: Abschnitt von 0.2 */
+    z4:M=>({P:3,n:10,st:1,s:ri(1,M*100+99)*10,big:5,med:0}),           /* Tausendstel (Abschnitt von 0.01) */
+    z5:M=>({P:3,n:20,st:1,s:ri(1,M*100+98)*10,big:10,med:5})           /* Hundertstel und Tausendstel kombiniert (Abschnitt von 0.02) */
+  };
+  const ZS_LEVELS=[
+    function(){return ZS_V.z1(9);},                                                            /* L1: nur Zehntel, Abschnitt irgendwo zwischen 0 und 10 */
+    function(){return ZS_V.z2(9);},                                                            /* L2: Einführung Hundertstel */
+    function(){return Math.random()<0.5?ZS_V[pick(['z3a','z3b'])](9):ZS_V.z4(9);},            /* L3: 50 % Zehntel+Hundertstel, 50 % Einführung Tausendstel */
+    function(){return ZS_V[pick(['z3a','z3b','z4','z5'])](9);},                                /* L4: Zwischenstufe: Kombinationen und Tausendstel */
+    function(){return ZS_V[pick(['z1','z2','z3a','z3b','z4','z5'])](9);}                       /* L5: alles kombiniert */
+  ];
+  function zsVal(g,i){return dfmt(g.s+i*g.st,g.P);}
+  function zsSvg(g,mode){   /* mode: 'read' (Pfeil auf Zielzahl), 'place' (anklickbar), 'solved' (Pfeil + Zahl) */
+    const X0=40,X1=660,Y=80,W=(X1-X0)/g.n;
+    const xs=i=>X0+W*i;
+    let o='<svg class="zs" tabindex="0" viewBox="0 -14 700 164" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Zahlenstrahl">';
+    o+='<line x1="'+(X0-18)+'" y1="'+Y+'" x2="'+(X1+18)+'" y2="'+Y+'" stroke="#263238" stroke-width="3"/>';
+    for(let i=0;i<=g.n;i++){
+      let h=(i===0||i===g.n)?26:(i===g.big?22:((g.med&&i%g.med===0)?16:11));
+      o+='<line x1="'+xs(i)+'" y1="'+(Y-h)+'" x2="'+xs(i)+'" y2="'+(Y+h)+'" stroke="#263238" stroke-width="'+((i===0||i===g.n)?3:2)+'"/>';
+    }
+    o+='<text x="'+xs(0)+'" y="132" text-anchor="middle" font-size="26" font-weight="bold" fill="#263238">'+zsVal(g,0)+'</text>';
+    o+='<text x="'+xs(g.n)+'" y="132" text-anchor="middle" font-size="26" font-weight="bold" fill="#263238">'+zsVal(g,g.n)+'</text>';
+    if(mode==='read'||mode==='solved'){
+      let x=xs(g.i);
+      o+='<polygon points="'+(x-11)+',24 '+(x+11)+',24 '+x+',58" fill="#d32f2f"/>';
+      o+='<text x="'+x+'" y="18" text-anchor="middle" font-size="26" font-weight="bold" fill="#d32f2f">'+(mode==='solved'?zsVal(g,g.i):'?')+'</text>';
+    }
+    if(mode==='place'){
+      o+='<g class="zh" transform="translate('+X0+' 0)"><text class="zhv" x="0" y="18" text-anchor="middle" font-size="26" font-weight="bold"></text>'
+        +'<line x1="0" y1="58" x2="0" y2="104" stroke-width="3"/><polygon points="-14,24 14,24 0,60"/><circle cx="0" cy="'+Y+'" r="9"/></g>';
+    }
+    return o+'</svg>';
+  }
+  function genStrahl(l,kind,ref){
+    for(let k=0;k<500;k++){
+      let g=ZS_LEVELS[l]();
+      g.i=ri(1,g.n-1);
+      if(g.hund){   /* 80 %: Hundertstelziffer nicht 0 (z. B. 5.45), 20 %: Zehntel (z. B. 5.50) */
+        let want=Math.random()<0.8,c=[];
+        for(let i=1;i<g.n;i++)if(((g.s+i*g.st)%10!==0)===want)c.push(i);
+        if(c.length)g.i=pick(c);
+      }
+      if(ref&&g.s===ref.s&&g.i===ref.i&&g.P===ref.P)continue;
+      g.kind=kind;
+      return g;
+    }
+  }
+  /* Brüche am Zahlenstrahl (ab Level 4): Bruch einzeichnen und die passende Dezimalzahl nennen.
+     Erlaubt: Nenner 2, 4, 5, 8 mit beliebigen Zählern (Level 5: auch bis 2) */
+  function frHtml(n,d){return '<span class="fr"><span class="fn">'+n+'</span><span class="fd">'+d+'</span></span>';}
+  function genFrac(l,ref){
+    for(let k=0;k<500;k++){
+      let d=pick([2,4,5,8]),W=(l>=4&&Math.random()<0.5)?2:1,un=(d===5)?10:8;
+      let num=ri(1,W*d-1);
+      if(num%d===0)continue;                      /* keine ganzen Zahlen */
+      if(ref&&ref.d===d&&ref.num===num)continue;
+      let g={P:3,n:un*W,st:(d===5?100:125),s:0,big:un*W/2,med:0,d:d,num:num,i:num*(un/d)};
+      return g;
+    }
+  }
+  function makeFrac(l){
+    let g=genFrac(l),v=zsVal(g,g.i);
+    let t={cat:'strahl',level:l,kind:'frac',g:g,answer:v,interactive:true,state:{c:null}};
+    t.text='Zahlenstrahl: Bruch '+g.num+'/'+g.d+' einzeichnen und als Dezimalzahl schreiben';
+    t.html='<div class="zq">Zeichne den Bruch '+frHtml(g.num,g.d)+' am Zahlenstrahl ein und schreibe die passende <b>Dezimalzahl</b>.</div>'+zsSvg(g,'place');
+    return t;
+  }
+  function helpFrac(t){
+    let g=t.g;
+    if(!HX){let e=genFrac(t.level,{d:g.d,num:g.num});if(e)g=e;}
+    let sf={2:'0.5',4:'0.25',5:'0.2',8:'0.125'}[g.d],v=zsVal(g,g.i);
+    let h='<b>Hilfsbeispiel:</b><div class="helpcalc">'+zsSvg(g,'solved')+'</div><div class="helpline">'
+      +'<b>1.</b> Der Nenner <b>'+g.d+'</b> sagt: Ein Ganzes ist in '+g.d+' gleich grosse Teile geteilt. Ein Teil ist '+frHtml(1,g.d)+' = <b>'+sf+'</b>.<br>'
+      +'<b>2.</b> Der Zähler <b>'+g.num+'</b> sagt: Nimm '+g.num+' solche Teile.<br>'
+      +'<b>3.</b> Rechne: '+g.num+' · '+sf+' = <b>'+v+'</b>.<br>'
+      +'<b>4.</b> Auf dem Zahlenstrahl: Gehe von 0 aus '+g.num+' Teile nach rechts. Du landest bei <b>'+v+'</b>.</div>';
+    return h;
+  }
+  /* Prozente am Zahlenstrahl (ab Level 4): Prozentzahl einzeichnen und die passende Dezimalzahl nennen */
+  function genPct(l,ref){
+    for(let k=0;k<500;k++){
+      let W=(l>=4&&Math.random()<0.5)?2:1,i=ri(1,19),p=(W===1?i*5:i*10);
+      if(p%100===0)continue;
+      if(ref&&ref.pct===p)continue;
+      return {P:3,n:20,st:(W===1?50:100),s:0,big:10,med:(W===1?2:0),pct:p,i:i};
+    }
+  }
+  function makePct(l){
+    let g=genPct(l),v=zsVal(g,g.i);
+    let t={cat:'strahl',level:l,kind:'pct',g:g,answer:v,interactive:true,state:{c:null}};
+    t.text='Zahlenstrahl: '+g.pct+' % einzeichnen und als Dezimalzahl schreiben';
+    t.html='<div class="zq">Zeichne <b>'+g.pct+' %</b> am Zahlenstrahl ein und schreibe die passende <b>Dezimalzahl</b>.</div>'+zsSvg(g,'place');
+    return t;
+  }
+  function helpPct(t){
+    let g=t.g;
+    if(!HX){let e=genPct(t.level,{pct:g.pct});if(e)g=e;}
+    let v=zsVal(g,g.i);
+    let h='<b>Hilfsbeispiel:</b><div class="helpcalc">'+zsSvg(g,'solved')+'</div><div class="helpline">'
+      +'<b>1.</b> Prozent heisst «von 100»: <b>'+g.pct+' %</b> = '+frHtml(g.pct,100)+'.<br>'
+      +'<b>2.</b> Teile durch 100, also Komma um 2 Stellen nach links: '+g.pct+' ÷ 100 = <b>'+v+'</b>.<br>'
+      +'<b>3.</b> 100 % ist das Ganze (die 1 am Zahlenstrahl). Die Marke gehört also bei <b>'+v+'</b>.</div>';
+    return h;
+  }
+  function makeStrahl(l){
+    if(l>=3){let r=Math.random();if(r<0.25)return makeFrac(l);if(r<0.5)return makePct(l);}
+    let kind=Math.random()<0.5?'read':'place';
+    let g=genStrahl(l,kind);
+    let v=zsVal(g,g.i);
+    let t={cat:'strahl',level:l,kind:kind,g:g,answer:v};
+    if(kind==='read'){
+      t.text='Zahlenstrahl: welche Zahl ist markiert?';
+      t.html='<div class="zq">Welche Zahl ist am Zahlenstrahl markiert?</div>'+zsSvg(g,'read');
+    }else{
+      t.text='Zahlenstrahl: markiere '+v;
+      t.html='<div class="zq">Markiere <b>'+v+'</b> am Zahlenstrahl. Schiebe die Marke an die richtige Stelle.</div>'+zsSvg(g,'place');
+      t.interactive=true;t.noInput=true;t.state={c:null};
+    }
+    return t;
+  }
+  function helpStrahl(t){
+    let g=t.g;
+    if(!HX){let e=genStrahl(t.level,t.kind,t.g);if(e)g=e;}
+    let len=dfmt(g.n*g.st,g.P),stp=dfmt(g.st,g.P),a=zsVal(g,0),b=zsVal(g,g.n),v=zsVal(g,g.i);
+    let fromLeft=g.i<=g.n/2,k=fromLeft?g.i:g.n-g.i;          /* vom näheren Ende aus zählen */
+    let chain=[],m=Math.min(k,4);
+    for(let j=0;j<=m;j++)chain.push(zsVal(g,fromLeft?j:g.n-j));
+    let ch=chain.join(' → ')+(k>4?' → …':'');
+    let h='<b>Hilfsbeispiel:</b><div class="helpcalc">'+zsSvg(g,'solved')+'</div><div class="helpline">'
+      +'<b>1.</b> Am Rand stehen zwei Zahlen: <b>'+a+'</b> und <b>'+b+'</b>.<br>'
+      +'<b>2.</b> Dazwischen sind <b>'+g.n+' gleich grosse Schritte</b> (zähle die Teile). Jeder Schritt ist <b>'+stp+'</b> (der Abstand '+len+' ist in '+g.n+' Teile geteilt).<br>'
+      +'<b>3.</b> Starte bei <b>'+(fromLeft?a:b)+'</b> und gehe '+k+' Strich'+(k>1?'e':'')+' '+(fromLeft?'nach rechts':'nach links')+', weil die Marke dort näher ist. Jeder Strich ist '+stp+(fromLeft?' mehr':' weniger')+':<br>'
+      +'<b>'+ch+'</b><br>'
+      +'<b>Die Zahl ist '+v+'.</b></div>';
+    return h;
+  }
+
   const rFree={};
   function makeTask(l,opt){
     let cat=CATS[opt]?opt:pick(CAT_KEYS);
     if(cat==='komma')return makeKommaTask(l);
     if(cat==='dez')return makeDez(l);
+    if(cat==='strahl')return makeStrahl(l);
     return makeKommaTask(l);
   }
   function mount(el,t){
     if(!t.interactive)return;
     let st=t.state;
+    let zs=el.querySelector('svg.zs');
+    if(zs&&(t.kind==='place'||t.kind==='frac'||t.kind==='pct')){   /* Schieberegler: Marke ziehen oder Stelle antippen, rastet auf den Strichen ein */
+      let g=t.g,X0=40,W=620/g.n,h=zs.querySelector('.zh'),lab=zs.querySelector('.zhv'),drag=false;
+      function setI(i){
+        i=Math.max(0,Math.min(g.n,i));
+        h.setAttribute('transform','translate('+(X0+W*i)+' 0)');
+        h.classList.add('on');
+        let v=zsVal(g,i);if(t.level<2&&t.kind==='place')lab.textContent=v;st.c=v;st.i=i;   /* ab Level 3 kein Wert über der Marke */
+      }
+      function fromEvent(e){let r=zs.getBoundingClientRect();return Math.round(((e.clientX-r.left)/r.width*700-X0)/W);}
+      zs.addEventListener('pointerdown',function(e){drag=true;try{zs.setPointerCapture(e.pointerId);}catch(x){}setI(fromEvent(e));e.preventDefault();});
+      zs.addEventListener('pointermove',function(e){if(drag)setI(fromEvent(e));});
+      zs.addEventListener('pointerup',function(){drag=false;});
+      zs.addEventListener('pointercancel',function(){drag=false;});
+      zs.addEventListener('keydown',function(e){
+        if(e.key==='ArrowLeft'||e.key==='ArrowRight'){setI((st.i===undefined?(e.key==='ArrowRight'?-1:g.n+1):st.i)+(e.key==='ArrowRight'?1:-1));e.preventDefault();}
+      });
+    }
     el.querySelectorAll('.yn button,.exq button').forEach(function(b){
       b.addEventListener('click',function(){
         st.c=b.getAttribute('data-v');
@@ -840,6 +1007,7 @@ const TOPIC=(function(){
   }
   function check(raw,t){
     if(t.noInput)return t.state.c===t.answer;
+    if(t.cat==='strahl'&&(t.kind==='frac'||t.kind==='pct')){let v=normalizeInput(raw);return t.state.c===t.answer&&v!==null&&v===t.answer;}   /* Marke UND Dezimalzahl müssen stimmen */
     if(t.cat==='komma'){let v=normalizeInput(raw);return v!==null&&v===t.answer;}
     let v=normalizeInput(raw);   /* Potenzen und Kommutativgesetz: nur Zahlen */
     return v!==null&&v===normalize(String(t.answer));
@@ -849,6 +1017,7 @@ const TOPIC=(function(){
   function help(t){
     if(t.cat==='potenz')return helpPotenz(t);
     if(t.cat==='dez')return helpDez(t);
+    if(t.cat==='strahl')return t.kind==='frac'?helpFrac(t):(t.kind==='pct'?helpPct(t):helpStrahl(t));
     if(t.cat==='komm')return helpKomm(t);
     if(t.cat==='rang')return helpRang(t);
     return helpKomma(t);
@@ -856,12 +1025,13 @@ const TOPIC=(function(){
 
   return {
     id:'komma',   /* NIE ändern: sonst gehen gespeicherte Lernstände verloren */
-    title:'Komma Trainer',
+    title:'Dezimalzahl Trainer',
     subtitle:'Dezimalzahlen mit 10, 100 und 1000 multiplizieren und dividieren',
     subtitles:{
       komma:'Dezimalzahlen mit 10, 100 und 1000 multiplizieren und dividieren',
       dez:'Dezimalzahlen addieren, subtrahieren, multiplizieren und dividieren',
-      mix:'Alle Kategorien gemischt: Komma verschieben und Rechnen mit Dezimalzahlen'
+      strahl:'Dezimalzahlen am Zahlenstrahl ablesen und einzeichnen',
+      mix:'Alle Kategorien gemischt: Komma verschieben, Rechnen mit Dezimalzahlen und Zahlenstrahl'
     },
     levels:LEVELS,
     raceLevel:2,
@@ -870,7 +1040,7 @@ const TOPIC=(function(){
       choices:CAT_KEYS.map(k=>({v:k,label:CATS[k].icon+' '+CATS[k].name})).concat([{v:'mix',label:'🎲 Gemischt'}]),
       default:'komma'
     },
-    css:'.helpcalc{font-size:30px;font-weight:bold;margin:12px 0 6px}.cOld{color:#d32f2f;font-weight:bold}.cNew{color:#2e7d32;font-weight:bold}.helpcalc .cOld,.helpcalc .cNew{font-size:1.5em}.cross{background:#fff176;border-radius:4px;padding:0 2px}.legend{font-size:14px;color:#444}.pw{font-size:1.1em}.pw sup,.task sup{font-size:.6em;font-weight:bold}.qm{display:inline-block;min-width:30px;border-bottom:3px solid #c62828;color:#c62828;font-weight:bold;text-align:center}.hint{font-size:14px;font-weight:normal;color:#555;margin-top:8px}.ex{font-size:26px;font-weight:bold;margin:8px 0}.yn{display:flex;gap:16px;justify-content:center;margin-top:12px}.yn button{font-size:22px;font-weight:bold;padding:10px 34px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.yn.opts{flex-direction:column;align-items:stretch;max-width:420px;margin-left:auto;margin-right:auto}.yn.opts button{font-size:22px;padding:10px 16px;text-align:left}.col{font-family:ui-monospace,Consolas,monospace;font-size:24px;line-height:1.3;text-align:left;display:inline-block;margin:8px 0;background:#f5f5f5;padding:6px 14px;border-radius:8px}.exq button{font:inherit;font-size:28px;font-weight:bold;min-width:46px;height:46px;margin:0 4px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.exq button.sel,.yn button.sel{background:#1976d2;border-color:#1976d2;color:#fff}',
+    css:'.helpcalc{font-size:30px;font-weight:bold;margin:12px 0 6px}.cOld{color:#d32f2f;font-weight:bold}.cNew{color:#2e7d32;font-weight:bold}.helpcalc .cOld,.helpcalc .cNew{font-size:1.5em}.cross{background:#fff176;border-radius:4px;padding:0 2px}.legend{font-size:14px;color:#444}.pw{font-size:1.1em}.pw sup,.task sup{font-size:.6em;font-weight:bold}.qm{display:inline-block;min-width:30px;border-bottom:3px solid #c62828;color:#c62828;font-weight:bold;text-align:center}.hint{font-size:14px;font-weight:normal;color:#555;margin-top:8px}.ex{font-size:26px;font-weight:bold;margin:8px 0}.yn{display:flex;gap:16px;justify-content:center;margin-top:12px}.yn button{font-size:22px;font-weight:bold;padding:10px 34px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.yn.opts{flex-direction:column;align-items:stretch;max-width:420px;margin-left:auto;margin-right:auto}.yn.opts button{font-size:22px;padding:10px 16px;text-align:left}.col{font-family:ui-monospace,Consolas,monospace;font-size:24px;line-height:1.3;text-align:left;display:inline-block;margin:8px 0;background:#f5f5f5;padding:6px 14px;border-radius:8px}.exq button{font:inherit;font-size:28px;font-weight:bold;min-width:46px;height:46px;margin:0 4px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.exq button.sel,.yn button.sel{background:#1976d2;border-color:#1976d2;color:#fff}.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 4px;line-height:1.1;font-size:28px;font-weight:bold}.fr .fn{border-bottom:3px solid currentColor;padding:0 6px}.fr .fd{padding:0 6px}.zq{font-size:22px;font-weight:normal;margin-bottom:6px}.zs{width:100%;max-width:700px;height:auto;display:block;margin:6px auto;user-select:none}svg.zs{touch-action:none;cursor:pointer;outline:none}.zh{cursor:grab}.zh polygon,.zh circle,.zh text{fill:#9e9e9e}.zh line{stroke:#9e9e9e}.zh.on polygon,.zh.on circle,.zh.on text{fill:#1976d2}.zh.on line{stroke:#1976d2}.helpcalc .zs{max-width:520px}',
     makeTask:makeTask,
     mount:mount,
     check:check,
