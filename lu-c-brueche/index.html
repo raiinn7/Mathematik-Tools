@@ -75,7 +75,8 @@ const TOPIC=(function(){
     erweitern:{name:'Brüche erweitern',icon:'✖️'},
     addieren:{name:'Brüche addieren',icon:'➕'},
     subtrahieren:{name:'Brüche subtrahieren',icon:'➖'},
-    multdiv:{name:'Multiplizieren & Dividieren',icon:'➗'}
+    multiplizieren:{name:'Brüche multiplizieren',icon:'✖️'},
+    dividieren:{name:'Brüche dividieren',icon:'➗'}
     /* hier später weitere Kategorien */
   };
   const CAT_KEYS=Object.keys(CATS);
@@ -658,7 +659,8 @@ const TOPIC=(function(){
     return h+'</div>';
   }
   /* multiplizieren & dividieren */
-  const MD_TYPES=[['mulint'],['mulint','divint'],['mulfrac'],['mulfrac','divfrac'],['mulmix','divmix']];
+  const MUL_TYPES=[['mulint'],['mulint'],['mulfrac'],['mulfrac'],['mulmix']];
+  const DIV_TYPES=[['divint'],['divint'],['divint','divfrac'],['divfrac'],['divmix']];
   function genMulDiv(l,type,avoidText){
     for(let tries=0;tries<3000;tries++){
       let x,y,op='·',rn,rd,swap=false,b,d;
@@ -688,10 +690,10 @@ const TOPIC=(function(){
     return {x:{n:1,d:2,w:0},y:{n:1,d:3,w:0},op:'·',rn:1,rd:6,type:'mulfrac'};
   }
   function opx2(x){return x.int?'<span class="eqs">'+x.n+'</span>':opx(x);}
-  function taskMulDiv(l){
-    let type=pick(MD_TYPES[l]);
+  function taskMulDiv(l,div){
+    let type=pick((div?DIV_TYPES:MUL_TYPES)[l]);
     let g=genMulDiv(l,type);
-    let t={cat:'multdiv',level:l,mtype:type,g:g};
+    let t={cat:div?'dividieren':'multiplizieren',level:l,mtype:type,g:g};
     let e=arithFinish(t,g.x,g.op,g.y,g.rn,g.rd,l>=3);
     t.html=t.html.replace(/<div class="eq">.*?<\/div>/,'<div class="eq">'+opx2(g.x)+' <span class="eqs">'+g.op+'</span> '+opx2(g.y)+' <span class="eqs">=</span> <span class="eqs">?</span></div>');
     t.html=t.html.replace('<div class="q">Rechne','<div class="q">Rechne');
@@ -724,7 +726,8 @@ const TOPIC=(function(){
     if(cat==='erweitern')return taskErweitern(l);
     if(cat==='addieren')return taskAddSub(l,false);
     if(cat==='subtrahieren')return taskAddSub(l,true);
-    if(cat==='multdiv')return taskMulDiv(l);
+    if(cat==='multiplizieren')return taskMulDiv(l,false);
+    if(cat==='dividieren')return taskMulDiv(l,true);
     return taskDezimal(l);
   }
   function check(raw,t){
@@ -733,7 +736,7 @@ const TOPIC=(function(){
       return (t.mode!=='draw'||t.state.n===t.den)&&cnt===t.num*(t.ext||1);
     }
     if(t.cat==='erweitern')return checkErweitern(raw,t);
-    if(t.cat==='addieren'||t.cat==='subtrahieren'||t.cat==='multdiv')return checkArith(raw,t);
+    if(t.cat==='addieren'||t.cat==='subtrahieren'||t.cat==='multiplizieren'||t.cat==='dividieren')return checkArith(raw,t);
     if(t.cat==='kuerzen'){   /* nur der vollständig gekürzte Bruch ist richtig */
       let f=parseFraction(raw);
       return f!==null&&f.num*t.den===t.num*f.den&&gcd(f.num,f.den)===1&&f.den>1;
@@ -749,7 +752,7 @@ const TOPIC=(function(){
   let HX=false;   /* true: Lösungsweg mit den Zahlen der Aufgabe selbst (Prüfungsauswertung) statt Hilfsbeispiel */
   function helpExact(t){HX=true;try{return String(help(t)).split('Hilfsbeispiel:').join('Lösungsweg:');}finally{HX=false;}}
   function help(t){
-    return t.cat==='kuchen'?helpKuchen(t):(t.cat==='kuerzen'?helpKuerzen(t):(t.cat==='erweitern'?helpErweitern(t):((t.cat==='addieren'||t.cat==='subtrahieren')?helpAddSub(t):(t.cat==='multdiv'?helpMulDiv(t):helpDezimal(t)))));
+    return t.cat==='kuchen'?helpKuchen(t):(t.cat==='kuerzen'?helpKuerzen(t):(t.cat==='erweitern'?helpErweitern(t):((t.cat==='addieren'||t.cat==='subtrahieren')?helpAddSub(t):((t.cat==='multiplizieren'||t.cat==='dividieren')?helpMulDiv(t):helpDezimal(t)))));
   }
 
   return {
@@ -763,7 +766,8 @@ const TOPIC=(function(){
       erweitern:'Brüche erweitern und fehlende Zahlen ergänzen',
       addieren:'Brüche addieren',
       subtrahieren:'Brüche subtrahieren',
-      multdiv:'Brüche multiplizieren und dividieren',
+      multiplizieren:'Brüche multiplizieren',
+      dividieren:'Brüche dividieren',
       mix:'Alle Bruch-Kategorien gemischt: ablesen, umwandeln, kürzen, erweitern und rechnen'
     },
     levels:LEVELS,
@@ -784,6 +788,10 @@ const TOPIC=(function(){
       if(t.cat==='kuerzen'){
         let f=parseFraction(raw);
         if(f&&f.den>0&&f.num>0&&f.num*t.den===f.den*t.num&&gcd(f.num,f.den)>1)return '<br>💡 Dein Bruch hat den richtigen Wert, aber er lässt sich <b>noch weiter kürzen</b>.';
+      }
+      if(t.reqRed&&(t.cat==='addieren'||t.cat==='subtrahieren'||t.cat==='multiplizieren'||t.cat==='dividieren')){
+        let f=parseFraction(raw);
+        if(f&&f.den>0&&f.num>0&&f.num*t.den===f.den*t.num&&gcd(f.num,f.den)>1)return '<br>💡 Das Ergebnis ist richtig, aber du musst noch <b>weiter kürzen</b>.';
       }
       return '';
     }
