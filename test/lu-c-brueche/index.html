@@ -359,14 +359,16 @@ const TOPIC=(function(){
     if(l===3)return 'improper';
     return 'proper';
   }
+  /* Zähler 1..hi, aber meist KEIN Stammbruch (nur ca. 15 % mit Zähler 1), damit auch 3/4, 2/5, 7/20 usw. vorkommen */
+  function kMix(hi){ return (hi>=2&&Math.random()<0.85)?ri(2,hi):ri(1,hi); }
   function dezNumbers(l,d,form,avoidK){
     let k,w=0;
     for(let tries=0;tries<500;tries++){
       if(l===0)k=ri(1,9);                                   /* Zehntel */
       else if(l===1)k=(d===10)?ri(1,9):1;                   /* Zehntel oder Stammbruch */
-      else if(l===2)k=ri(1,d);                              /* bis zum ganzen Bruch (d/d) */
-      else if(l===4)k=(d===100)?ri(1,99):1;                  /* 1/20, 1/25, 1/50 und beliebige Hundertstel */
-      else if(form==='proper')k=ri(1,d-1);
+      else if(l===2)k=kMix(d);                              /* bis zum ganzen Bruch (d/d), meist keine Stammbrüche */
+      else if(l===4)k=kMix(d-1);                            /* 3/20, 7/25, 13/50, 37/100 … */
+      else if(form==='proper')k=kMix(d-1);
       else if(form==='mixed'){k=ri(1,d-1);w=ri(1,5);}
       else k=ri(d+1,3*d);                                   /* bis 3 Ganze, z. B. 12/4 */
       if(k!==avoidK)break;
@@ -377,7 +379,7 @@ const TOPIC=(function(){
   function revNumbers(l,d,avoidK){
     let k,improper=false;   /* Umkehraufgaben: nie über 1 */
     for(let tries=0;tries<500;tries++){
-      k=improper?ri(d+1,3*d):((l>=4&&d!==100)?1:ri(1,d-1));
+      k=improper?ri(d+1,3*d):kMix(d-1);
       if(k%d===0)continue;
       if(k!==avoidK)break;
     }
