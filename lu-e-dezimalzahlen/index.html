@@ -865,7 +865,6 @@ const TOPIC=(function(){
     },
     levels:LEVELS,
     raceLevel:2,
-    raceOption:'mix',
     medals:['🥉 Bronze-Komma-Meister','🥈 Silber-Komma-Meister','🥇 Gold-Komma-Meister','💠 Platin-Komma-Meister'],
     options:{
       choices:CAT_KEYS.map(k=>({v:k,label:CATS[k].icon+' '+CATS[k].name})).concat([{v:'mix',label:'🎲 Gemischt'}]),
@@ -1930,6 +1929,11 @@ function applyData(d,fromFile){
   else{   /* älterer Stand: ein gemeinsamer Satz (aus dem gemischten Rennen) -> zur Auswahl "mix", sonst zur aktuellen */
     let k=(!TOPIC.raceOption&&TOPIC.options&&TOPIC.options.choices.some(c=>c.v==='mix'))?'mix':recKey();
     recMap[k]=LEVELS.map((_,i)=>Math.max(0,parseInt(d.records&&d.records[i])||0));
+  }
+  if(recMap['_']){   /* früher: ein gemeinsamer Rekord-Satz fürs gemischte Rennen -> jetzt Kategorie "mix" */
+    let o=recMap['_'],m=recMap.mix||(recMap.mix=LEVELS.map(()=>0));
+    LEVELS.forEach((_,i)=>{m[i]=Math.max(m[i]||0,o[i]||0);});
+    delete recMap['_'];
   }
   records=recMap[recKey()]||(recMap[recKey()]=LEVELS.map(()=>0));
 }

@@ -331,7 +331,6 @@ const TOPIC=(function(){
     subtitle:'Länge, Volumen, Gewicht, Zeit und Fläche umrechnen',
     levels:LEVELS,
     raceLevel:2,   /* Zeitrennen: immer Aufgaben von Level 3 (Profi) */
-    raceOption:'mix',   /* Zeitrennen: immer gemischte Kategorien, unabhängig von der Auswahl */
     raceRating:[{min:9,icon:'🤖',name:'Maschine'},{min:6,icon:'🏃',name:'Sprinter'},{min:3,icon:'🚶',name:'Spaziergänger'},{min:1,icon:'🐌',name:'Schnecke'}],
     medals:['🥉 Bronze-Umrechner','🥈 Silber-Umrechner','🥇 Gold-Umrechner','💠 Platin-Umrechner'],
     options:{
@@ -1379,6 +1378,11 @@ function applyData(d,fromFile){
   else{   /* älterer Stand: ein gemeinsamer Satz (aus dem gemischten Rennen) -> zur Auswahl "mix", sonst zur aktuellen */
     let k=(!TOPIC.raceOption&&TOPIC.options&&TOPIC.options.choices.some(c=>c.v==='mix'))?'mix':recKey();
     recMap[k]=LEVELS.map((_,i)=>Math.max(0,parseInt(d.records&&d.records[i])||0));
+  }
+  if(recMap['_']){   /* früher: ein gemeinsamer Rekord-Satz fürs gemischte Rennen -> jetzt Kategorie "mix" */
+    let o=recMap['_'],m=recMap.mix||(recMap.mix=LEVELS.map(()=>0));
+    LEVELS.forEach((_,i)=>{m[i]=Math.max(m[i]||0,o[i]||0);});
+    delete recMap['_'];
   }
   records=recMap[recKey()]||(recMap[recKey()]=LEVELS.map(()=>0));
 }
