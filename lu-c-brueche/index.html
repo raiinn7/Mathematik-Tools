@@ -33,6 +33,17 @@ h1{font-size:26px;margin:4px 0 6px}
 .box{max-width:88vw;padding:18px;box-sizing:border-box}
 .gamebox{padding:12px}
 }
+/* ---- iPad / Tablet (Touch, breiter als 700px): eigene Zahlentasten statt Bildschirmtastatur, sonst Laptop-Ansicht ---- */
+@media (pointer:coarse) and (min-width:701px){
+.keypad{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px;max-width:520px}
+#answer[style*="display: none"] ~ .keypad{display:none}
+#answer:not([style*="display: none"]) ~ .check{display:none}
+.keypad button{font-size:28px;font-weight:bold;padding:0;height:64px;border-radius:12px;border:1px solid #b8c4cf;background:#f3f6f9;touch-action:manipulation}
+.keypad button:active{background:#dbe5ee}
+.keypad button.kok{grid-column:span 2;background:#4caf50;border-color:#3d8b40;color:#fff;font-size:24px}
+.keypad button.kdel{background:#fdecea;border-color:#e5a8a2}
+.btn{touch-action:manipulation}
+}
 .gpick{display:flex;flex-direction:column;gap:10px;margin:10px 0;min-width:min(300px,76vw)}
 .gpbtn{display:flex!important;align-items:center;gap:12px;text-align:left;padding:12px!important;font-size:16px!important}
 .gpbtn .gpi{font-size:30px}.gpbtn small{display:block;font-weight:normal;color:#667;font-size:12px}
@@ -1283,7 +1294,7 @@ if(TOPIC.options){
 /* Smartphone: eigene Zahlentasten (statt der Bildschirmtastatur) und einklappbare Achievements */
 (function(){
   const kp=document.getElementById('keypad');
-  const mq=window.matchMedia('(max-width:700px)');
+  const mq=window.matchMedia('(max-width:700px), (pointer:coarse)');   /* Smartphone und iPad */
   function sync(){if(mq.matches)answer.setAttribute('inputmode','none');else answer.removeAttribute('inputmode');}
   sync();if(mq.addEventListener)mq.addEventListener('change',sync);else mq.addListener(sync);
   kp.addEventListener('mousedown',function(e){e.preventDefault();});   /* Fokus bleibt im Antwortfeld */
