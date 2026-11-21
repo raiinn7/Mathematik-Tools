@@ -989,8 +989,9 @@ const TOPIC=(function(){
        read   Tafel mit Ziffern -> Zahl schreiben
        readdots Tafel mit Punkten -> Zahl schreiben (Punkte zählen)
        dots   Zahl gegeben -> Zahl mit Punkten in die Tafel legen (1er/5er-Punkt hineinziehen, antippen = löschen)
-       f2d    Bruch gegeben -> Dezimalzahl schreiben
-       d2f    Dezimalzahl gegeben -> Bruch schreiben (Zähler und Nenner, jeder gleichwertige Bruch zählt)
+       change Tafel mit Punkten -> Punkte so verändern, dass die Zahl um 1, 0.1, 0.01 … grösser/kleiner wird (teils mit Übertrag)
+       f2d    Bruch gegeben -> Dezimalzahl schreiben (zurzeit in keinem Level)
+       d2f    Dezimalzahl gegeben -> Bruch schreiben (zurzeit in keinem Level)
        fill   Zahl gegeben -> Ziffern selbst in die Tafel eintragen (zurzeit in keinem Level)
      ====================================================================== */
   const SW_E=[5,4,3,2,1,0,-1,-2,-3];
@@ -1000,7 +1001,7 @@ const TOPIC=(function(){
     {hi:[0,0,0,-1],lo:[-2],zero:0.15,cols:[0,-1,-2],kinds:[['read',1]]},                       /* L1: Zahl aus der Tafel ablesen – Einer, Zehntel, Hundertstel */
     {hi:[0,0,0,-1],lo:[-2],zero:0.15,cols:[0,-1,-2],kinds:[['dots',1]]},                       /* L2: Zahl mit Punkten legen – Einer, Zehntel, Hundertstel */
     {hi:[0,1,2,3],lo:[-1,-2,-3],zero:0.2,cols:[3,2,1,0,-1,-2,-3],kinds:[['readdots',1],['dots',1]]}, /* L3: Tausender bis Tausendstel – Zahl aus Punkten ablesen oder mit Punkten legen */
-    {fr:true,kinds:[['f2d',1],['d2f',1]]},                                                     /* L4: Brüche <-> Dezimalzahlen */
+    {hi:[0,1,2],lo:[-1,-2,-3],zero:0.15,cols:[3,2,1,0,-1,-2,-3],kinds:[['change',1]]},          /* L4: Zahl in der Tafel mit Punkten verändern (z. B. um 0.1 grösser), teils mit Übertrag */
     {hi:[1,2,3,4,4,5,5],lo:[-1,-2,-3],zero:0.2,cols:[5,4,3,2,1,0,-1,-2,-3],kinds:[['readdots',1],['dots',1]]}   /* L5: wie L3 bis Hunderttausender, aber die Zahl steht als Punkte in der Tafel */
   ];
   function wpick(a){let s=0;a.forEach(x=>s+=x[1]);let r=Math.random()*s;for(let x of a){r-=x[1];if(r<0)return x[0];}return a[0][0];}
@@ -1053,9 +1054,36 @@ const TOPIC=(function(){
     }
     return {n:n,d:d,v:n*1000/d};
   }
+  const SW_U={2:'100',1:'10',0:'1','-1':'0.1','-2':'0.01','-3':'0.001'};
+  /* Level 4: Startzahl, Stelle e, Anzahl k und Richtung; ca. 40 % mit Übertrag (genau eine Stelle weiter) */
+  function swChange(l,ref){
+    let wantCarry=ref?ref.carry:Math.random()<0.4;
+    for(let i=0;i<500;i++){
+      let d=swNum(l),ks=Object.keys(d).map(Number),lo=Math.min(...ks),hi=Math.max(...ks);
+      let e=(Math.random()<0.2&&lo>-3)?lo-1:ri(lo,Math.min(hi,2));
+      if(ref&&e!==ref.e)continue;
+      let k=ref?ref.k:pick([1,1,1,2,3]),up=ref?ref.up:Math.random()<0.5,x=d[e]||0;
+      let carry=up?(x+k>9):(x-k<0);
+      if(carry!==wantCarry)continue;
+      if(carry){   /* Übertrag nur in die nächste Stelle, und die muss es in der Tafel geben */
+        if(e+1>3)continue;
+        let y=d[e+1]||0;
+        if(up?(y+1>9):(y-1<0))continue;
+      }
+      let v=swVal(d),R=v+(up?1:-1)*k*swP10(e);
+      if(R<=0||R>=10000*1000)continue;
+      if(ref&&ref.v===v)continue;
+      return {d:d,v:v,e:e,k:k,up:up,carry:carry,R:R,rd:swDigits(R)};
+    }
+  }
   function genStelle(l,kind,ref){
     for(let k=0;k<300;k++){
       let t={cat:'stelle',level:l,kind:kind};
+      if(kind==='change'){
+        let g=swChange(l,ref);if(!g)continue;
+        Object.assign(t,g);t.cols=SW_LEVELS[l].cols;t.start=swCells(g.d);t.answer=dfmt(g.R,3);
+        return t;
+      }
       if(kind==='f2d'||kind==='d2f'){
         let f=swFrac();t.n=f.n;t.den=f.d;t.v=f.v;t.dec=dfmt(f.v,3);t.d=swDigits(f.v);
         t.answer=kind==='f2d'?t.dec:t.n+'/'+t.den;
@@ -1076,6 +1104,15 @@ const TOPIC=(function(){
       let cells={};for(let e in t.d)cells[e]=t.d[e];
       t.text='Stellenwerttafel: welche Zahl steht in der Tafel?';
       t.html='<div class="zq">Welche Zahl steht in der Stellenwerttafel?</div>'+swTable(cells,t.cols);
+    }
+    if(kind==='change'){
+      let amt=t.k===1?SW_U[t.e]:dfmt(t.k*swP10(t.e),3);
+      let what=t.k+' '+SW_N[t.e];
+      t.text='Mache die Zahl in der Tafel um '+amt+' '+(t.up?'grösser':'kleiner');
+      t.html='<div class="zq">Verändere die Punkte so, dass die Zahl um <b>'+amt+'</b> ('+what+') <b>'+(t.up?'grösser':'kleiner')+'</b> wird.</div>'
+        +'<div class="swsrc"><span class="srcdot" title="1 Punkt in die Tafel ziehen"></span><span class="srcdot5 srcdot2" title="2 Punkte auf einmal in die Tafel ziehen"><i></i><i></i></span><span class="srcdot5" title="5 Punkte auf einmal in die Tafel ziehen"><i></i><i></i><i></i><i></i><i></i></span><span>Ziehe Punkte hinein.<br>Punkt antippen oder hinausziehen = löschen.</span><button type="button" class="swclr swrst">↺ Von vorne</button></div>'
+        +swTable(t.start,t.cols,true)+'<div class="hint">In einer Spalte haben höchstens 9 Punkte Platz.</div>';
+      t.interactive=true;t.noInput=true;t.state={c:swCells(t.start)};
     }
     if(kind==='readdots'){
       let cells={};for(let e in t.d)cells[e]=t.d[e];
@@ -1161,6 +1198,17 @@ const TOPIC=(function(){
         +'<b>2.</b> Jede Ziffer sagt, <b>wie viele Punkte</b> in ihre Spalte kommen.<br>'
         +'<b>3.</b> Hier: '+parts.join(', ')+'.<br>'
         +'<b>Tipp:</b> Für 5 oder mehr Punkte ziehst du zuerst den <b>5er-Punkt</b> hinein. Den Rest legst du mit dem <b>2er-Punkt</b> und einzelnen Punkten (z. B. 8 = 5 + 2 + 1).</div>';
+    }
+    if(x.kind==='change'){
+      let N=SW_N[x.e],S=SW_S[x.e],amt=x.k===1?SW_U[x.e]:dfmt(x.k*swP10(x.e),3),o=x.d[x.e]||0;
+      let h1='<b>1.</b> Die Tafel zeigt <b>'+swFmt(dfmt(x.v,3))+'</b>. Um '+amt+' '+(x.up?'grösser':'kleiner')+' heisst: <b>'+x.k+' Punkt'+(x.k>1?'e':'')+' '+(x.up?'mehr':'weniger')+'</b> in der Spalte <b>'+S+'</b> ('+N+').<br>';
+      let h2;
+      if(!x.carry)h2='<b>2.</b> Bei '+S+' sind es dann '+o+(x.up?' + ':' − ')+x.k+' = <b>'+(x.up?o+x.k:o-x.k)+'</b> Punkte.<br>';
+      else if(x.up)h2='<b>2.</b> Bei '+S+' wären es '+o+' + '+x.k+' = '+(o+x.k)+' Punkte – zu viele! <b>10 '+N+' = 1 '+SW_N[x.e+1]+'</b>: Nimm 10 Punkte bei '+S+' weg und lege dafür <b>1 Punkt bei '+SW_S[x.e+1]+'</b>. Bei '+S+' bleiben '+(o+x.k-10)+'.<br>';
+      else h2='<b>2.</b> Bei '+S+' hat es nur '+o+' Punkt'+(o===1?'':'e')+' – zu wenig, um '+x.k+' wegzunehmen. <b>1 '+SW_N[x.e+1]+' = 10 '+N+'</b>: Nimm 1 Punkt bei '+SW_S[x.e+1]+' weg und lege dafür 10 Punkte bei '+S+'. Jetzt hat es '+(o+10)+', davon nimmst du '+x.k+' weg: Es bleiben <b>'+(o+10-x.k)+'</b>.<br>';
+      return h+'<div class="helpcalc">'+swTable(swCells(x.d),x.cols,true)+'</div><div class="helpline">'+h1+h2
+        +'<b>3.</b> So sieht die Tafel danach aus. Die neue Zahl ist <b>'+swFmt(dfmt(x.R,3))+'</b>.</div>'
+        +'<div class="helpcalc">'+swTable(swCells(x.rd),x.cols,true)+'</div>';
     }
     if(x.kind==='readdots'){
       let digs={};x.cols.forEach(e=>{if(x.d[e]!==undefined)digs[e]=x.d[e];});
@@ -1261,7 +1309,7 @@ const TOPIC=(function(){
       document.addEventListener('pointermove',move);
       document.addEventListener('pointerup',end);
       document.addEventListener('pointercancel',end);
-      el.querySelector('.swclr').addEventListener('click',function(){st.c={};draw();this.blur();});
+      el.querySelector('.swclr').addEventListener('click',function(){st.c=this.classList.contains('swrst')?Object.assign({},t.start):{};draw();this.blur();});   /* Level 4: zurück zur Startzahl */
       /* alte Listener entfernen, sobald die Aufgabe nicht mehr angezeigt wird */
       const obs=new MutationObserver(()=>{if(!document.body.contains(sd)){document.removeEventListener('pointermove',move);document.removeEventListener('pointerup',end);document.removeEventListener('pointercancel',end);obs.disconnect();}});
       obs.observe(el,{childList:true});
@@ -1309,6 +1357,7 @@ const TOPIC=(function(){
     if(t.cat==='stelle'&&t.kind==='fill')return swFillOk(t);
     if(t.cat==='stelle'&&t.kind==='dots')return swDotsOk(t);
     if(t.cat==='stelle'&&t.kind==='d2f')return swFracOk(t);
+    if(t.cat==='stelle'&&t.kind==='change'){let c=t.state.c||{};return SW_E.every(e=>(c[e]||0)===(t.rd[e]||0));}
     if(t.noInput)return t.state.c===t.answer;
     if(t.cat==='strahl'&&(t.kind==='frac'||t.kind==='pct')){let v=normalizeInput(raw);return t.state.c===t.answer&&v!==null&&v===t.answer;}   /* Marke UND Dezimalzahl müssen stimmen */
     if(t.cat==='komma'){let v=normalizeInput(raw);return v!==null&&v===t.answer;}
@@ -1335,7 +1384,7 @@ const TOPIC=(function(){
       komma:'Dezimalzahlen mit 10, 100 und 1000 multiplizieren und dividieren',
       dez:'Dezimalzahlen addieren, subtrahieren, multiplizieren und dividieren',
       strahl:'Dezimalzahlen am Zahlenstrahl ablesen und einzeichnen',
-      stelle:'Dezimalzahlen in der Stellenwerttafel lesen und legen, Brüche und Dezimalzahlen',
+      stelle:'Dezimalzahlen in der Stellenwerttafel lesen, legen und verändern',
       mix:'Alle Kategorien gemischt: Komma verschieben, Rechnen mit Dezimalzahlen, Zahlenstrahl und Stellenwerttafel'
     },
     levels:LEVELS,
