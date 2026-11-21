@@ -329,7 +329,7 @@ const TOPIC=(function(){
      Level 4: unechte Brüche bis 3 Ganze (z. B. 12/4, 17/8)
      Ab Level 3: die Hälfte der Aufgaben umgekehrt (Dezimalzahl gegeben, Bruch eintippen)
      Level 5: nur die wichtigen Brüche 1/20, 1/25, 1/50 (nur Zähler 1) und Hundertstel mit beliebigem Zähler (z. B. 37/100) */
-  const DEN=[[10],[10,2,4,5,8],[2,4,5,8,10],[2,4,5,8,10],[20,25,50,100,100]];
+  const DEN=[[10,10,10,100,1000],[10,2,4,5,8,100,1000],[2,4,5,8,10,100,1000],[2,4,5,8,10,100,1000],[20,25,50,100,100,1000]];
 
   function pow10for(d){   /* kleinste Zehnerpotenz 10^m, die durch d teilbar ist (d hat nur die Teiler 2 und 5) */
     let m=0,p=1;while(p%d!==0){p*=10;m++;if(m>12)return null;}
@@ -364,8 +364,8 @@ const TOPIC=(function(){
   function dezNumbers(l,d,form,avoidK){
     let k,w=0;
     for(let tries=0;tries<500;tries++){
-      if(l===0)k=ri(1,9);                                   /* Zehntel */
-      else if(l===1)k=(d===10)?ri(1,9):1;                   /* Zehntel oder Stammbruch */
+      if(l===0)k=(d===10)?ri(1,9):1;                       /* Zehntel, dazu 1/100 und 1/1000 */
+      else if(l===1)k=(d===10)?ri(1,9):(d>=100?kMix(d-1):1);   /* Zehntel, Stammbruch, Hundertstel/Tausendstel */
       else if(l===2)k=kMix(d);                              /* bis zum ganzen Bruch (d/d), meist keine Stammbrüche */
       else if(l===4)k=kMix(d-1);                            /* 3/20, 7/25, 13/50, 37/100 … */
       else if(form==='proper')k=kMix(d-1);
