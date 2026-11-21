@@ -999,7 +999,7 @@ const TOPIC=(function(){
   const SW_LEVELS=[
     {hi:[0,0,0,-1],lo:[-2],zero:0.15,cols:[0,-1,-2],kinds:[['read',1]]},                       /* L1: Zahl aus der Tafel ablesen – Einer, Zehntel, Hundertstel */
     {hi:[0,0,0,-1],lo:[-2],zero:0.15,cols:[0,-1,-2],kinds:[['dots',1]]},                       /* L2: Zahl mit Punkten legen – Einer, Zehntel, Hundertstel */
-    {hi:[0,1,2,3],lo:[-1,-2,-3],zero:0.2,cols:[3,2,1,0,-1,-2,-3],kinds:[['read',1],['dots',1]]}, /* L3: Mischung L1 + L2, Tausender bis Tausendstel */
+    {hi:[0,1,2,3],lo:[-1,-2,-3],zero:0.2,cols:[3,2,1,0,-1,-2,-3],kinds:[['readdots',1],['dots',1]]}, /* L3: Tausender bis Tausendstel – Zahl aus Punkten ablesen oder mit Punkten legen */
     {fr:true,kinds:[['f2d',1],['d2f',1]]},                                                     /* L4: Brüche <-> Dezimalzahlen */
     {hi:[1,2,3,4,4,5,5],lo:[-1,-2,-3],zero:0.2,cols:[5,4,3,2,1,0,-1,-2,-3],kinds:[['readdots',1],['dots',1]]}   /* L5: wie L3 bis Hunderttausender, aber die Zahl steht als Punkte in der Tafel */
   ];
