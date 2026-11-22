@@ -744,6 +744,23 @@ const TOPIC=(function(){
     }
     return genAS(0);
   }
+  function genASW(l,ref){   /* Level 1: zweistellige Dezimalzahl plus/minus ganze Zahl (z. B. 35.2 − 7 = 28.2) */
+    let op=ref?ref.op:pick(['+','\u2212']);
+    let big=ref?ref.w>=10:Math.random()<0.35;   /* meist einstellige ganze Zahl, manchmal zweistellige */
+    for(let k=0;k<500;k++){
+      let A=ri(10,99)*10+ri(1,9);   /* in Zehnteln: 10.1 … 99.9, Zehntel nie 0 */
+      let w=big?ri(10,49):ri(1,9),B=w*10;
+      if(op==='\u2212'&&B>=A)continue;
+      let R=op==='+'?A+B:A-B;
+      let a=sfmt(A,1),b=String(w);
+      if(ref&&a===ref.a&&b===ref.b)continue;
+      let swap=op==='+'&&(ref?ref.swap:Math.random()<0.3);   /* beim Plus manchmal die ganze Zahl zuerst: 7 + 35.2 */
+      let t={cat:'dez',kind:'asw',lvl:l,op:op,a:a,b:b,w:w,A:A,B:B,R:R,P:1,swap:swap};
+      let ex=swap?b+' '+op+' '+a:a+' '+op+' '+b;
+      t.text=ex+' = ?';t.html=ex+' = '+QM;t.answer=dfmt(R,1);
+      return t;
+    }
+  }
   function genMulWD(l){   /* ganze Zahl mal Dezimalzahl */
     let w=ri(2,9),t10;
     do{t10=ri(2,l<=2?59:99);}while(t10%10===0);
@@ -772,8 +789,8 @@ const TOPIC=(function(){
     t.text=sfmt(D,p)+' \u00f7 '+n+' = ?';t.html=sfmt(D,p)+' \u00f7 '+n+' = '+QM;
     t.answer=dfmt(Q,p);return t;
   }
-  function genDez(kind,l,ref){return kind==='as'?genAS(l,ref):(kind==='mulwd'?genMulWD(l):(kind==='muldd'?genMulDD(l,ref):genDiv(l,ref)));}
-  const DEZ_KINDS=[['as'],['as'],['as','as','mulwd'],['as','mulwd','muldd','muldd'],['as','mulwd','muldd','div','div']];
+  function genDez(kind,l,ref){return kind==='asw'?genASW(l,ref):kind==='as'?genAS(l,ref):(kind==='mulwd'?genMulWD(l):(kind==='muldd'?genMulDD(l,ref):genDiv(l,ref)));}
+  const DEZ_KINDS=[['asw'],['as'],['as','as','mulwd'],['as','mulwd','muldd','muldd'],['as','mulwd','muldd','div','div']];
   function makeDez(l){return genDez(pick(DEZ_KINDS[l]),l);}
 
   function colLines(a,b,op,P,R){   /* Stellenwert-Rechnung: Komma unter Komma */
@@ -784,6 +801,12 @@ const TOPIC=(function(){
   function helpDez(t){
     let ex=null;if(HX)ex=t;else for(let k=0;k<50;k++){ex=genDez(t.kind,t.lvl,t);if(ex.text!==t.text)break;}
     const h='<b>Hilfsbeispiel:</b>';
+    if(t.kind==='asw'){
+      let top=ex.swap?ex.B:ex.A,bot=ex.swap?ex.A:ex.B;
+      return h+'<div class="ex">'+(ex.swap?ex.b+' '+ex.op+' '+ex.a:ex.a+' '+ex.op+' '+ex.b)+'</div>'+colLines(top,bot,ex.op,1,ex.R)+
+        'Eine ganze Zahl hat das Komma ganz hinten: <b>'+ex.b+' = '+ex.b+'.0</b>. Schreibe <b>Komma unter Komma</b>: Die '+ex.b+' gehört zu den <b>Einern'+(ex.w>=10?' und Zehnern':'')+'</b>, nicht zu den Zehnteln. '+
+        'Die Zehntel ('+ex.a.split('.')[1]+') bleiben gleich, du rechnest nur vor dem Komma: '+(ex.swap?ex.b+' '+ex.op+' '+ex.a.split('.')[0]:ex.a.split('.')[0]+' '+ex.op+' '+ex.b)+' = '+ex.R.toString().slice(0,-1)+'.';
+    }
     if(t.kind==='as'){
       return h+'<div class="ex">'+ex.a+' '+ex.op+' '+ex.b+'</div>'+colLines(ex.A,ex.B,ex.op,ex.P,ex.R)+
         'Schreibe die Zahlen so untereinander, dass <b>Komma unter Komma</b> steht. Fehlende Stellen füllst du mit Nullen auf. Dann rechnest du Stelle für Stelle von rechts nach links.';
