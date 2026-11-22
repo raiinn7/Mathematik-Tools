@@ -794,20 +794,24 @@ const TOPIC=(function(){
       return t;
     }
   }
-  function genAS100(l,ref){   /* Level 4: Zahlen zwischen 0 und 100 mit Zehnteln und Hundertsteln, Ergebnis zwischen 0 und 100 (z. B. 34.56 + 27.38 = 61.94) */
+  function genAS100(l,ref,max){   /* Zahlen zwischen 0 und max (10 oder 100) mit Zehnteln und Hundertsteln, Ergebnis zwischen 0 und max
+                                     Level 4: bis 10 (z. B. 3.47 + 5.86 = 9.33), Level 5: bis 100 (z. B. 34.56 + 27.38 = 61.94) */
+    max=max||(ref&&ref.max)||100;
     let op=ref?ref.op:pick(['+','\u2212']);
     let want=ref?ref.carry:Math.random()<0.7;   /* meist mit Übertrag bzw. Entbündeln */
     for(let k=0;k<2000;k++){
-      let ia=Math.random()<0.25?ri(1,9):ri(10,99),ib=Math.random()<0.25?ri(1,9):ri(10,99);
+      let ia,ib;
+      if(max===10){ia=Math.random()<0.15?0:ri(1,9);ib=Math.random()<0.15?0:ri(1,9);}   /* ab und zu eine Zahl unter 1 (0.56) */
+      else{ia=Math.random()<0.25?ri(1,9):ri(10,99);ib=Math.random()<0.25?ri(1,9):ri(10,99);}
       let A=ia*100+ri(0,9)*10+ri(1,9),B=ib*100+ri(0,9)*10+ri(1,9);   /* in Hundertsteln, Hundertstel nie 0 */
       if(op==='\u2212'&&A<=B)continue;
       let R=op==='+'?A+B:A-B;
-      if(R<=0||R>=10000)continue;
+      if(R<=0||R>=max*100)continue;
       let carry=carryIn(A,B,op==='+'?'+':'-');
       if(carry!==want)continue;
       let a=sfmt(A,2),b=sfmt(B,2);
       if(ref&&a===ref.a&&b===ref.b)continue;
-      let t={cat:'dez',kind:'as100',lvl:l,op:op,a:a,b:b,A:A,B:B,R:R,P:2,carry:carry};
+      let t={cat:'dez',kind:max===10?'as10':'as100',lvl:l,op:op,a:a,b:b,A:A,B:B,R:R,P:2,carry:carry,max:max};
       t.text=a+' '+op+' '+b+' = ?';t.html=a+' '+op+' '+b+' = '+QM;t.answer=dfmt(R,2);
       return t;
     }
@@ -822,7 +826,7 @@ const TOPIC=(function(){
       n+=c;}
     return n===0?'ohne':(n>=3||chain||zero?'gemein':'normal');
   }
-  function genAS1000(l,ref){   /* Level 5: Zahlen zwischen 0 und 1000 mit Zehnteln und Hundertsteln, Ergebnis zwischen 0 und 1000 */
+  function genAS1000(l,ref){   /* zurzeit in keinem Level – Zahlen zwischen 0 und 1000 mit Zehnteln und Hundertsteln, Ergebnis zwischen 0 und 1000 */
     let op=ref?ref.op:pick(['+','\u2212']);
     let r=Math.random(),want=ref?ref.diff:(r<0.25?'ohne':(r<0.75?'normal':'gemein'));   /* nur etwa jede 4. Rechnung ist "gemein" */
     const intPart=()=>{let q=Math.random();return q<0.15?ri(1,9):(q<0.45?ri(10,99):ri(100,999));};
@@ -869,8 +873,8 @@ const TOPIC=(function(){
     t.text=sfmt(D,p)+' \u00f7 '+n+' = ?';t.html=sfmt(D,p)+' \u00f7 '+n+' = '+QM;
     t.answer=dfmt(Q,p);return t;
   }
-  function genDez(kind,l,ref){return kind==='as1000'?genAS1000(l,ref):kind==='as100'?genAS100(l,ref):kind==='as01h'?genAS01H(l,ref):kind==='as01'?genAS01(l,ref):kind==='asw'?genASW(l,ref):kind==='as'?genAS(l,ref):(kind==='mulwd'?genMulWD(l):(kind==='muldd'?genMulDD(l,ref):genDiv(l,ref)));}
-  const DEZ_KINDS=[['asw'],['as01'],['as01h'],['as100'],['as1000']];
+  function genDez(kind,l,ref){return kind==='as1000'?genAS1000(l,ref):kind==='as10'?genAS100(l,ref,10):kind==='as100'?genAS100(l,ref,100):kind==='as01h'?genAS01H(l,ref):kind==='as01'?genAS01(l,ref):kind==='asw'?genASW(l,ref):kind==='as'?genAS(l,ref):(kind==='mulwd'?genMulWD(l):(kind==='muldd'?genMulDD(l,ref):genDiv(l,ref)));}
+  const DEZ_KINDS=[['asw'],['as01'],['as01h'],['as10'],['as100']];
   function makeDez(l){return genDez(pick(DEZ_KINDS[l]),l);}
 
   function colLines(a,b,op,P,R){   /* Stellenwert-Rechnung: Komma unter Komma */
@@ -903,7 +907,7 @@ const TOPIC=(function(){
       return h+'<div class="ex">'+ex.a+' '+ex.op+' '+ex.b+'</div>'+colLines(ex.A,ex.B,ex.op,2,ex.R)+
         'Schreibe <b>Komma unter Komma</b>. Rechne von rechts nach links:<br>'+hz+'<br>'+zz+'<br>Vor dem Komma steht <b>0</b>. Ergebnis: <b>'+dfmt(ex.R,2)+'</b>.';
     }
-    if(t.kind==='as100'||t.kind==='as1000'){
+    if(t.kind==='as10'||t.kind==='as100'||t.kind==='as1000'){
       return h+'<div class="ex">'+ex.a+' '+ex.op+' '+ex.b+'</div>'+colLines(ex.A,ex.B,ex.op,2,ex.R)+
         'Schreibe die Zahlen so untereinander, dass <b>Komma unter Komma</b> steht. Rechne dann Stelle für Stelle <b>von rechts nach links</b>: Hundertstel, Zehntel, Einer, Zehner. '+
         (ex.op==='+'?'Werden es in einer Stelle 10 oder mehr, schreibst du nur die Einerziffer hin und nimmst <b>1 in die nächste Stelle links</b> mit.':'Ist oben zu wenig, nimmst du <b>1 aus der nächsten Stelle links</b> und machst daraus 10 (entbündeln).')+
