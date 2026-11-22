@@ -947,7 +947,8 @@ const TOPIC=(function(){
     strahl:{icon:'📏',name:'Zahlenstrahl'},
     stelle:{icon:'🧮',name:'Stellenwerttafel'},
     bdg:{icon:'🥧',name:'Brüche und Dezimalzahlen bei Grössen bestimmen'},
-    mul:{icon:'✖️',name:'Multiplikation von Dezimalzahlen'}
+    mul:{icon:'✖️',name:'Multiplikation von Dezimalzahlen'},
+    div:{icon:'➗',name:'Division von Dezimalzahlen'}
   };
   const CAT_KEYS=Object.keys(CATS);
 
@@ -1766,6 +1767,72 @@ const TOPIC=(function(){
       +'Ist er <b>100-mal kleiner</b> (0.0'+(x.which==='b'?x.b:x.a)+'), rückt das Komma <b>2 Stellen</b> nach links.</div>';
   }
 
+  /* ======================================================================
+     NEU: Kategorie "Division von Dezimalzahlen" (cat 'div') – alle Aufgaben gehen auf
+     Level 1: ganze Zahl : ganze Zahl bis 100, Ergebnis ganz (54 : 6 = 9)
+     Level 2: einstellige Dezimalzahl mit Zehnteln : ganze Zahl bis 9 (4.9 : 7 = 0.7)
+     Level 3: 2–3 verwandte Aufgaben (540 : 6 = 90, 54 : 6 = 9, 5.4 : 6 = 0.9)
+     Level 4: zweistellige Dezimalzahl mit Zehnteln : ganze Zahl (21.7 : 7 = 3.1)
+     Level 5: Mischung aus Level 1–4 mit schwierigeren Zahlen
+     Gerechnet wird in Zehnteln bzw. ganzen Zahlen (keine Rundungsfehler).
+     ====================================================================== */
+  const DIV_OP=' : ';
+  function divGen(l,ref){
+    let sub=ref?ref.sub:(l<4?l:ri(0,3)),hard=l===4;
+    for(let it=0;it<500;it++){
+      let t={cat:'div',level:l,sub:sub,hard:hard,kind:'d'+(sub+1)};
+      if(sub===0){   /* ganze Zahlen */
+        let b,q;
+        if(!hard){b=Math.random()<0.75?ri(2,10):ri(11,50);q=ri(2,Math.floor(100/b));if(q<2)continue;}
+        else{b=Math.random()<0.6?ri(3,12):ri(13,25);q=ri(Math.max(2,Math.ceil(101/b)),Math.floor(1000/b));}   /* schwerer: Dividend 101–1000 */
+        if(ref&&ref.b===b&&ref.q===q)continue;
+        Object.assign(t,{b:b,q:q,a:String(b*q)});t.ans=String(q);
+      }
+      if(sub===1||sub===3){   /* Dezimalzahl mit Zehnteln : ganze Zahl */
+        let b=hard?ri(3,12):ri(2,9),q,D;
+        let lo=sub===1?1:(hard?1001:101),hi=sub===1?99:(hard?9999:999);   /* D in Zehnteln: L2 0.1–9.9, L4 10.1–99.9, L5 auch 100.1–999.9 */
+        if(sub===1&&hard)hi=99;
+        q=ri(Math.ceil(lo/b),Math.floor(hi/b));D=b*q;
+        if(D%10===0||D<lo||D>hi)continue;   /* Dividend hat immer Zehntel */
+        if(sub===1&&!hard&&D<10&&Math.random()<0.5)continue;   /* nicht zu oft 0.x */
+        if(ref&&ref.b===b&&ref.q===q)continue;
+        Object.assign(t,{b:b,q:q,D:D,a:sfmt(D,1)});t.ans=dfmt(q,1);
+      }
+      if(sub===2){   /* verwandte Aufgaben */
+        let b=hard?ri(11,15):ri(2,9),q=ri(2,9),base=b*q;
+        if(ref&&ref.b===b&&ref.q===q)continue;
+        let ks=hard?pick([[2,1,0],[1,0,-1],[0,-1,-2]]):pick([[1,0,-1],[1,0,-1],[0,-1,-2],[1,0],[0,-1]]);   /* Zehnerpotenz des Dividenden */
+        let rows=ks.map(k=>({txt:dfmt(base*ipow(10,k+2),2)+DIV_OP+b,ans:dfmt(q*ipow(10,k+2),2)}));
+        Object.assign(t,{b:b,q:q,base:base,ks:ks,rows:rows});
+        t.text=rows.map(r=>r.txt).join(' | ');t.answer=rows.map(r=>r.ans).join(' / ');
+        t.html='<div class="zq">Löse die verwandten Aufgaben.</div><div class="mulrows">'+rows.map((r,i)=>'<div class="mulrow"><span>'+r.txt+' =</span><input class="bin mulin" data-i="'+i+'" data-part="r'+i+'" inputmode="decimal" autocomplete="off"></div>').join('')+'</div><div class="hint">Tipp: Vergleiche die Aufgaben miteinander.</div>';
+        t.interactive=true;t.noInput=true;t.state={v:{}};
+        return t;
+      }
+      let ex=t.a+DIV_OP+t.b;
+      t.text=ex+' = ?';t.html=ex+' = '+QM;t.answer=t.ans;
+      return t;
+    }
+  }
+  function makeDiv(l){return divGen(l);}
+  function helpDiv(t){
+    let x=t;if(!HX){let e=divGen(t.level,t);if(e)x=e;}
+    let h='<b>Hilfsbeispiel:</b>';
+    if(x.sub===0)return h+'<div class="ex">'+x.a+DIV_OP+x.b+'</div><div class="helpline">Frage dich: <b>'+x.b+' mal wie viel gibt '+x.a+'?</b><br>'+x.b+MUL_DOT+x.q+' = '+x.a+', also ist '+x.a+DIV_OP+x.b+' = <b>'+x.q+'</b>.'
+      +(x.q>=10&&x.b<=12?'<br>Tipp bei grossen Zahlen: zerlegen, z. B. '+x.a+' = '+(x.b*Math.floor(x.q/10)*10)+' + '+(x.b*(x.q%10))+' → '+(Math.floor(x.q/10)*10)+' + '+(x.q%10)+' = '+x.q+'.':'')+'</div>';
+    if(x.sub===2){
+      let base=x.base+DIV_OP+x.b+' = '+x.q;
+      return h+'<div class="mulrows">'+x.rows.map(r=>'<div class="mulrow"><span>'+r.txt+' = <b>'+r.ans+'</b></span></div>').join('')+'</div><div class="helpline">'
+        +'Alle Aufgaben haben die gleichen Ziffern: <b>'+base+'</b>.<br>'
+        +'Ist die erste Zahl <b>10-mal kleiner</b>, ist auch das Ergebnis 10-mal kleiner: Das Komma rückt <b>1 Stelle nach links</b>. Ist sie 10-mal grösser, rückt es 1 Stelle nach rechts.</div>';
+    }
+    let E=Math.floor(x.D/10),z=x.D%10,parts='';
+    if(E%x.b===0&&z%x.b===0&&E>0)parts='<br><b>Weg 2 – zerlegen:</b> '+x.a+' = '+E+' + '+sfmt(z,1)+'. '+E+DIV_OP+x.b+' = '+(E/x.b)+' und '+sfmt(z,1)+DIV_OP+x.b+' = '+dfmt(z/x.b,1)+'. Zusammen: <b>'+dfmt(x.q,1)+'</b>.';
+    return h+'<div class="ex">'+x.a+DIV_OP+x.b+'</div><div class="helpline"><b>Weg 1 – in Zehnteln rechnen:</b> '+x.a+' sind <b>'+x.D+' Zehntel</b>.<br>'
+      +x.D+' Zehntel'+DIV_OP+x.b+' = <b>'+x.q+' Zehntel</b> (denn '+x.b+MUL_DOT+x.q+' = '+x.D+').<br>'
+      +x.q+' Zehntel = <b>'+dfmt(x.q,1)+'</b>.'+parts+'</div>';
+  }
+
   const rFree={};
   function makeTask(l,opt){
     let cat=CATS[opt]?opt:pick(CAT_KEYS);
@@ -1775,12 +1842,13 @@ const TOPIC=(function(){
     if(cat==='stelle')return makeStelle(l);
     if(cat==='bdg')return makeBdg(l);
     if(cat==='mul')return makeMul(l);
+    if(cat==='div')return makeDiv(l);
     return makeKommaTask(l);
   }
   function mount(el,t){
     if(!t.interactive)return;
     if(t.cat==='bdg'){bgMount(el,t);return;}
-    if(t.cat==='mul'){mulMount(el,t);return;}
+    if(t.cat==='mul'||t.cat==='div'){mulMount(el,t);return;}
     let st=t.state;
     let zs=el.querySelector('svg.zs');
     if(zs&&(t.kind==='place'||t.kind==='frac'||t.kind==='pct')){   /* Schieberegler: Marke ziehen oder Stelle antippen, rastet auf den Strichen ein */
@@ -1895,6 +1963,7 @@ const TOPIC=(function(){
   }
   function check(raw,t){
     if(t.cat==='bdg'&&t.noInput)return bgCheck(t);
+    if(t.cat==='div'&&t.noInput)return mulCheck(t);
     if(t.cat==='mul'&&t.noInput)return (t.kind==='mk4'||t.kind==='mk5')?mkCheck(t):mulCheck(t);
     if(t.cat==='stelle'&&t.kind==='fill')return swFillOk(t);
     if(t.cat==='stelle'&&t.kind==='dots')return swDotsOk(t);
@@ -1915,6 +1984,7 @@ const TOPIC=(function(){
     if(t.cat==='stelle')return helpStelle(t);
     if(t.cat==='bdg')return helpBdg(t);
     if(t.cat==='mul')return helpMul(t);
+    if(t.cat==='div')return helpDiv(t);
     if(t.cat==='komm')return helpKomm(t);
     if(t.cat==='rang')return helpRang(t);
     return helpKomma(t);
@@ -1931,7 +2001,8 @@ const TOPIC=(function(){
       stelle:'Dezimalzahlen in der Stellenwerttafel lesen, legen und verändern',
       bdg:'Brüche, Dezimalzahlen und Prozent im Kreis, auf der Strecke und bei Grössen',
       mul:'Dezimalzahlen multiplizieren: mit ganzen Zahlen, verwandte Aufgaben und Malkreuz',
-      mix:'Alle Kategorien gemischt: Komma verschieben, Addition und Subtraktion, Multiplikation, Zahlenstrahl, Stellenwerttafel und Brüche bei Grössen'
+      div:'Dezimalzahlen durch ganze Zahlen dividieren – es geht immer auf',
+      mix:'Alle Kategorien gemischt: Komma verschieben, Addition und Subtraktion, Multiplikation, Division, Zahlenstrahl, Stellenwerttafel und Brüche bei Grössen'
     },
     levels:LEVELS,
     raceLevel:2,
