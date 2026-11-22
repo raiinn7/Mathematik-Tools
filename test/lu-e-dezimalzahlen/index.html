@@ -777,6 +777,23 @@ const TOPIC=(function(){
       return t;
     }
   }
+  function genAS01H(l,ref){   /* Level 3: Zahlen zwischen 0 und 1 mit Zehnteln und Hundertsteln, Ergebnis ebenfalls zwischen 0 und 1 (z. B. 0.45 + 0.38 = 0.83) */
+    let op=ref?ref.op:pick(['+','\u2212']);
+    let want=ref?ref.carry:Math.random()<0.5;   /* etwa die Hälfte mit Übertrag bzw. Entbündeln bei den Hundertsteln */
+    for(let k=0;k<1000;k++){
+      let A=ri(1,9)*10+ri(1,9),B=ri(1,9)*10+ri(1,9);   /* in Hundertsteln: 0.11 … 0.99, beide Stellen nie 0 */
+      if(op==='\u2212'&&A<=B)continue;
+      let R=op==='+'?A+B:A-B;
+      if(R<=0||R>=100)continue;
+      let carry=op==='+'?(A%10+B%10>=10):(A%10<B%10);
+      if(carry!==want)continue;
+      let a=sfmt(A,2),b=sfmt(B,2);
+      if(ref&&a===ref.a&&b===ref.b)continue;
+      let t={cat:'dez',kind:'as01h',lvl:l,op:op,a:a,b:b,A:A,B:B,R:R,P:2,carry:carry};
+      t.text=a+' '+op+' '+b+' = ?';t.html=a+' '+op+' '+b+' = '+QM;t.answer=dfmt(R,2);
+      return t;
+    }
+  }
   function genMulWD(l){   /* ganze Zahl mal Dezimalzahl */
     let w=ri(2,9),t10;
     do{t10=ri(2,l<=2?59:99);}while(t10%10===0);
@@ -805,8 +822,8 @@ const TOPIC=(function(){
     t.text=sfmt(D,p)+' \u00f7 '+n+' = ?';t.html=sfmt(D,p)+' \u00f7 '+n+' = '+QM;
     t.answer=dfmt(Q,p);return t;
   }
-  function genDez(kind,l,ref){return kind==='as01'?genAS01(l,ref):kind==='asw'?genASW(l,ref):kind==='as'?genAS(l,ref):(kind==='mulwd'?genMulWD(l):(kind==='muldd'?genMulDD(l,ref):genDiv(l,ref)));}
-  const DEZ_KINDS=[['asw'],['as01'],['as','as','mulwd'],['as','mulwd','muldd','muldd'],['as','mulwd','muldd','div','div']];
+  function genDez(kind,l,ref){return kind==='as01h'?genAS01H(l,ref):kind==='as01'?genAS01(l,ref):kind==='asw'?genASW(l,ref):kind==='as'?genAS(l,ref):(kind==='mulwd'?genMulWD(l):(kind==='muldd'?genMulDD(l,ref):genDiv(l,ref)));}
+  const DEZ_KINDS=[['asw'],['as01'],['as01h'],['as','mulwd','muldd','muldd'],['as','mulwd','muldd','div','div']];
   function makeDez(l){return genDez(pick(DEZ_KINDS[l]),l);}
 
   function colLines(a,b,op,P,R){   /* Stellenwert-Rechnung: Komma unter Komma */
@@ -829,6 +846,15 @@ const TOPIC=(function(){
         'Schreibe <b>Komma unter Komma</b>: '+ex.b+' = <b>'+ex.b+'0</b>. Die '+ex.z+' gehört zu den <b>Zehnteln</b>, nicht zu den Hundertsteln.<br>'+
         'Die Hundertstel ('+ex.y+') bleiben gleich. Du rechnest nur bei den Zehnteln: '+(ex.op==='+'?(ex.swap?ex.z+' + '+ex.x:ex.x+' + '+ex.z):ex.x+' − '+ex.z)+' = <b>'+rz+'</b>.<br>'+
         'Ergebnis: <b>'+dfmt(ex.R,2)+'</b>.';
+    }
+    if(t.kind==='as01h'){
+      let ah=ex.A%10,bh=ex.B%10,az=Math.floor(ex.A/10),bz=Math.floor(ex.B/10),hz,zz;
+      if(ex.op==='+'){hz='Hundertstel: '+ah+' + '+bh+' = '+(ah+bh)+(ex.carry?' → schreibe <b>'+(ah+bh-10)+'</b>, <b>1 Zehntel</b> geht weiter zu den Zehnteln.':'.');
+        zz='Zehntel: '+az+' + '+bz+(ex.carry?' + 1':'')+' = <b>'+(az+bz+(ex.carry?1:0))+'</b>.';}
+      else{hz='Hundertstel: '+(ex.carry?ah+' − '+bh+' geht nicht → nimm <b>1 Zehntel</b> = 10 Hundertstel dazu: '+(ah+10)+' − '+bh+' = <b>'+(ah+10-bh)+'</b>.':ah+' − '+bh+' = <b>'+(ah-bh)+'</b>.');
+        zz='Zehntel: '+(ex.carry?(az-1)+' (eins weggenommen)':az)+' − '+bz+' = <b>'+(az-(ex.carry?1:0)-bz)+'</b>.';}
+      return h+'<div class="ex">'+ex.a+' '+ex.op+' '+ex.b+'</div>'+colLines(ex.A,ex.B,ex.op,2,ex.R)+
+        'Schreibe <b>Komma unter Komma</b>. Rechne von rechts nach links:<br>'+hz+'<br>'+zz+'<br>Vor dem Komma steht <b>0</b>. Ergebnis: <b>'+dfmt(ex.R,2)+'</b>.';
     }
     if(t.kind==='as'){
       return h+'<div class="ex">'+ex.a+' '+ex.op+' '+ex.b+'</div>'+colLines(ex.A,ex.B,ex.op,ex.P,ex.R)+
