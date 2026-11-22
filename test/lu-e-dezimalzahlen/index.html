@@ -812,6 +812,35 @@ const TOPIC=(function(){
       return t;
     }
   }
+  /* Schwierigkeit einer Plus-/Minus-Rechnung: 'ohne' (kein Übertrag), 'normal' (1–2 Überträge), 'gemein' (3 oder mehr Überträge,
+     Übertrag in Kette wie 9 + 0 + 1, oder Entbündeln über eine 0 wie bei 230.04 − 35.87) */
+  function asLevel(A,B,op){
+    let c=0,n=0,chain=false,zero=false;
+    while(A>0||B>0){let da=A%10,db=B%10;A=Math.floor(A/10);B=Math.floor(B/10);
+      if(op==='+'){let s=da+db+c;if(c&&da+db===9)chain=true;c=s>=10?1:0;}
+      else{let top=da-c;if(c&&da===0)zero=true;c=top<db?1:0;}
+      n+=c;}
+    return n===0?'ohne':(n>=3||chain||zero?'gemein':'normal');
+  }
+  function genAS1000(l,ref){   /* Level 5: Zahlen zwischen 0 und 1000 mit Zehnteln und Hundertsteln, Ergebnis zwischen 0 und 1000 */
+    let op=ref?ref.op:pick(['+','\u2212']);
+    let r=Math.random(),want=ref?ref.diff:(r<0.25?'ohne':(r<0.75?'normal':'gemein'));   /* nur etwa jede 4. Rechnung ist "gemein" */
+    const intPart=()=>{let q=Math.random();return q<0.15?ri(1,9):(q<0.45?ri(10,99):ri(100,999));};
+    for(let k=0;k<5000;k++){
+      let A=intPart()*100+ri(0,9)*10+ri(1,9),B=intPart()*100+ri(0,9)*10+ri(1,9);   /* in Hundertsteln, Hundertstel nie 0 */
+      if(want==='gemein'&&op==='\u2212'&&Math.random()<0.5){let s=String(A).split('');let i=ri(0,s.length-2);if(i>0||s.length>3){s[i===0?1:i]='0';A=+s.join('');if(A%10===0)continue;}}   /* öfter eine 0 oben, damit über die 0 entbündelt wird */
+      if(op==='\u2212'&&A<=B)continue;
+      let R=op==='+'?A+B:A-B;
+      if(R<=0||R>=100000)continue;
+      let diff=asLevel(A,B,op==='+'?'+':'-');
+      if(diff!==want)continue;
+      let a=sfmt(A,2),b=sfmt(B,2);
+      if(ref&&a===ref.a&&b===ref.b)continue;
+      let t={cat:'dez',kind:'as1000',lvl:l,op:op,a:a,b:b,A:A,B:B,R:R,P:2,diff:diff,carry:diff!=='ohne'};
+      t.text=a+' '+op+' '+b+' = ?';t.html=a+' '+op+' '+b+' = '+QM;t.answer=dfmt(R,2);
+      return t;
+    }
+  }
   function genMulWD(l){   /* ganze Zahl mal Dezimalzahl */
     let w=ri(2,9),t10;
     do{t10=ri(2,l<=2?59:99);}while(t10%10===0);
@@ -840,8 +869,8 @@ const TOPIC=(function(){
     t.text=sfmt(D,p)+' \u00f7 '+n+' = ?';t.html=sfmt(D,p)+' \u00f7 '+n+' = '+QM;
     t.answer=dfmt(Q,p);return t;
   }
-  function genDez(kind,l,ref){return kind==='as100'?genAS100(l,ref):kind==='as01h'?genAS01H(l,ref):kind==='as01'?genAS01(l,ref):kind==='asw'?genASW(l,ref):kind==='as'?genAS(l,ref):(kind==='mulwd'?genMulWD(l):(kind==='muldd'?genMulDD(l,ref):genDiv(l,ref)));}
-  const DEZ_KINDS=[['asw'],['as01'],['as01h'],['as100'],['as','mulwd','muldd','div','div']];
+  function genDez(kind,l,ref){return kind==='as1000'?genAS1000(l,ref):kind==='as100'?genAS100(l,ref):kind==='as01h'?genAS01H(l,ref):kind==='as01'?genAS01(l,ref):kind==='asw'?genASW(l,ref):kind==='as'?genAS(l,ref):(kind==='mulwd'?genMulWD(l):(kind==='muldd'?genMulDD(l,ref):genDiv(l,ref)));}
+  const DEZ_KINDS=[['asw'],['as01'],['as01h'],['as100'],['as1000']];
   function makeDez(l){return genDez(pick(DEZ_KINDS[l]),l);}
 
   function colLines(a,b,op,P,R){   /* Stellenwert-Rechnung: Komma unter Komma */
@@ -874,10 +903,12 @@ const TOPIC=(function(){
       return h+'<div class="ex">'+ex.a+' '+ex.op+' '+ex.b+'</div>'+colLines(ex.A,ex.B,ex.op,2,ex.R)+
         'Schreibe <b>Komma unter Komma</b>. Rechne von rechts nach links:<br>'+hz+'<br>'+zz+'<br>Vor dem Komma steht <b>0</b>. Ergebnis: <b>'+dfmt(ex.R,2)+'</b>.';
     }
-    if(t.kind==='as100'){
+    if(t.kind==='as100'||t.kind==='as1000'){
       return h+'<div class="ex">'+ex.a+' '+ex.op+' '+ex.b+'</div>'+colLines(ex.A,ex.B,ex.op,2,ex.R)+
         'Schreibe die Zahlen so untereinander, dass <b>Komma unter Komma</b> steht. Rechne dann Stelle für Stelle <b>von rechts nach links</b>: Hundertstel, Zehntel, Einer, Zehner. '+
         (ex.op==='+'?'Werden es in einer Stelle 10 oder mehr, schreibst du nur die Einerziffer hin und nimmst <b>1 in die nächste Stelle links</b> mit.':'Ist oben zu wenig, nimmst du <b>1 aus der nächsten Stelle links</b> und machst daraus 10 (entbündeln).')+
+        (ex.diff==='gemein'&&ex.op!=='+'?' Steht links davon eine <b>0</b>, kannst du dort nichts wegnehmen: Dann gehst du noch eine Stelle weiter nach links und entbündelst nacheinander.':'')+
+        (ex.diff==='gemein'&&ex.op==='+'?' Achtung: Durch den Übertrag kann auch die nächste Stelle wieder 10 werden – dann geht der Übertrag noch eine Stelle weiter.':'')+
         ' Das Komma setzt du im Ergebnis genau unter die anderen Kommas: <b>'+dfmt(ex.R,2)+'</b>.';
     }
     if(t.kind==='as'){
