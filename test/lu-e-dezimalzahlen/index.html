@@ -1429,7 +1429,8 @@ const TOPIC=(function(){
       if(kind==='b2st'){f=bgFr([2,3,4,5,6,8,10]);t.g=(f.d<=5&&Math.random()<0.35)?2*f.d:f.d;}   /* manchmal feinere Einteilung: 2/5 auf 10 Teilen */
       if(kind==='b2d'||kind==='d2b')f=bgFr([2,4,5,8,10,20,25,50,100,100],kind==='d2b');
       if(kind==='m3'){t.model=pick(['pie','bar']);f=bgFr(t.model==='pie'?[2,4,5,10]:[2,4,5,10,20]);t.g=f.d;}
-      if(kind==='r3'){f=bgFr([2,4,5,10,20,25,50],true);t.from=pick(['dec','pct']);t.model=f.d<=10&&Math.random()<0.6?'pie':'bar';t.g=t.model==='pie'?bgPieG(f.d):bgBarG(f.d);}
+      if(kind==='r3'){   /* nur 5-Hundertstel-Schritte (0.05, 0.1, … 0.95); Strecke immer mit 20 Teilen, manchmal zusätzlich der Kreis */
+        f=bgFr([2,4,5,10,20,20],true);t.from=pick(['dec','pct']);t.model=f.d<=10&&Math.random()<0.5?'pie':'bar';t.pg=f.d;t.bg=20;}
       if(kind==='row'){
         t.given=ref?ref.given:pick(['fr','pie','bar','l','grid']);
         f=bgFr(t.given==='pie'?[2,4,5,10]:[2,4,5,10,20,20],true);   /* Kreis immer mit Teilstrichen zum Antippen: höchstens 20 Teile */
@@ -1480,10 +1481,11 @@ const TOPIC=(function(){
     if(kind==='r3'){
       let given=t.from==='dec'?bgDec(n,d):(n*100/d)+' %';
       t.text=given+' als Bruch, '+(t.from==='dec'?'Prozent':'Dezimalzahl')+' und im Modell';
-      t.html='<div class="zq">Gib <b>'+given+'</b> auch als Bruch und als '+(t.from==='dec'?'Prozent':'Dezimalzahl')+' an und zeige den Anteil im '+(t.model==='pie'?'Kreis':'Streckenmodell')+'.</div>'
+      t.html='<div class="zq">Gib <b>'+given+'</b> auch als Bruch und als '+(t.from==='dec'?'Prozent':'Dezimalzahl')+' an und zeige den Anteil '+(t.model==='pie'?'im Kreis und ':'')+'im Streckenmodell.</div>'
         +'<div class="bgline"><span class="bggiven">'+given+' =</span>'+bgFrIn()+' = '+(t.from==='dec'?bgIn('pct',70)+' %':bgIn('dec'))+'</div>'
-        +(t.model==='pie'?bgPie(t.g,0,true,t.g>10,'pie')+'<div class="hint">'+(t.g>10?'Ziehe im Kreis, bis der richtige Anteil gefärbt ist.':'Tippe auf die Teile, die gefärbt sein sollen.')+'</div>':bgBar(t.g,0,true,'bar')+'<div class="hint">Ziehe den blauen Hebel an die richtige Stelle.</div>');
-      t.parts=['fr',t.from==='dec'?'pct':'dec',t.model];
+        +(t.model==='pie'?bgPie(t.pg,0,true,false,'pie'):'')
+        +bgBar(t.bg,0,true,'bar')+'<div class="hint">'+(t.model==='pie'?'Kreis: Teile antippen · ':'')+'Strecke: Hebel ziehen – ein Teil = 0.05 (5 %)</div>';
+      t.parts=t.model==='pie'?['fr',t.from==='dec'?'pct':'dec','pie','bar']:['fr',t.from==='dec'?'pct':'dec','bar'];
     }
     if(kind==='unit'){
       let U=t.units,cells=U.map((u,j)=>(j===t.u?'<b class="bgv">'+t.vals[j]+'</b>':bgIn('u'+j,100))+' '+u);
@@ -1511,7 +1513,7 @@ const TOPIC=(function(){
     if(k==='ml')return num(v.ml,String(n*1000/d));
     if(k==='grid')return st.grid*d===n*100;
     if(k==='pie'||k==='bar'){
-      let g=k==='pie'?(t.kind==='row'?t.pg:t.g):(t.kind==='row'?t.bg:t.g),c=st[k];
+      let g=k==='pie'?(t.pg||t.g):(t.bg||t.g),c=st[k];
       if(g===100)return Math.abs(c/g-n/d)<=0.02+1e-9;   /* ohne Teilstriche: 2 % Spielraum */
       return c*d===n*g;
     }
@@ -1597,8 +1599,10 @@ const TOPIC=(function(){
     if(x.kind==='d2b'){let E=bgExp(n,d),g=bgGcd(E.Z,E.N);
       return h+'<div class="swnum">'+bgDec(n,d)+' = ?</div><div class="helpline">Die letzte Ziffer steht bei den <b>'+({10:'Zehnteln',100:'Hundertsteln',1000:'Tausendsteln'})[E.N]+'</b>, also ist der Nenner <b>'+E.N+'</b>: '+bgDec(n,d)+' = '+frHtml(E.Z,E.N)+'.'+(g>1?'<br>Du kannst kürzen: '+frHtml(E.Z,E.N)+' = <b>'+frHtml(E.Z/g,E.N/g)+'</b>.':'')+'</div>';}
     if(x.kind==='m3'||x.kind==='r3'){
-      let g=x.g||d,k=Math.round(g*n/d),mod=(x.model==='pie')?bgPie(g,k,false,g>10):bgBar(g,k,false);
-      return h+mod+'<div class="helpline"><b>Bruch:</b> '+frHtml(n,d)+' ('+n+' von '+d+' gleich grossen Teilen)<br><b>Dezimalzahl:</b> '+exp()+'<br><b>Prozent:</b> '+pct()+'<br>Merke: <b>Prozent heisst „von 100“</b>, darum erweiterst du auf 100.</div>';
+      let mod;
+      if(x.kind==='r3')mod=(x.model==='pie'?bgPie(x.pg,x.pg*n/d,false,false):'')+bgBar(20,20*n/d,false);
+      else{let g=x.g||d,k=Math.round(g*n/d);mod=(x.model==='pie')?bgPie(g,k,false,g>10):bgBar(g,k,false);}
+      return h+mod+'<div class="helpline"><b>Bruch:</b> '+frHtml(n,d)+' ('+n+' von '+d+' gleich grossen Teilen)<br><b>Dezimalzahl:</b> '+exp()+'<br><b>Prozent:</b> '+pct()+'<br>Merke: <b>Prozent heisst „von 100“</b>, darum erweiterst du auf 100.'+(x.kind==='r3'?'<br><b>Strecke:</b> Sie hat 20 Teile, jedes Teil ist 0.05 = 5 %. '+(n*100/d)+' % sind also <b>'+(20*n/d)+' Teile</b>.':'')+'</div>';
     }
     if(x.kind==='unit'){
       let U=x.units,big=U[0];
