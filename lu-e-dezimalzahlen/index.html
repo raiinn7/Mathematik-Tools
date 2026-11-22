@@ -58,7 +58,7 @@ h1{font-size:26px;margin:4px 0 6px}
      ╚══════════════════════════════════════════════════════════════════════╝ -->
 <script>
 /* =========================================================================
-   THEMA: Dezimalzahl Trainer – Komma verschieben und Rechnen mit Dezimalzahlen
+   THEMA: Dezimalzahl Trainer – Komma verschieben, Addition und Subtraktion von Dezimalzahlen
 
    Aufbau wie beim Komma- und Masseinheiten-Trainer: Nur dieser Block gehört zum Thema.
    Die ENGINE weiter unten (Oberfläche, Levels/XP, Cookies, Achievements, Zeitrennen, Speichern/Laden)
@@ -706,13 +706,21 @@ const TOPIC=(function(){
   const RANG_RULE='Reihenfolge: <b>1. Klammern</b> (von innen nach aussen), <b>2. Punkt vor Strich</b> (· und ÷ vor + und −), <b>3. von links nach rechts</b>, wenn nur + und − (oder nur · und ÷) vorkommen. Beispiel: 12 − 5 + 4 = 7 + 4 = 11.';
 
   /* ======================================================================
-     Rechnen mit Dezimalzahlen (genau mit ganzen Zahlen gerechnet, kein Rundungsfehler)
+     Addition und Subtraktion von Dezimalzahlen (genau mit ganzen Zahlen gerechnet, kein Rundungsfehler)
      ====================================================================== */
   function p10(n){let r=1;for(let i=0;i<n;i++)r*=10;return r;}
   function sc(str){let p=str.split('.');return {v:parseInt(p[0]+(p[1]||''),10),p:(p[1]||'').length};}
   function sfmt(v,p){let s=String(v);if(p===0)return s;while(s.length<=p)s='0'+s;return s.slice(0,-p)+'.'+s.slice(-p);}   /* genau p Nachkommastellen */
   function dfmt(v,p){return normalize(sfmt(v,p));}                                                                     /* ohne überflüssige Nullen */
   function randDec(places,intMax,intMin){intMin=intMin||0;let d='';for(let i=0;i<places;i++)d+=(i===places-1)?ri(1,9):ri(0,9);return ri(intMin,intMax)+'.'+d;}   /* letzte Stelle nie 0 */
+  /* Sprung über das Komma: Übertrag von den Zehnteln zu den Einern (Plus) bzw. Entbündeln eines Einers in Zehntel (Minus).
+     a, b in Einheiten der letzten Stelle, p = Anzahl Nachkommastellen */
+  function crossPoint(a,b,op,p){
+    let c=0;
+    for(let i=0;i<p;i++){let da=a%10,db=b%10;a=Math.floor(a/10);b=Math.floor(b/10);
+      if(op==='+')c=(da+db+c>=10)?1:0;else c=(da-c<db)?1:0;}
+    return c===1;
+  }
   function carryIn(a,b,op){   /* gibt es in irgendeiner Stelle einen Übertritt (beim Minus: Entbündeln)? */
     while(a>0||b>0){let da=a%10,db=b%10;a=Math.floor(a/10);b=Math.floor(b/10);
       if(op==='+'){if(da+db>=10)return true;}   /* kein Übertrag aus der Vorstelle, sonst wäre schon true */
@@ -744,6 +752,109 @@ const TOPIC=(function(){
     }
     return genAS(0);
   }
+  function genASW(l,ref){   /* Level 1: zweistellige Dezimalzahl plus/minus ganze Zahl (z. B. 35.2 − 7 = 28.2) */
+    let op=ref?ref.op:pick(['+','\u2212']);
+    let big=ref?ref.w>=10:Math.random()<0.35;   /* meist einstellige ganze Zahl, manchmal zweistellige */
+    for(let k=0;k<500;k++){
+      let A=ri(10,99)*10+ri(1,9);   /* in Zehnteln: 10.1 … 99.9, Zehntel nie 0 */
+      let w=big?ri(10,49):ri(1,9),B=w*10;
+      if(op==='\u2212'&&B>=A)continue;
+      let R=op==='+'?A+B:A-B;
+      let a=sfmt(A,1),b=String(w);
+      if(ref&&a===ref.a&&b===ref.b)continue;
+      let swap=op==='+'&&(ref?ref.swap:Math.random()<0.3);   /* beim Plus manchmal die ganze Zahl zuerst: 7 + 35.2 */
+      let t={cat:'dez',kind:'asw',lvl:l,op:op,a:a,b:b,w:w,A:A,B:B,R:R,P:1,swap:swap};
+      let ex=swap?b+' '+op+' '+a:a+' '+op+' '+b;
+      t.text=ex+' = ?';t.html=ex+' = '+QM;t.answer=dfmt(R,1);
+      return t;
+    }
+  }
+  function genAS01(l,ref){   /* Level 2: Zahl zwischen 0 und 1 mit Hundertsteln plus/minus Zehntel, Ergebnis zwischen 0 und 1 (z. B. 0.47 + 0.3 = 0.77) */
+    let op=ref?ref.op:pick(['+','\u2212']);
+    for(let k=0;k<1000;k++){
+      let x=ri(0,9),y=ri(1,9),z=ri(1,9);   /* erste Zahl 0.xy (Hundertstel nie 0), zweite Zahl 0.z */
+      if(op==='+'&&x+z>9)continue;          /* Ergebnis bleibt unter 1 */
+      if(op==='\u2212'&&x<z)continue;      /* Ergebnis bleibt über 0 */
+      let A=x*10+y,B=z*10,R=op==='+'?A+B:A-B;
+      let a=sfmt(A,2),b=sfmt(z,1);
+      if(ref&&a===ref.a&&b===ref.b)continue;
+      let swap=op==='+'&&(ref?ref.swap:Math.random()<0.3);   /* beim Plus manchmal die Zehntel zuerst: 0.3 + 0.47 */
+      let t={cat:'dez',kind:'as01',lvl:l,op:op,a:a,b:b,x:x,y:y,z:z,A:A,B:B,R:R,P:2,swap:swap};
+      let ex=swap?b+' '+op+' '+a:a+' '+op+' '+b;
+      t.text=ex+' = ?';t.html=ex+' = '+QM;t.answer=dfmt(R,2);
+      return t;
+    }
+  }
+  function genAS01H(l,ref){   /* Level 3: Zahlen zwischen 0 und 1 mit Zehnteln und Hundertsteln, Ergebnis ebenfalls zwischen 0 und 1 (z. B. 0.45 + 0.38 = 0.83) */
+    let op=ref?ref.op:pick(['+','\u2212']);
+    let want=ref?ref.carry:Math.random()<0.5;   /* etwa die Hälfte mit Übertrag bzw. Entbündeln bei den Hundertsteln */
+    for(let k=0;k<1000;k++){
+      let A=ri(1,9)*10+ri(1,9),B=ri(1,9)*10+ri(1,9);   /* in Hundertsteln: 0.11 … 0.99, beide Stellen nie 0 */
+      if(op==='\u2212'&&A<=B)continue;
+      let R=op==='+'?A+B:A-B;
+      if(R<=0||R>=100)continue;
+      let carry=op==='+'?(A%10+B%10>=10):(A%10<B%10);
+      if(carry!==want)continue;
+      let a=sfmt(A,2),b=sfmt(B,2);
+      if(ref&&a===ref.a&&b===ref.b)continue;
+      let t={cat:'dez',kind:'as01h',lvl:l,op:op,a:a,b:b,A:A,B:B,R:R,P:2,carry:carry};
+      t.text=a+' '+op+' '+b+' = ?';t.html=a+' '+op+' '+b+' = '+QM;t.answer=dfmt(R,2);
+      return t;
+    }
+  }
+  function genAS100(l,ref,max){   /* Zahlen zwischen 0 und max (10 oder 100) mit Zehnteln und Hundertsteln, Ergebnis zwischen 0 und max
+                                     Level 4: bis 10 (z. B. 3.47 + 5.86 = 9.33), Level 5: bis 100 (z. B. 34.56 + 27.38 = 61.94) */
+    max=max||(ref&&ref.max)||100;
+    let op=ref?ref.op:pick(['+','\u2212']);
+    let want=ref?ref.carry:Math.random()<0.5;          /* Level 4: etwa die Hälfte mit Übertrag zwischen Hundertsteln und Zehnteln */
+    let wantX=ref?ref.cross:Math.random()<0.3;         /* Level 5: höchstens ca. 1/3 mit Sprung über das Komma */
+    for(let k=0;k<3000;k++){
+      let ia,ib;
+      if(max===10){ia=Math.random()<0.15?0:ri(1,9);ib=Math.random()<0.15?0:ri(1,9);}   /* ab und zu eine Zahl unter 1 (0.56) */
+      else{ia=Math.random()<0.25?ri(1,9):ri(10,99);ib=Math.random()<0.25?ri(1,9):ri(10,99);}
+      let A=ia*100+ri(0,9)*10+ri(1,9),B=ib*100+ri(0,9)*10+ri(1,9);   /* in Hundertsteln, Hundertstel nie 0 */
+      if(op==='\u2212'&&A<=B)continue;
+      let R=op==='+'?A+B:A-B;
+      if(R<=0||R>=max*100)continue;
+      let carry=carryIn(A,B,op==='+'?'+':'-'),cross=crossPoint(A,B,op==='+'?'+':'-',2);
+      if(max===10){if(cross||carry!==want)continue;}   /* Level 4: nie über das Komma */
+      else if(cross!==wantX)continue;
+      let a=sfmt(A,2),b=sfmt(B,2);
+      if(ref&&a===ref.a&&b===ref.b)continue;
+      let t={cat:'dez',kind:max===10?'as10':'as100',lvl:l,op:op,a:a,b:b,A:A,B:B,R:R,P:2,carry:carry,cross:cross,max:max};
+      t.text=a+' '+op+' '+b+' = ?';t.html=a+' '+op+' '+b+' = '+QM;t.answer=dfmt(R,2);
+      return t;
+    }
+  }
+  /* Schwierigkeit einer Plus-/Minus-Rechnung: 'ohne' (kein Übertrag), 'normal' (1–2 Überträge), 'gemein' (3 oder mehr Überträge,
+     Übertrag in Kette wie 9 + 0 + 1, oder Entbündeln über eine 0 wie bei 230.04 − 35.87) */
+  function asLevel(A,B,op){
+    let c=0,n=0,chain=false,zero=false;
+    while(A>0||B>0){let da=A%10,db=B%10;A=Math.floor(A/10);B=Math.floor(B/10);
+      if(op==='+'){let s=da+db+c;if(c&&da+db===9)chain=true;c=s>=10?1:0;}
+      else{let top=da-c;if(c&&da===0)zero=true;c=top<db?1:0;}
+      n+=c;}
+    return n===0?'ohne':(n>=3||chain||zero?'gemein':'normal');
+  }
+  function genAS1000(l,ref){   /* zurzeit in keinem Level – Zahlen zwischen 0 und 1000 mit Zehnteln und Hundertsteln, Ergebnis zwischen 0 und 1000 */
+    let op=ref?ref.op:pick(['+','\u2212']);
+    let r=Math.random(),want=ref?ref.diff:(r<0.25?'ohne':(r<0.75?'normal':'gemein'));   /* nur etwa jede 4. Rechnung ist "gemein" */
+    const intPart=()=>{let q=Math.random();return q<0.15?ri(1,9):(q<0.45?ri(10,99):ri(100,999));};
+    for(let k=0;k<5000;k++){
+      let A=intPart()*100+ri(0,9)*10+ri(1,9),B=intPart()*100+ri(0,9)*10+ri(1,9);   /* in Hundertsteln, Hundertstel nie 0 */
+      if(want==='gemein'&&op==='\u2212'&&Math.random()<0.5){let s=String(A).split('');let i=ri(0,s.length-2);if(i>0||s.length>3){s[i===0?1:i]='0';A=+s.join('');if(A%10===0)continue;}}   /* öfter eine 0 oben, damit über die 0 entbündelt wird */
+      if(op==='\u2212'&&A<=B)continue;
+      let R=op==='+'?A+B:A-B;
+      if(R<=0||R>=100000)continue;
+      let diff=asLevel(A,B,op==='+'?'+':'-');
+      if(diff!==want)continue;
+      let a=sfmt(A,2),b=sfmt(B,2);
+      if(ref&&a===ref.a&&b===ref.b)continue;
+      let t={cat:'dez',kind:'as1000',lvl:l,op:op,a:a,b:b,A:A,B:B,R:R,P:2,diff:diff,carry:diff!=='ohne'};
+      t.text=a+' '+op+' '+b+' = ?';t.html=a+' '+op+' '+b+' = '+QM;t.answer=dfmt(R,2);
+      return t;
+    }
+  }
   function genMulWD(l){   /* ganze Zahl mal Dezimalzahl */
     let w=ri(2,9),t10;
     do{t10=ri(2,l<=2?59:99);}while(t10%10===0);
@@ -772,8 +883,8 @@ const TOPIC=(function(){
     t.text=sfmt(D,p)+' \u00f7 '+n+' = ?';t.html=sfmt(D,p)+' \u00f7 '+n+' = '+QM;
     t.answer=dfmt(Q,p);return t;
   }
-  function genDez(kind,l,ref){return kind==='as'?genAS(l,ref):(kind==='mulwd'?genMulWD(l):(kind==='muldd'?genMulDD(l,ref):genDiv(l,ref)));}
-  const DEZ_KINDS=[['as'],['as'],['as','as','mulwd'],['as','mulwd','muldd','muldd'],['as','mulwd','muldd','div','div']];
+  function genDez(kind,l,ref){return kind==='as1000'?genAS1000(l,ref):kind==='as10'?genAS100(l,ref,10):kind==='as100'?genAS100(l,ref,100):kind==='as01h'?genAS01H(l,ref):kind==='as01'?genAS01(l,ref):kind==='asw'?genASW(l,ref):kind==='as'?genAS(l,ref):(kind==='mulwd'?genMulWD(l):(kind==='muldd'?genMulDD(l,ref):genDiv(l,ref)));}
+  const DEZ_KINDS=[['asw'],['as01'],['as01h'],['as10'],['as100']];
   function makeDez(l){return genDez(pick(DEZ_KINDS[l]),l);}
 
   function colLines(a,b,op,P,R){   /* Stellenwert-Rechnung: Komma unter Komma */
@@ -784,6 +895,36 @@ const TOPIC=(function(){
   function helpDez(t){
     let ex=null;if(HX)ex=t;else for(let k=0;k<50;k++){ex=genDez(t.kind,t.lvl,t);if(ex.text!==t.text)break;}
     const h='<b>Hilfsbeispiel:</b>';
+    if(t.kind==='asw'){
+      let top=ex.swap?ex.B:ex.A,bot=ex.swap?ex.A:ex.B;
+      return h+'<div class="ex">'+(ex.swap?ex.b+' '+ex.op+' '+ex.a:ex.a+' '+ex.op+' '+ex.b)+'</div>'+colLines(top,bot,ex.op,1,ex.R)+
+        'Eine ganze Zahl hat das Komma ganz hinten: <b>'+ex.b+' = '+ex.b+'.0</b>. Schreibe <b>Komma unter Komma</b>: Die '+ex.b+' gehört zu den <b>Einern'+(ex.w>=10?' und Zehnern':'')+'</b>, nicht zu den Zehnteln. '+
+        'Die Zehntel ('+ex.a.split('.')[1]+') bleiben gleich, du rechnest nur vor dem Komma: '+(ex.swap?ex.b+' '+ex.op+' '+ex.a.split('.')[0]:ex.a.split('.')[0]+' '+ex.op+' '+ex.b)+' = '+ex.R.toString().slice(0,-1)+'.';
+    }
+    if(t.kind==='as01'){
+      let top=ex.swap?ex.B:ex.A,bot=ex.swap?ex.A:ex.B,rz=ex.op==='+'?ex.x+ex.z:ex.x-ex.z;
+      return h+'<div class="ex">'+(ex.swap?ex.b+' '+ex.op+' '+ex.a:ex.a+' '+ex.op+' '+ex.b)+'</div>'+colLines(top,bot,ex.op,2,ex.R)+
+        'Schreibe <b>Komma unter Komma</b>: '+ex.b+' = <b>'+ex.b+'0</b>. Die '+ex.z+' gehört zu den <b>Zehnteln</b>, nicht zu den Hundertsteln.<br>'+
+        'Die Hundertstel ('+ex.y+') bleiben gleich. Du rechnest nur bei den Zehnteln: '+(ex.op==='+'?(ex.swap?ex.z+' + '+ex.x:ex.x+' + '+ex.z):ex.x+' − '+ex.z)+' = <b>'+rz+'</b>.<br>'+
+        'Ergebnis: <b>'+dfmt(ex.R,2)+'</b>.';
+    }
+    if(t.kind==='as01h'){
+      let ah=ex.A%10,bh=ex.B%10,az=Math.floor(ex.A/10),bz=Math.floor(ex.B/10),hz,zz;
+      if(ex.op==='+'){hz='Hundertstel: '+ah+' + '+bh+' = '+(ah+bh)+(ex.carry?' → schreibe <b>'+(ah+bh-10)+'</b>, <b>1 Zehntel</b> geht weiter zu den Zehnteln.':'.');
+        zz='Zehntel: '+az+' + '+bz+(ex.carry?' + 1':'')+' = <b>'+(az+bz+(ex.carry?1:0))+'</b>.';}
+      else{hz='Hundertstel: '+(ex.carry?ah+' − '+bh+' geht nicht → nimm <b>1 Zehntel</b> = 10 Hundertstel dazu: '+(ah+10)+' − '+bh+' = <b>'+(ah+10-bh)+'</b>.':ah+' − '+bh+' = <b>'+(ah-bh)+'</b>.');
+        zz='Zehntel: '+(ex.carry?(az-1)+' (eins weggenommen)':az)+' − '+bz+' = <b>'+(az-(ex.carry?1:0)-bz)+'</b>.';}
+      return h+'<div class="ex">'+ex.a+' '+ex.op+' '+ex.b+'</div>'+colLines(ex.A,ex.B,ex.op,2,ex.R)+
+        'Schreibe <b>Komma unter Komma</b>. Rechne von rechts nach links:<br>'+hz+'<br>'+zz+'<br>Vor dem Komma steht <b>0</b>. Ergebnis: <b>'+dfmt(ex.R,2)+'</b>.';
+    }
+    if(t.kind==='as10'||t.kind==='as100'||t.kind==='as1000'){
+      return h+'<div class="ex">'+ex.a+' '+ex.op+' '+ex.b+'</div>'+colLines(ex.A,ex.B,ex.op,2,ex.R)+
+        'Schreibe die Zahlen so untereinander, dass <b>Komma unter Komma</b> steht. Rechne dann Stelle für Stelle <b>von rechts nach links</b>: Hundertstel, Zehntel, Einer, Zehner. '+
+        (ex.op==='+'?'Werden es in einer Stelle 10 oder mehr, schreibst du nur die Einerziffer hin und nimmst <b>1 in die nächste Stelle links</b> mit.':'Ist oben zu wenig, nimmst du <b>1 aus der nächsten Stelle links</b> und machst daraus 10 (entbündeln).')+
+        (ex.diff==='gemein'&&ex.op!=='+'?' Steht links davon eine <b>0</b>, kannst du dort nichts wegnehmen: Dann gehst du noch eine Stelle weiter nach links und entbündelst nacheinander.':'')+
+        (ex.diff==='gemein'&&ex.op==='+'?' Achtung: Durch den Übertrag kann auch die nächste Stelle wieder 10 werden – dann geht der Übertrag noch eine Stelle weiter.':'')+
+        ' Das Komma setzt du im Ergebnis genau unter die anderen Kommas: <b>'+dfmt(ex.R,2)+'</b>.';
+    }
     if(t.kind==='as'){
       return h+'<div class="ex">'+ex.a+' '+ex.op+' '+ex.b+'</div>'+colLines(ex.A,ex.B,ex.op,ex.P,ex.R)+
         'Schreibe die Zahlen so untereinander, dass <b>Komma unter Komma</b> steht. Fehlende Stellen füllst du mit Nullen auf. Dann rechnest du Stelle für Stelle von rechts nach links.';
@@ -800,10 +941,14 @@ const TOPIC=(function(){
   const LEVELS=[
     {name:'Anfänger',icon:'👶'},{name:'Fortgeschritten',icon:'🛹'},{name:'Profi',icon:'😎'},{name:'Experte',icon:'🚀'},{name:'Meister',icon:'👑'}
   ];
-  const CATS={
+  const CATS={   /* Reihenfolge = Reihenfolge im Menü */
     komma:{icon:'🔢',name:'Komma verschieben'},
-    dez:{icon:'➕',name:'Rechnen mit Dezimalzahlen'},
-    strahl:{icon:'📏',name:'Zahlenstrahl'}
+    strahl:{icon:'📏',name:'Zahlenstrahl'},
+    bdg:{icon:'🥧',name:'Brüche und Dezimalzahlen bei Grössen bestimmen'},
+    stelle:{icon:'🧮',name:'Stellenwerttafel'},
+    dez:{icon:'➕',name:'Addition und Subtraktion von Dezimalzahlen'},
+    mul:{icon:'✖️',name:'Multiplikation von Dezimalzahlen'},
+    div:{icon:'➗',name:'Division von Dezimalzahlen'}
   };
   const CAT_KEYS=Object.keys(CATS);
 
@@ -979,16 +1124,731 @@ const TOPIC=(function(){
     return h;
   }
 
+
+  /* ======================================================================
+     NEU: Kategorie Stellenwerttafel
+     Stellen als Exponent e: 5=HT(Hunderttausender) … 0=E(iner), -1=z(ehntel), -2=h(undertstel), -3=t(ausendstel)
+     Werte werden intern in Tausendsteln (ganze Zahlen) gerechnet, damit keine Rundungsfehler entstehen.
+     Aufgabenarten (kind):
+       read   Tafel mit Ziffern -> Zahl schreiben
+       readdots Tafel mit Punkten -> Zahl schreiben (Punkte zählen)
+       dots   Zahl gegeben -> Zahl mit Punkten in die Tafel legen (1er/5er-Punkt hineinziehen, antippen = löschen)
+       change Tafel mit Punkten -> Punkte so verändern, dass die Zahl um 1, 0.1, 0.01 … grösser/kleiner wird (teils mit Übertrag)
+       f2d    Bruch gegeben -> Dezimalzahl schreiben (zurzeit in keinem Level)
+       d2f    Dezimalzahl gegeben -> Bruch schreiben (zurzeit in keinem Level)
+       fill   Zahl gegeben -> Ziffern selbst in die Tafel eintragen (zurzeit in keinem Level)
+     ====================================================================== */
+  const SW_E=[5,4,3,2,1,0,-1,-2,-3];
+  const SW_S={5:'HT',4:'ZT',3:'T',2:'H',1:'Z',0:'E','-1':'z','-2':'h','-3':'t'};
+  const SW_N={5:'Hunderttausender',4:'Zehntausender',3:'Tausender',2:'Hunderter',1:'Zehner',0:'Einer','-1':'Zehntel','-2':'Hundertstel','-3':'Tausendstel'};
+  const SW_LEVELS=[
+    {hi:[0,0,0,-1],lo:[-2],zero:0.15,cols:[0,-1,-2],kinds:[['read',1]]},                       /* L1: Zahl aus der Tafel ablesen – Einer, Zehntel, Hundertstel */
+    {hi:[0,0,0,-1],lo:[-2],zero:0.15,cols:[0,-1,-2],kinds:[['dots',1]]},                       /* L2: Zahl mit Punkten legen – Einer, Zehntel, Hundertstel */
+    {hi:[0,1,2,3],lo:[-1,-2,-3],zero:0.2,cols:[3,2,1,0,-1,-2,-3],kinds:[['readdots',1],['dots',1]]}, /* L3: Tausender bis Tausendstel – Zahl aus Punkten ablesen oder mit Punkten legen */
+    {hi:[0,1,2],lo:[-1,-2,-3],zero:0.15,cols:[3,2,1,0,-1,-2,-3],kinds:[['change',1]]},          /* L4: Zahl in der Tafel mit Punkten verändern (z. B. um 0.1 grösser), teils mit Übertrag */
+    {hi:[1,2,3,4,4,5,5],lo:[-1,-2,-3],zero:0.2,cols:[5,4,3,2,1,0,-1,-2,-3],kinds:[['readdots',1],['dots',1]]}   /* L5: wie L3 bis Hunderttausender, aber die Zahl steht als Punkte in der Tafel */
+  ];
+  function wpick(a){let s=0;a.forEach(x=>s+=x[1]);let r=Math.random()*s;for(let x of a){r-=x[1];if(r<0)return x[0];}return a[0][0];}
+  function swP10(e){return ipow(10,e+3);}   /* Wert einer Stelle in Tausendsteln */
+  function gcd(a,b){while(b){[a,b]=[b,a%b];}return a;}
+  /* Dezimalzahl-Text, ganze Zahl ab 5 Stellen mit ’ gruppiert (123’456.78) */
+  function swFmt(s){let p=s.split('.');return fmt(p[0])+(p[1]?'.'+p[1]:'');}
+  /* Zufallszahl als {e:Ziffer}: höchste Stelle (ausser bei Zahlen < 1) und tiefste Stelle nie 0 */
+  function swNum(l){
+    let L=SW_LEVELS[l],hi=pick(L.hi),lo=pick(L.lo);
+    if(hi<lo)hi=lo;
+    let d={};
+    for(let e=Math.max(hi,0);e>=lo;e--){
+      if(e>hi){d[e]=0;continue;}   /* Zahl kleiner als 1: Einer sind 0 */
+      d[e]=(e===hi||e===lo)?ri(1,9):(Math.random()<L.zero?0:ri(0,9));
+    }
+    return d;
+  }
+  function swVal(d){let v=0;for(let e in d)v+=d[e]*swP10(+e);return v;}
+  function swStr(d){return dfmt(swVal(d),3);}
+  function swDigits(v){   /* Wert in Tausendsteln -> {e:Ziffer} von der höchsten Stelle (mind. Einer) bis zur letzten Nicht-Null nach dem Komma */
+    let s=sfmt(v,3),p=s.split('.'),d={},ip=p[0],dp=p[1].replace(/0+$/,'');
+    for(let i=0;i<ip.length;i++)d[ip.length-1-i]=+ip[i];
+    for(let i=0;i<dp.length;i++)d[-1-i]=+dp[i];
+    return d;
+  }
+  /* Stellenwerttafel als HTML. cells: {e:Inhalt}; cols: Spalten (Exponenten); dots: Punkte statt Ziffern */
+  function swDots(n){let o='';for(let i=0;i<n;i++)o+='<span class="dot"></span>';return o;}
+  function swTable(cells,cols,dots,inp){
+    cols=cols||[3,2,1,0,-1,-2,-3];
+    let h='<table class="swt'+(dots?' swd':'')+(cols.length>7?' sw9':'')+'" style="--n:'+cols.length+'"><tr>',b='<tr>';
+    cols.forEach(e=>{
+      let k=e===-1?' class="kc"':'';
+      h+='<th'+k+' title="'+SW_N[e]+'">'+SW_S[e]+'</th>';
+      let c=dots?'<div class="dz" data-e="'+e+'">'+swDots(cells[e]||0)+'</div>':inp?'<input class="swin" data-e="'+e+'" inputmode="numeric" autocomplete="off" aria-label="'+SW_N[e]+'">':(cells[e]===undefined?'':cells[e]);
+      b+='<td'+k+'>'+c+'</td>';
+    });
+    return h+'</tr>'+b+'</tr></table><div class="swleg">'+cols.map(e=>SW_S[e]+' = '+SW_N[e]).join(' · ')+'</div>';
+  }
+  /* Brüche für Level 4: Zehnerbrüche (Nenner 10, 100, 1000) und einfache Brüche (Nenner 2, 4, 5, 8, 20, 25, 50) */
+  function swFrac(){
+    let n,d;
+    if(Math.random()<0.6){
+      d=pick([10,100,1000]);
+      let max=d===10?29:(d===100?199:999);
+      do{n=ri(1,max);}while(n%10===0||(Math.random()<0.75&&n>=d));   /* meist kleiner als 1, manchmal grösser (23/10 = 2.3) */
+    }else{
+      d=pick([2,4,5,8,20,25,50]);
+      do{n=ri(1,d===2?5:(d<=8?2*d-1:d-1));}while(gcd(n,d)!==1);
+    }
+    return {n:n,d:d,v:n*1000/d};
+  }
+  const SW_U={2:'100',1:'10',0:'1','-1':'0.1','-2':'0.01','-3':'0.001'};
+  /* Level 4: Startzahl, Stelle e, Anzahl k und Richtung; ca. 40 % mit Übertrag (genau eine Stelle weiter) */
+  function swChange(l,ref){
+    let wantCarry=ref?ref.carry:Math.random()<0.4;
+    for(let i=0;i<500;i++){
+      let d=swNum(l),ks=Object.keys(d).map(Number),lo=Math.min(...ks),hi=Math.max(...ks);
+      let e=(Math.random()<0.2&&lo>-3)?lo-1:ri(lo,Math.min(hi,2));
+      if(ref&&e!==ref.e)continue;
+      let k=ref?ref.k:pick([1,1,1,2,3]),up=ref?ref.up:Math.random()<0.5,x=d[e]||0;
+      let carry=up?(x+k>9):(x-k<0);
+      if(carry!==wantCarry)continue;
+      if(carry){   /* Übertrag nur in die nächste Stelle, und die muss es in der Tafel geben */
+        if(e+1>3)continue;
+        let y=d[e+1]||0;
+        if(up?(y+1>9):(y-1<0))continue;
+      }
+      let v=swVal(d),R=v+(up?1:-1)*k*swP10(e);
+      if(R<=0||R>=10000*1000)continue;
+      if(ref&&ref.v===v)continue;
+      return {d:d,v:v,e:e,k:k,up:up,carry:carry,R:R,rd:swDigits(R)};
+    }
+  }
+  function genStelle(l,kind,ref){
+    for(let k=0;k<300;k++){
+      let t={cat:'stelle',level:l,kind:kind};
+      if(kind==='change'){
+        let g=swChange(l,ref);if(!g)continue;
+        Object.assign(t,g);t.cols=SW_LEVELS[l].cols;t.start=swCells(g.d);t.answer=dfmt(g.R,3);
+        return t;
+      }
+      if(kind==='f2d'||kind==='d2f'){
+        let f=swFrac();t.n=f.n;t.den=f.d;t.v=f.v;t.dec=dfmt(f.v,3);t.d=swDigits(f.v);
+        t.answer=kind==='f2d'?t.dec:t.n+'/'+t.den;
+        if(ref&&(ref.dec===t.dec))continue;
+        return t;
+      }
+      t.cols=SW_LEVELS[l].cols;
+      t.d=swNum(l);
+      t.answer=swStr(t.d);
+      if(ref&&ref.answer===t.answer)continue;
+      return t;
+    }
+  }
+  function makeStelle(l){
+    let kind=wpick(SW_LEVELS[l].kinds);
+    let t=genStelle(l,kind);
+    if(kind==='read'){
+      let cells={};for(let e in t.d)cells[e]=t.d[e];
+      t.text='Stellenwerttafel: welche Zahl steht in der Tafel?';
+      t.html='<div class="zq">Welche Zahl steht in der Stellenwerttafel?</div>'+swTable(cells,t.cols);
+    }
+    if(kind==='change'){
+      let amt=t.k===1?SW_U[t.e]:dfmt(t.k*swP10(t.e),3);
+      let what=t.k+' '+SW_N[t.e];
+      t.text='Mache die Zahl in der Tafel um '+amt+' '+(t.up?'grösser':'kleiner');
+      t.html='<div class="zq">Verändere die Punkte so, dass die Zahl um <b>'+amt+'</b> ('+what+') <b>'+(t.up?'grösser':'kleiner')+'</b> wird.</div>'
+        +'<div class="swsrc"><span class="srcdot" title="1 Punkt in die Tafel ziehen"></span><span class="srcdot5 srcdot2" title="2 Punkte auf einmal in die Tafel ziehen"><i></i><i></i></span><span class="srcdot5" title="5 Punkte auf einmal in die Tafel ziehen"><i></i><i></i><i></i><i></i><i></i></span><span>Ziehe Punkte hinein.<br>Punkt antippen oder hinausziehen = löschen.</span><button type="button" class="swclr swrst">↺ Von vorne</button></div>'
+        +swTable(t.start,t.cols,true)+'<div class="hint">In einer Spalte haben höchstens 9 Punkte Platz.</div>';
+      t.interactive=true;t.noInput=true;t.state={c:swCells(t.start)};
+    }
+    if(kind==='readdots'){
+      let cells={};for(let e in t.d)cells[e]=t.d[e];
+      t.text='Stellenwerttafel mit Punkten: welche Zahl ist das?';
+      t.html='<div class="zq">Welche Zahl ist mit den Punkten in der Stellenwerttafel gelegt?</div>'+swTable(cells,t.cols,true);
+    }
+    if(kind==='dots'){
+      t.text='Lege '+swStr(t.d)+' mit Punkten in die Stellenwerttafel';
+      t.html='<div class="zq">Lege die Zahl mit Punkten in die Stellenwerttafel.</div><div class="swnum">'+swFmt(swStr(t.d))+'</div>'
+        +'<div class="swsrc"><span class="srcdot" title="1 Punkt in die Tafel ziehen"></span><span class="srcdot5 srcdot2" title="2 Punkte auf einmal in die Tafel ziehen"><i></i><i></i></span><span class="srcdot5" title="5 Punkte auf einmal in die Tafel ziehen"><i></i><i></i><i></i><i></i><i></i></span><span>Ziehe 1, 2 oder 5 Punkte in die Spalten.<br>Punkt antippen oder hinausziehen = löschen.</span><button type="button" class="swclr">🗑️ Alle löschen</button></div>'
+        +swTable({},t.cols,true);
+      t.interactive=true;t.noInput=true;t.state={c:{}};
+    }
+    if(kind==='fill'){
+      t.text='Trage '+swStr(t.d)+' in die Stellenwerttafel ein';
+      t.html='<div class="zq">Trage die Zahl in die Stellenwerttafel ein.</div><div class="swnum">'+swFmt(swStr(t.d))+'</div>'+swTable({},t.cols,false,true)+'<div class="hint">Tippe in jedes Feld eine Ziffer. Felder, die du nicht brauchst, bleiben leer.</div>';
+      t.interactive=true;t.noInput=true;t.state={c:null};
+    }
+    if(kind==='f2d'){
+      t.text='Schreibe '+t.n+'/'+t.den+' als Dezimalzahl';
+      t.html='<div class="zq">Schreibe den Bruch als <b>Dezimalzahl</b>.</div><div class="swnum">'+frHtml(t.n,t.den)+' = ?</div>';
+    }
+    if(kind==='d2f'){
+      t.text='Schreibe '+t.dec+' als Bruch';
+      t.html='<div class="zq">Schreibe die Dezimalzahl als <b>Bruch</b>.</div><div class="swnum">'+t.dec+' = '
+        +'<span class="frin"><input class="fin" data-k="n" inputmode="numeric" autocomplete="off" aria-label="Zähler"><span class="frl"></span><input class="fin" data-k="d" inputmode="numeric" autocomplete="off" aria-label="Nenner"></span></div>'
+        +'<div class="hint">Oben den Zähler, unten den Nenner eintragen. Jeder gleichwertige Bruch ist richtig.</div>';
+      t.interactive=true;t.noInput=true;t.state={c:null};
+    }
+    return t;
+  }
+  /* eingetragene Tafel prüfen: belegte Felder lückenlos, Einer belegt, Wert = gesuchte Zahl (Nullen ganz vorne/hinten sind erlaubt) */
+  function swFillOk(t){
+    let c=t.state.c;if(!c)return false;
+    let used=SW_E.filter(e=>c[e]!==undefined&&c[e]!=='');
+    if(!used.length||!c[0])return false;
+    let hi=used[0],lo=used[used.length-1];
+    for(let e=hi;e>=lo;e--)if(!c[e])return false;   /* keine leeren Felder zwischen Ziffern */
+    let v=0;used.forEach(e=>v+=(+c[e])*swP10(e));
+    return dfmt(v,3)===t.answer;
+  }
+  /* gelegte Punkte prüfen: in jeder Spalte so viele Punkte wie die Ziffer (0 = leer) */
+  function swDotsOk(t){
+    let c=t.state.c||{};
+    return SW_E.every(e=>(c[e]||0)===(t.d[e]||0));
+  }
+  /* Bruch prüfen: Zähler/Nenner ganze Zahlen, Nenner > 0, gleicher Wert wie die Dezimalzahl */
+  function swFracOk(t){
+    let c=t.state.c;if(!c)return false;
+    if(!/^\d+$/.test(c.n||'')||!/^\d+$/.test(c.d||''))return false;
+    let n=+c.n,d=+c.d;
+    return d>0&&n*1000===t.v*d;
+  }
+  function swCells(d){let c={};for(let e in d)c[e]=d[e];return c;}
+  function swFracCols(d){let ks=Object.keys(d).map(Number);let lo=Math.min(-1,...ks),hi=Math.max(0,...ks);let c=[];for(let e=hi;e>=lo;e--)c.push(e);return c;}
+  function helpStelle(t){
+    let x=t;
+    if(!HX){let e=genStelle(t.level,t.kind,t);if(e)x=e;}
+    let h='<b>Hilfsbeispiel:</b>';
+    if(x.kind==='f2d'||x.kind==='d2f'){
+      let ex=(x.den===10||x.den===100||x.den===1000);
+      let nd=Object.keys(x.d).filter(e=>+e<0).length;          /* Nachkommastellen */
+      let N=ipow(10,Math.max(nd,1)),Z=x.v*N/1000;              /* Zehnerbruch Z/N */
+      let unit={10:'Zehntel',100:'Hundertstel',1000:'Tausendstel'}[N];
+      let tab=swTable(swCells(x.d),swFracCols(x.d));
+      if(x.kind==='f2d'){
+        let l1=ex?'<b>1.</b> Der Nenner ist <b>'+x.den+'</b>: Der Bruch bedeutet <b>'+x.n+' '+unit+'</b>.<br>'
+                 :'<b>1.</b> Erweitere den Bruch, sodass unten 10, 100 oder 1000 steht: '+frHtml(x.n,x.den)+' = '+frHtml(x.n+' · '+(N/x.den),x.den+' · '+(N/x.den))+' = '+frHtml(Z,N)+', also <b>'+Z+' '+unit+'</b>.<br>';
+        return h+'<div class="swnum">'+frHtml(x.n,x.den)+' = ?</div><div class="helpline">'+l1
+          +'<b>2.</b> Trage es in die Stellenwerttafel ein: Die letzte Ziffer kommt in die Spalte <b>'+SW_S[-nd]+'</b> ('+unit+').</div>'
+          +'<div class="helpcalc">'+tab+'</div><div class="helpline"><b>3.</b> Die Dezimalzahl ist <b>'+x.dec+'</b>.</div>';
+      }
+      let g=gcd(Z,N),kz=(g>1)?' Du kannst auch kürzen: '+frHtml(Z,N)+' = '+frHtml(Z/g,N/g)+'.':'';
+      return h+'<div class="swnum">'+x.dec+' = ?</div><div class="helpcalc">'+tab+'</div><div class="helpline">'
+        +'<b>1.</b> Die letzte Ziffer steht bei den <b>'+unit+'n</b>. Darum ist der Nenner <b>'+N+'</b>.<br>'
+        +'<b>2.</b> Lies die Zahl ohne Komma als Zähler: '+x.dec+' = <b>'+Z+' '+unit+'</b> = '+frHtml(Z,N)+'.<br>'
+        +'<b>3.</b>'+(kz||' Der Bruch ist '+frHtml(Z,N)+'.')+'</div>';
+    }
+    if(x.kind==='dots'){
+      let parts=x.cols.filter(e=>x.d[e]!==undefined).map(e=>(x.d[e]===0?'<b>0</b> bei '+SW_S[e]+' (leer lassen)':'<b>'+x.d[e]+'</b> bei '+SW_S[e]));
+      return h+'<div class="swnum">'+swFmt(x.answer)+'</div><div class="helpcalc">'+swTable(swCells(x.d),x.cols,true)+'</div><div class="helpline">'
+        +'<b>1.</b> Suche das <b>Komma</b>. Die Ziffer direkt <b>vor</b> dem Komma gehört zu den Einern (E).<br>'
+        +'<b>2.</b> Jede Ziffer sagt, <b>wie viele Punkte</b> in ihre Spalte kommen.<br>'
+        +'<b>3.</b> Hier: '+parts.join(', ')+'.<br>'
+        +'<b>Tipp:</b> Für 5 oder mehr Punkte ziehst du zuerst den <b>5er-Punkt</b> hinein. Den Rest legst du mit dem <b>2er-Punkt</b> und einzelnen Punkten (z. B. 8 = 5 + 2 + 1).</div>';
+    }
+    if(x.kind==='change'){
+      let N=SW_N[x.e],S=SW_S[x.e],amt=x.k===1?SW_U[x.e]:dfmt(x.k*swP10(x.e),3),o=x.d[x.e]||0;
+      let h1='<b>1.</b> Die Tafel zeigt <b>'+swFmt(dfmt(x.v,3))+'</b>. Um '+amt+' '+(x.up?'grösser':'kleiner')+' heisst: <b>'+x.k+' Punkt'+(x.k>1?'e':'')+' '+(x.up?'mehr':'weniger')+'</b> in der Spalte <b>'+S+'</b> ('+N+').<br>';
+      let h2;
+      if(!x.carry)h2='<b>2.</b> Bei '+S+' sind es dann '+o+(x.up?' + ':' − ')+x.k+' = <b>'+(x.up?o+x.k:o-x.k)+'</b> Punkte.<br>';
+      else if(x.up)h2='<b>2.</b> Bei '+S+' wären es '+o+' + '+x.k+' = '+(o+x.k)+' Punkte – zu viele! <b>10 '+N+' = 1 '+SW_N[x.e+1]+'</b>: Nimm 10 Punkte bei '+S+' weg und lege dafür <b>1 Punkt bei '+SW_S[x.e+1]+'</b>. Bei '+S+' bleiben '+(o+x.k-10)+'.<br>';
+      else h2='<b>2.</b> Bei '+S+' hat es nur '+o+' Punkt'+(o===1?'':'e')+' – zu wenig, um '+x.k+' wegzunehmen. <b>1 '+SW_N[x.e+1]+' = 10 '+N+'</b>: Nimm 1 Punkt bei '+SW_S[x.e+1]+' weg und lege dafür 10 Punkte bei '+S+'. Jetzt hat es '+(o+10)+', davon nimmst du '+x.k+' weg: Es bleiben <b>'+(o+10-x.k)+'</b>.<br>';
+      return h+'<div class="helpcalc">'+swTable(swCells(x.d),x.cols,true)+'</div><div class="helpline">'+h1+h2
+        +'<b>3.</b> So sieht die Tafel danach aus. Die neue Zahl ist <b>'+swFmt(dfmt(x.R,3))+'</b>.</div>'
+        +'<div class="helpcalc">'+swTable(swCells(x.rd),x.cols,true)+'</div>';
+    }
+    if(x.kind==='readdots'){
+      let digs={};x.cols.forEach(e=>{if(x.d[e]!==undefined)digs[e]=x.d[e];});
+      return h+'<div class="helpcalc">'+swTable(swCells(x.d),x.cols,true)+'</div><div class="helpline">'
+        +'<b>1.</b> Zähle die Punkte in jeder Spalte. Eine Reihe hat <b>5 Punkte</b>, das hilft beim Zählen.<br>'
+        +'<b>2.</b> Die Anzahl Punkte ist die Ziffer. Eine <b>leere Spalte zwischen</b> anderen Spalten ist eine <b>0</b>:</div>'
+        +'<div class="helpcalc">'+swTable(digs,x.cols)+'</div><div class="helpline">'
+        +'<b>3.</b> Nach der Einer-Spalte (E) kommt das Komma. Die Zahl ist <b>'+swFmt(x.answer)+'</b>.</div>';
+    }
+    if(x.kind==='fill'){
+      return h+'<div class="swnum">'+swFmt(x.answer)+'</div><div class="helpcalc">'+swTable(swCells(x.d),x.cols)+'</div><div class="helpline">'
+        +'<b>1.</b> Suche das <b>Komma</b>. Die Ziffer direkt <b>vor</b> dem Komma kommt in die Spalte <b>E</b> (Einer).<br>'
+        +'<b>2.</b> Die Ziffern davor kommen nach links in die nächsten Spalten, die Ziffern <b>nach</b> dem Komma in z, h, t.<br>'
+        +'<b>3.</b> Eine <b>0 zwischen</b> anderen Ziffern musst du auch eintragen.</div>';
+    }
+    return h+'<div class="helpcalc">'+swTable(swCells(x.d),x.cols)+'</div><div class="helpline">'
+      +'<b>1.</b> Lies die Ziffern von links nach rechts.<br>'
+      +'<b>2.</b> Nach der <b>Einer</b>-Spalte (E) kommt das <b>Komma</b> (rote Linie).<br>'
+      +'<b>3.</b> Die Zahl ist <b>'+swFmt(x.answer)+'</b>.</div>';
+  }
+
+  /* ======================================================================
+     NEU: Kategorie "Brüche und Dezimalzahlen bei Grössen bestimmen" (cat 'bdg')
+     Aufgabenarten (kind):
+       kr2b  Kreis mit gefärbten Teilen -> Bruch            st2b  Strecke mit gefärbten Teilen -> Bruch
+       b2kr  Bruch -> Teile im Kreis anmalen                b2st  Bruch -> Hebel auf der Strecke verschieben
+       b2d   Bruch -> Dezimalzahl                           d2b   Dezimalzahl -> Bruch
+       m3    Kreis/Strecke -> Bruch, Dezimalzahl, Prozent   r3    Dezimalzahl oder Prozent -> Bruch, das andere, Modell
+       unit  Grösse in l/dl/cl/ml oder m/dm/cm/mm -> die anderen 3 Einheiten
+       row   Tabellenzeile: Bruch, Kreis, Strecke, l = cl = ml, Prozent (eine Angabe gegeben)
+     Alle Brüche sind kleiner als 1. Rechnen mit ganzen Zahlen (kein Rundungsfehler).
+     Teile (parts): fr = Bruch, dec = Dezimalzahl, pct = Prozent, pie = Kreis, bar = Strecke, grid = Hunderterfeld,
+                    l/cl/ml bzw. u0…u3 = Einheiten
+     ====================================================================== */
+  function bgGcd(a,b){while(b){[a,b]=[b,a%b];}return a;}
+  function bgDec(n,d){return dfmt(n*1000/d,3);}     /* d teilt 1000 */
+  function bgFr(dens,reduced){for(;;){let d=pick(dens),n=ri(1,d-1);if(!reduced||bgGcd(n,d)===1)return {n:n,d:d};}}
+  /* ---------- Darstellungen ---------- */
+  function bgPt(a){let w=2*Math.PI*a;return (100+90*Math.sin(w)).toFixed(2)+' '+(100-90*Math.cos(w)).toFixed(2);}
+  function bgArc(a0,a1){if(a1-a0>=0.9999)return 'M100 10 A90 90 0 1 1 99.99 10 Z';return 'M100 100 L'+bgPt(a0)+' A90 90 0 '+((a1-a0)>0.5?1:0)+' 1 '+bgPt(a1)+' Z';}
+  /* Kreis: g Teile, k davon gefärbt (von oben im Uhrzeigersinn). drag = ohne Teilstriche, Fläche wird gezogen */
+  function bgPie(g,k,live,drag,part){
+    let o='<svg class="bgpie'+(live?' live':'')+(drag?' drag':'')+'" viewBox="0 0 200 200" data-g="'+g+'"'+(part?' data-part="'+part+'"':'')+'>';
+    if(drag){o+='<circle cx="100" cy="100" r="90" class="bgbase"></circle><path class="bgarc" d="'+(k>0?bgArc(0,k/g):'')+'"></path>'+(live?'<circle class="bgknob" r="9" cx="100" cy="10"></circle>':'');}
+    else for(let i=0;i<g;i++)o+='<path data-i="'+i+'" class="'+(i<k?'on':'')+'" d="'+(g===1?bgArc(0,1):bgArc(i/g,(i+1)/g))+'"></path>';
+    return o+'<circle cx="100" cy="100" r="90" class="bgout"></circle></svg>';
+  }
+  /* Strecke von 0 bis 1 mit g Teilen, k gefärbt; live = Hebel zum Verschieben */
+  function bgBar(g,k,live,part){
+    let o='<div class="bgbar'+(live?' live':'')+'" data-g="'+g+'"'+(part?' data-part="'+part+'"':'')+'><div class="bgfill" style="width:'+(100*k/g)+'%"></div>';
+    if(g===20)for(let i=1;i<g;i++)o+='<span class="bgtick'+(i%2?' dash':' tenth')+'" style="left:'+(100*i/g)+'%"></span>';   /* 20 Teile: Zehntel durchgezogen, 5-Hundertstel gestrichelt */
+    else if(g<=20)for(let i=1;i<g;i++)o+='<span class="bgtick" style="left:'+(100*i/g)+'%"></span>';
+    else for(let i=1;i<10;i++)o+='<span class="bgtick" style="left:'+(10*i)+'%"></span>';   /* 100 Teile: nur Zehnerstriche */
+    o+='<span class="bgl0">0</span>'+(g===20?'<span class="bglm">0.5</span>':'')+'<span class="bgl1">1</span>';   /* 20 Teile: Mitte mit 0.5 beschriftet */
+    if(live)o+='<div class="bghandle" tabindex="0" role="slider" aria-label="Hebel" style="left:'+(100*k/g)+'%"></div>';
+    return o+'</div>';
+  }
+  /* Hunderterfeld: p von 100 Feldern gefärbt (zeilenweise von oben links) */
+  function bgGrid(p,live,part){
+    let o='<div class="bggrid'+(live?' live':'')+'"'+(part?' data-part="'+part+'"':'')+'>';
+    for(let i=0;i<100;i++)o+='<i data-i="'+i+'" class="'+(i<p?'on':'')+'"></i>';
+    return o+'</div>';
+  }
+  function bgIn(k,w){return '<input class="bin" data-k="'+k+'" data-part="'+k+'" inputmode="decimal" autocomplete="off"'+(w?' style="width:'+w+'px"':'')+'>';}
+  function bgFrIn(){return '<span class="frin" data-part="fr"><input class="bin bfn" data-k="fn" inputmode="numeric" autocomplete="off" aria-label="Zähler"><span class="frl"></span><input class="bin bfn" data-k="fd" inputmode="numeric" autocomplete="off" aria-label="Nenner"></span>';}
+  /* Modell für einen Bruch wählen: Kreis mit d Teilen (d ≤ 10) bzw. Strecke mit d Teilen (d ≤ 20), sonst ohne Teilstriche */
+  function bgPieG(d){return d<=10?d:100;}
+  function bgBarG(d){return d<=20?d:100;}
+  const BG_VOL=['l','dl','cl','ml'],BG_LEN=['m','dm','cm','mm'];
+  /* ---------- Aufgaben erzeugen ---------- */
+  const BG_KINDS=[[['kr2b',1],['st2b',1],['b2kr',1],['b2st',1]],[['b2d',1],['d2b',1]],[['m3',1],['r3',1]],[['unit',1]],[['row',1]]];
+  function bgGen(l,kind,ref){
+    for(let it=0;it<300;it++){
+      let t={cat:'bdg',level:l,kind:kind},f;
+      if(kind==='kr2b'||kind==='b2kr'){f=bgFr([2,3,4,5,6,8,10]);t.g=f.d;}
+      if(kind==='st2b'){f=bgFr([2,3,4,5,6,8,10,12]);t.g=f.d;}
+      if(kind==='b2st'){f=bgFr([2,3,4,5,6,8,10]);t.g=(f.d<=5&&Math.random()<0.35)?2*f.d:f.d;}   /* manchmal feinere Einteilung: 2/5 auf 10 Teilen */
+      if(kind==='b2d'||kind==='d2b')f=bgFr([2,4,5,8,10,20,25,50,100,100],kind==='d2b');
+      if(kind==='m3'){t.model=pick(['pie','bar']);f=bgFr(t.model==='pie'?[2,4,5,10]:[2,4,5,10,20]);t.g=f.d;}
+      if(kind==='r3'){   /* nur 5-Hundertstel-Schritte (0.05, 0.1, … 0.95); Strecke immer mit 20 Teilen, manchmal zusätzlich der Kreis */
+        f=bgFr([2,4,5,10,20,20],true);t.from=pick(['dec','pct']);t.model=f.d<=10&&Math.random()<0.5?'pie':'bar';t.pg=f.d;t.bg=20;}
+      if(kind==='row'){
+        t.given=ref?ref.given:pick(['fr','pie','bar','l','grid']);
+        f=bgFr(t.given==='pie'?[2,4,5,10]:[2,4,5,10,20,20],true);   /* Kreis immer mit Teilstrichen zum Antippen: höchstens 20 Teile */
+        t.pg=f.d;t.bg=f.d;
+      }
+      if(kind==='unit'){
+        t.sys=ref?ref.sys:pick(['vol','vol','len']);t.u=ref?ref.u:pick([0,0,1,1,2,3]);
+        let V=pick([ri(1,9),ri(10,99),ri(100,999),ri(100,999),ri(1000,9999)]);   /* in ml bzw. mm */
+        let p=3-t.u;if(t.u<3&&V%ipow(10,p)===0)continue;   /* gegebene Zahl ist eine Dezimalzahl (ausser bei ml/mm) */
+        if(ref&&V===ref.V)continue;
+        t.V=V;t.units=t.sys==='vol'?BG_VOL:BG_LEN;t.vals=[0,1,2,3].map(j=>dfmt(V,3-j));
+        t.answer=t.vals.filter((x,j)=>j!==t.u).join(' / ');
+        return t;
+      }
+      if(ref&&ref.n===f.n&&ref.d===f.d)continue;
+      if(ref&&kind==='row'&&f.d>10&&ref.d<=10)continue;   /* Hilfsbeispiel ähnlich schwer */
+      t.n=f.n;t.d=f.d;t.answer=kind==='b2d'?bgDec(f.n,f.d):f.n+'/'+f.d;
+      return t;
+    }
+  }
+  function bgRowCells(t,sol){   /* Tabellenzeile wie im Arbeitsblatt; sol=true: alles ausgefüllt (Hilfe) */
+    let n=t.n,d=t.d,G=t.given,cl=n*100/d,ml=n*1000/d,p=n*100/d,show=k=>sol||G===k;
+    let fr=show('fr')?'<div class="bggiven">'+frHtml(n,d)+'</div>':bgFrIn();
+    let pie=show('pie')?bgPie(t.pg,Math.round(t.pg*n/d),false,false):bgPie(t.pg,0,true,false,'pie');
+    let bar=show('bar')?bgBar(t.bg,Math.round(t.bg*n/d),false):bgBar(t.bg,0,true,'bar');
+    let v=(k,val)=>show(k)?'<b class="bgv">'+val+'</b>':bgIn(k,80);
+    let vol='<div class="bgline sm">'+v('l',bgDec(n,d))+' l</div>';   /* nur in Liter, keine Umrechnung */
+    let grid=show('grid')?bgGrid(p,false):bgGrid(0,false,'grid').replace('class="bggrid"','class="bggrid lev"')
+      +'<div class="bglev"><button type="button" class="bgstep" data-s="-1" aria-label="ein Feld weniger">−</button><div class="bgbar bgl live" data-g="100"><div class="bgfill" style="width:0%"></div>'
+      +[1,2,3,4,5,6,7,8,9].map(i=>'<span class="bgtick" style="left:'+(10*i)+'%"></span>').join('')+'<div class="bghandle" tabindex="0" role="slider" aria-label="Hebel Hunderterfeld" style="left:0%"></div></div><button type="button" class="bgstep" data-s="1" aria-label="ein Feld mehr">+</button></div>';
+    return '<div class="bgrow"><div class="bgcell"><h4>Bruch</h4>'+fr+'</div><div class="bgcell"><h4>Kreismodell</h4>'+pie+'</div><div class="bgcell"><h4>Streckenmodell</h4>'+bar+'</div><div class="bgcell"><h4>Angabe in l</h4>'+vol+'</div><div class="bgcell"><h4>Prozent</h4>'+grid+'</div></div>';
+  }
+  function makeBdg(l){
+    let kind=wpick(BG_KINDS[l]),t=bgGen(l,kind),n=t.n,d=t.d;
+    t.interactive=true;t.noInput=true;t.state={v:{},pie:0,bar:0,grid:0};
+    if(kind==='kr2b'){t.text='Welcher Bruch ist im Kreis gefärbt?';t.html='<div class="zq">Welcher Bruch ist gefärbt?</div>'+bgPie(t.g,n)+'<div class="bgline">'+bgFrIn()+'</div>';t.parts=['fr'];}
+    if(kind==='st2b'){t.text='Welcher Bruch ist auf der Strecke gefärbt?';t.html='<div class="zq">Welcher Bruch der Strecke ist gefärbt?</div>'+bgBar(t.g,n,false)+'<div class="bgline">'+bgFrIn()+'</div>';t.parts=['fr'];}
+    if(kind==='b2kr'){t.text='Male '+n+'/'+d+' im Kreis an';t.html='<div class="zq">Male '+frHtml(n,d)+' im Kreis an.</div>'+bgPie(t.g,0,true,false,'pie')+'<div class="hint">Tippe auf die Teile, die gefärbt sein sollen.</div>';t.parts=['pie'];}
+    if(kind==='b2st'){t.text='Zeige '+n+'/'+d+' auf der Strecke';t.html='<div class="zq">Schiebe den Hebel auf '+frHtml(n,d)+' der Strecke.</div>'+bgBar(t.g,0,true,'bar')+'<div class="hint">Ziehe den blauen Hebel oder tippe auf die Strecke.</div>';t.parts=['bar'];}
+    if(kind==='b2d'){t.text='Schreibe '+n+'/'+d+' als Dezimalzahl';t.html='<div class="zq">Schreibe den Bruch als <b>Dezimalzahl</b>.</div><div class="swnum">'+frHtml(n,d)+' = '+QM+'</div>';t.interactive=false;t.noInput=false;t.answer=bgDec(n,d);}
+    if(kind==='d2b'){t.text='Schreibe '+bgDec(n,d)+' als Bruch';t.html='<div class="zq">Schreibe die Dezimalzahl als <b>Bruch</b>.</div><div class="bgline"><span class="bggiven">'+bgDec(n,d)+' =</span>'+bgFrIn()+'</div><div class="hint">Jeder gleichwertige Bruch ist richtig.</div>';t.parts=['fr'];}
+    if(kind==='m3'){
+      t.text='Bruch, Dezimalzahl und Prozent zum '+(t.model==='pie'?'Kreis':'Streckenmodell');
+      t.html='<div class="zq">Welcher Anteil ist gefärbt? Gib ihn als <b>Bruch</b>, als <b>Dezimalzahl</b> und in <b>Prozent</b> an.</div>'+(t.model==='pie'?bgPie(t.g,n):bgBar(t.g,n,false))
+        +'<div class="bgline">'+bgFrIn()+' = '+bgIn('dec')+' = '+bgIn('pct',70)+' %</div>';
+      t.parts=['fr','dec','pct'];
+    }
+    if(kind==='r3'){
+      let given=t.from==='dec'?bgDec(n,d):(n*100/d)+' %';
+      t.text=given+' als Bruch, '+(t.from==='dec'?'Prozent':'Dezimalzahl')+' und im Modell';
+      t.html='<div class="zq">Gib <b>'+given+'</b> auch als Bruch und als '+(t.from==='dec'?'Prozent':'Dezimalzahl')+' an und zeige den Anteil '+(t.model==='pie'?'im Kreis und ':'')+'im Streckenmodell.</div>'
+        +'<div class="bgline"><span class="bggiven">'+given+' =</span>'+bgFrIn()+' = '+(t.from==='dec'?bgIn('pct',70)+' %':bgIn('dec'))+'</div>'
+        +(t.model==='pie'?bgPie(t.pg,0,true,false,'pie'):'')
+        +bgBar(t.bg,0,true,'bar')+'<div class="hint">'+(t.model==='pie'?'Kreis: Teile antippen · ':'')+'Strecke: Hebel ziehen – ein Teil = 0.05 (5 %)</div>';
+      t.parts=t.model==='pie'?['fr',t.from==='dec'?'pct':'dec','pie','bar']:['fr',t.from==='dec'?'pct':'dec','bar'];
+    }
+    if(kind==='unit'){
+      let U=t.units,cells=U.map((u,j)=>(j===t.u?'<b class="bgv">'+t.vals[j]+'</b>':bgIn('u'+j,100))+' '+u);
+      t.text=t.vals[t.u]+' '+U[t.u]+' in '+U.filter((x,j)=>j!==t.u).join(', ');
+      t.html='<div class="zq">Rechne <b>'+t.vals[t.u]+' '+U[t.u]+'</b> in die anderen Einheiten um.</div><div class="bgline nw">'+cells.map(c=>'<span class="bgu">'+c+'</span>').join('<span>=</span>')+'</div><div class="hint">Schreibe die Zahlen als Dezimalzahlen (z. B. 0.35), nicht als Bruch.</div>';
+      t.parts=[0,1,2,3].filter(j=>j!==t.u).map(j=>'u'+j);
+    }
+    if(kind==='row'){
+      t.text='Tabellenzeile vervollständigen ('+({fr:'Bruch',pie:'Kreis',bar:'Strecke',l:'l',cl:'cl',ml:'ml',grid:'Prozent'})[t.given]+' gegeben)';
+      t.html='<div class="zq">Stelle die gegebene Angabe in den verschiedenen Darstellungen dar.</div>'+bgRowCells(t,false)
+        +'<div class="hint">Kreis: Teile antippen · Strecke: Hebel ziehen · Prozent: Hebel ziehen, mit − und + genau einstellen</div>';
+      t.parts=['fr','pie','bar','l','grid'].filter(k=>k!==t.given);
+    }
+    return t;
+  }
+  /* ---------- Prüfen ---------- */
+  function bgPartOk(t,k){
+    let st=t.state,v=st.v,n=t.n,d=t.d;
+    const num=(x,exp)=>{if(x===undefined)return false;let s=normalizeInput(String(x).replace('%',''));return s!==null&&s===normalize(String(exp));};
+    if(k==='fr'){let a=v.fn,b=v.fd;if(!/^\d+$/.test(a||'')||!/^\d+$/.test(b||''))return false;return +b>0&&(+a)*d===n*(+b);}
+    if(k==='dec')return num(v.dec,bgDec(n,d));
+    if(k==='pct')return num(v.pct,dfmt(n*100000/d,3));
+    if(k==='l')return num(v.l,bgDec(n,d));
+    if(k==='cl')return num(v.cl,dfmt(n*100000/d,3));
+    if(k==='ml')return num(v.ml,String(n*1000/d));
+    if(k==='grid')return st.grid*d===n*100;
+    if(k==='pie'||k==='bar'){
+      let g=k==='pie'?(t.pg||t.g):(t.bg||t.g),c=st[k];
+      if(g===100)return Math.abs(c/g-n/d)<=0.02+1e-9;   /* ohne Teilstriche: 2 % Spielraum */
+      return c*d===n*g;
+    }
+    if(k[0]==='u'){let j=+k[1];return num(v[k],t.vals[j]);}
+    return false;
+  }
+  function bgCheck(t){
+    let ok=true,root=document.getElementById('task');
+    t.parts.forEach(k=>{
+      let good=bgPartOk(t,k);if(!good)ok=false;
+      if(root&&root.contains&&t.state.el&&root.contains(t.state.el))t.state.el.querySelectorAll('[data-part="'+k+'"]').forEach(e=>e.classList.toggle('bad',!good));
+    });
+    return ok;
+  }
+  /* ---------- Bedienung ---------- */
+  function bgMount(el,t){
+    let st=t.state;st.el=el;
+    const clear=e=>{let p=e.closest('[data-part]');if(p)p.classList.remove('bad');};
+    let ins=[...el.querySelectorAll('input.bin')];
+    ins.forEach(function(inp,i){
+      inp.addEventListener('input',function(){if(inp.classList.contains('bfn'))inp.value=inp.value.replace(/\D/g,'').slice(0,6);st.v[inp.getAttribute('data-k')]=inp.value;clear(inp);});
+      inp.addEventListener('keydown',function(e){
+        if(inp.getAttribute('data-k')==='fn'&&e.key==='ArrowDown'){let nx=inp.parentNode.querySelector('[data-k="fd"]');if(nx){nx.focus();e.preventDefault();}}
+        if(inp.getAttribute('data-k')==='fd'&&e.key==='ArrowUp'){let nx=inp.parentNode.querySelector('[data-k="fn"]');if(nx){nx.focus();e.preventDefault();}}
+      });
+    });
+    if(ins.length&&!window.matchMedia('(pointer:coarse)').matches)setTimeout(()=>ins[0].focus(),0);
+    /* Kreis */
+    el.querySelectorAll('svg.bgpie.live').forEach(function(sv){
+      let g=+sv.getAttribute('data-g');
+      if(!sv.classList.contains('drag')){
+        sv.addEventListener('click',function(e){let p=e.target.closest('path[data-i]');if(!p)return;p.classList.toggle('on');st.pie=sv.querySelectorAll('path.on').length;sv.classList.remove('bad');});
+        return;
+      }
+      let arc=sv.querySelector('.bgarc'),knob=sv.querySelector('.bgknob'),drag=false;
+      function setK(k){k=Math.max(0,Math.min(g,k));st.pie=k;arc.setAttribute('d',k>0?bgArc(0,k/g):'');let p=bgPt(k/g).split(' ');knob.setAttribute('cx',p[0]);knob.setAttribute('cy',p[1]);sv.classList.remove('bad');}
+      function fromEv(e){let r=sv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*200-100,y=(e.clientY-r.top)/r.height*200-100;
+        let a=Math.atan2(x,-y)/(2*Math.PI);if(a<0)a+=1;let k=Math.round(a*g);if(k===0&&st.pie>g/2)k=g;if(k===g&&st.pie<g/2&&a>0.9)k=g;return k;}
+      sv.addEventListener('pointerdown',function(e){drag=true;try{sv.setPointerCapture(e.pointerId);}catch(x){}setK(fromEv(e));e.preventDefault();});
+      sv.addEventListener('pointermove',function(e){if(drag)setK(fromEv(e));});
+      sv.addEventListener('pointerup',()=>drag=false);sv.addEventListener('pointercancel',()=>drag=false);
+    });
+    /* Strecke mit Hebel */
+    el.querySelectorAll('.bgbar.live').forEach(function(bar){
+      let g=+bar.getAttribute('data-g'),fill=bar.querySelector('.bgfill'),h=bar.querySelector('.bghandle'),drag=false;
+      let lev=bar.classList.contains('bgl'),gr=lev?bar.closest('.bgcell').querySelector('.bggrid'):null,key=lev?'grid':'bar';
+      function setK(k){k=Math.max(0,Math.min(g,k));st[key]=k;fill.style.width=(100*k/g)+'%';h.style.left=(100*k/g)+'%';bar.classList.remove('bad');
+        if(gr){gr.querySelectorAll('i').forEach((c,i)=>c.classList.toggle('on',i<k));gr.classList.remove('bad');}}   /* Hunderterfeld zeilenweise füllen */
+      if(lev)bar.parentNode.querySelectorAll('.bgstep').forEach(b=>b.addEventListener('click',()=>setK(st.grid+(+b.getAttribute('data-s')))));
+      function fromEv(e){let r=bar.getBoundingClientRect();return Math.round((e.clientX-r.left)/r.width*g);}
+      bar.addEventListener('pointerdown',function(e){drag=true;try{bar.setPointerCapture(e.pointerId);}catch(x){}setK(fromEv(e));h.focus({preventScroll:true});e.preventDefault();});
+      bar.addEventListener('pointermove',function(e){if(drag)setK(fromEv(e));});
+      bar.addEventListener('pointerup',()=>drag=false);bar.addEventListener('pointercancel',()=>drag=false);
+      h.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='ArrowUp'){setK(st[key]+1);e.preventDefault();}if(e.key==='ArrowLeft'||e.key==='ArrowDown'){setK(st[key]-1);e.preventDefault();}});
+    });
+    /* Hunderterfeld: antippen oder darüberwischen */
+    el.querySelectorAll('.bggrid.live').forEach(function(gr){
+      let mode=null;
+      const cnt=()=>{st.grid=gr.querySelectorAll('i.on').length;gr.classList.remove('bad');};
+      function at(e){let x=document.elementFromPoint(e.clientX,e.clientY);return x&&x.parentNode===gr?x:null;}
+      gr.addEventListener('pointerdown',function(e){let c=at(e);if(!c)return;mode=!c.classList.contains('on');c.classList.toggle('on',mode);cnt();e.preventDefault();});
+      gr.addEventListener('pointermove',function(e){if(mode===null)return;let c=at(e);if(c){c.classList.toggle('on',mode);cnt();}});
+      document.addEventListener('pointerup',()=>mode=null);
+    });
+  }
+  /* ---------- Hilfe ---------- */
+  function bgExp(n,d){   /* Bruch auf 10, 100 oder 1000 erweitern */
+    let N=[10,100,1000].find(x=>x%d===0);
+    return {N:N,Z:n*N/d,f:N/d};
+  }
+  function helpBdg(t){
+    let x=t;if(!HX){let e=bgGen(t.level,t.kind,t);if(e)x=Object.assign(e,{model:e.model||t.model});}
+    let h='<b>Hilfsbeispiel:</b>',n=x.n,d=x.d;
+    const exp=()=>{let E=bgExp(n,d);return (E.f>1?frHtml(n,d)+' = '+frHtml(n+' · '+E.f,d+' · '+E.f)+' = ':'')+frHtml(E.Z,E.N)+' = <b>'+bgDec(n,d)+'</b>';};
+    const pct=()=>{let f=100/d;return frHtml(n,d)+' = '+(f>1?frHtml(n+' · '+f,d+' · '+f)+' = ':'')+frHtml(n*f,100)+' = <b>'+(n*f)+' %</b>';};
+    if(x.kind==='kr2b'||x.kind==='b2kr'||x.kind==='st2b'||x.kind==='b2st'){
+      let pie=x.kind==='kr2b'||x.kind==='b2kr',g=x.g||d,k=g*n/d;
+      return h+'<div class="bgline">'+frHtml(n,d)+'</div>'+(pie?bgPie(g,k):bgBar(g,k,false))+'<div class="helpline">'
+        +'<b>Nenner '+d+'</b>: Das Ganze ist in <b>'+d+' gleich grosse Teile</b> geteilt.<br><b>Zähler '+n+'</b>: <b>'+n+' Teile</b> sind gefärbt.'
+        +(g!==d?'<br>Hier hat die Strecke '+g+' Teile: '+frHtml(n,d)+' = '+frHtml(k,g)+', also '+k+' Teile bis zum Hebel.':'')+'</div>';
+    }
+    if(x.kind==='b2d')return h+'<div class="swnum">'+frHtml(n,d)+' = ?</div><div class="helpline">Erweitere den Bruch so, dass unten <b>10, 100 oder 1000</b> steht. Dann kannst du ihn als Dezimalzahl schreiben:<br>'+exp()+'</div>';
+    if(x.kind==='d2b'){let E=bgExp(n,d),g=bgGcd(E.Z,E.N);
+      return h+'<div class="swnum">'+bgDec(n,d)+' = ?</div><div class="helpline">Die letzte Ziffer steht bei den <b>'+({10:'Zehnteln',100:'Hundertsteln',1000:'Tausendsteln'})[E.N]+'</b>, also ist der Nenner <b>'+E.N+'</b>: '+bgDec(n,d)+' = '+frHtml(E.Z,E.N)+'.'+(g>1?'<br>Du kannst kürzen: '+frHtml(E.Z,E.N)+' = <b>'+frHtml(E.Z/g,E.N/g)+'</b>.':'')+'</div>';}
+    if(x.kind==='m3'||x.kind==='r3'){
+      let mod;
+      if(x.kind==='r3')mod=(x.model==='pie'?bgPie(x.pg,x.pg*n/d,false,false):'')+bgBar(20,20*n/d,false);
+      else{let g=x.g||d,k=Math.round(g*n/d);mod=(x.model==='pie')?bgPie(g,k,false,g>10):bgBar(g,k,false);}
+      return h+mod+'<div class="helpline"><b>Bruch:</b> '+frHtml(n,d)+' ('+n+' von '+d+' gleich grossen Teilen)<br><b>Dezimalzahl:</b> '+exp()+'<br><b>Prozent:</b> '+pct()+'<br>Merke: <b>Prozent heisst „von 100“</b>, darum erweiterst du auf 100.'+(x.kind==='r3'?'<br><b>Strecke:</b> Sie hat 20 Teile, jedes Teil ist 0.05 = 5 %. '+(n*100/d)+' % sind also <b>'+(20*n/d)+' Teile</b>.':'')+'</div>';
+    }
+    if(x.kind==='unit'){
+      let U=x.units,big=U[0];
+      return h+'<div class="bgline"><b>'+x.vals[x.u]+' '+U[x.u]+'</b></div><div class="helpline">1 '+big+' = 10 '+U[1]+' = 100 '+U[2]+' = 1000 '+U[3]+'.<br>'
+        +'Zur nächst <b>kleineren</b> Einheit: mal 10, das Komma rückt <b>1 Stelle nach rechts</b>. Zur nächst <b>grösseren</b>: durch 10, das Komma rückt 1 Stelle nach links.</div>'
+        +'<div class="bgline">'+U.map((u,j)=>'<b>'+x.vals[j]+'</b> '+u).join(' = ')+'</div>';
+    }
+    if(x.kind==='row'){
+      return h+bgRowCells(x,true)+'<div class="helpline">Erweitere den Bruch auf <b>100</b>: '+pct()+'.<br>'
+        +'1 Ganzes = 1 l. Also: '+frHtml(n,d)+' l = <b>'+bgDec(n,d)+' l</b>.<br>'
+        +'Im Hunderterfeld färbst du '+(n*100/d)+' Felder. Im Kreis und auf der Strecke färbst du '+n+' von '+d+' gleich grossen Teilen.</div>';
+    }
+    return '';
+  }
+
+  /* ======================================================================
+     NEU: Kategorie "Multiplikation von Dezimalzahlen" (cat 'mul')
+     Level 1: ganze Zahl · Zehntel von 0.1 bis 0.9 (z. B. 7 · 0.3)
+     Level 2: 2–3 verwandte Aufgaben (z. B. 3 · 4, 3 · 0.4, 3 · 0.04)
+     Level 3: ganze Zahl · Dezimalzahl bis 10 mit Zehnteln (z. B. 7 · 2.3)
+     Level 4: Malkreuz mit ganzen Zahlen (16 · 14)   Level 5: Malkreuz mit Dezimalzahlen unter 10 (4.3 · 5.2)
+     Gerechnet wird mit ganzen Zahlen (Zehntel bzw. Hundertstel), damit keine Rundungsfehler entstehen.
+     ====================================================================== */
+  const MUL_DOT=' · ';
+  function mulGen(l,ref){
+    let L=Math.min(l,2);   /* Level 4/5 vorläufig wie Level 3 */
+    for(let it=0;it<300;it++){
+      let t={cat:'mul',level:l,kind:['m1','m2','m3'][L]};
+      if(L===0||L===2){
+        let w=ri(2,9),T=L===0?ri(1,9):(Math.random()<0.15?ri(1,9):ri(1,9)*10+ri(1,9));   /* T in Zehnteln: L1 0.1–0.9, L3 meist 1.1–9.9, selten 0.1–0.9; nie ganze Zahl */
+        let swap=ref?ref.swap:Math.random()<0.35;
+        if(ref&&ref.w===w&&ref.T===T)continue;
+        Object.assign(t,{w:w,T:T,swap:swap,d:sfmt(T,1)});
+        let ex=swap?t.d+MUL_DOT+w:w+MUL_DOT+t.d;
+        t.text=ex+' = ?';t.html=ex+' = '+QM;t.answer=dfmt(w*T,1);
+        return t;
+      }
+      /* Level 2: verwandte Aufgaben – gleiche Ziffern, ein Faktor wird 10- bzw. 100-mal kleiner */
+      let a=ri(2,9),b=ri(2,9),cnt=ref?ref.rows.length:pick([2,3,3]);
+      if(ref&&ref.a===a&&ref.b===b)continue;
+      let which=Math.random()<0.7?'b':'a';   /* meist der zweite Faktor */
+      let pl=cnt===3?[0,1,2]:pick([[0,1],[1,2],[0,2]]);   /* Nachkommastellen des veränderten Faktors */
+      let rows=pl.map(p=>{let x=dfmt(b,p),y=String(a);if(which==='a'){x=String(b);y=dfmt(a,p);}
+        return {txt:y+MUL_DOT+x,ans:dfmt(a*b,p)};});
+      Object.assign(t,{a:a,b:b,which:which,pl:pl,rows:rows});
+      t.text=rows.map(r=>r.txt).join(' | ');
+      t.html='<div class="zq">Löse die verwandten Aufgaben.</div><div class="mulrows">'+rows.map((r,i)=>'<div class="mulrow"><span>'+r.txt+' =</span><input class="bin mulin" data-i="'+i+'" data-part="r'+i+'" inputmode="decimal" autocomplete="off"></div>').join('')+'</div><div class="hint">Tipp: Vergleiche die Aufgaben miteinander.</div>';
+      t.answer=rows.map(r=>r.ans).join(' / ');
+      t.interactive=true;t.noInput=true;t.state={v:{}};
+      return t;
+    }
+  }
+  /* ---------- Level 4/5: Malkreuz ----------
+     Level 4: zwei ganze Zahlen von 11 bis 19, zerlegt in Zehner + Einer (16 · 14 = (10 + 6) · (10 + 4))
+     Level 5: zwei Dezimalzahlen unter 10 mit Zehnteln, zerlegt in Ganze + Zehntel (4.3 · 5.2 = (4 + 0.3) · (5 + 0.2))
+     Intern alles in Hundertsteln (ganze Zahlen). Felder: r0 r1 (Zeilen), c0 c1 (Spalten), p00…p11, s0 s1 (Zeilensummen), tot */
+  function mkGen(l,ref){
+    for(let it=0;it<300;it++){
+      let t={cat:'mul',level:l,kind:l===3?'mk4':'mk5'},A,B,R,C;
+      if(l===3){let a=ri(11,19),b=ri(11,19);   /* höchstens 20: (10 + x) · (10 + y) */A=a;B=b;R=[a-a%10,a%10].map(x=>x*100);C=[b-b%10,b%10].map(x=>x*100);t.a=String(a);t.b=String(b);}
+      else{let a=ri(1,9)*10+ri(1,9),b=ri(1,9)*10+ri(1,9);A=a;B=b;R=[a-a%10,a%10].map(x=>x*10);C=[b-b%10,b%10].map(x=>x*10);t.a=sfmt(a,1);t.b=sfmt(b,1);}   /* a, b in Zehnteln */
+      if(ref&&ref.a===t.a&&ref.b===t.b)continue;
+      t.R=R;t.C=C;t.P=[[R[0]*C[0]/100,R[0]*C[1]/100],[R[1]*C[0]/100,R[1]*C[1]/100]];
+      t.S=[t.P[0][0]+t.P[0][1],t.P[1][0]+t.P[1][1]];t.T=t.S[0]+t.S[1];
+      const f=x=>dfmt(x,2);
+      t.split='('+f(R[0])+' + '+f(R[1])+')'+MUL_DOT+'('+f(C[0])+' + '+f(C[1])+')';
+      t.text=t.a+MUL_DOT+t.b+' = '+t.split;t.answer=f(t.T);
+      return t;
+    }
+  }
+  function mkTable(t,sol){   /* Malkreuz wie im Arbeitsblatt; sol = ausgefüllt (Hilfe) */
+    const f=x=>dfmt(x,2),cell=(k,v,cls)=>'<td class="'+(cls||'')+'">'+(sol?'<b>'+f(v)+'</b>':'<input class="bin mkin" data-k="'+k+'" data-part="'+k+'" inputmode="decimal" autocomplete="off">')+'</td>';
+    return '<table class="mk"><tr><td class="mk0"></td>'+cell('c0',t.C[0],'mkh')+cell('c1',t.C[1],'mkh')+'<td class="mk0"></td></tr>'
+      +[0,1].map(i=>'<tr>'+cell('r'+i,t.R[i],'mkh')+cell('p'+i+'0',t.P[i][0],'mkc'+i+'0')+cell('p'+i+'1',t.P[i][1],'mkc'+i+'1')+cell('s'+i,t.S[i],'mks')+'</tr>').join('')
+      +'<tr><td class="mk0"></td><td class="mk0"></td><td class="mk0"></td>'+cell('tot',t.T,'mkt')+'</tr></table>';
+  }
+  function mkVal(x){   /* Eingabe -> Hundertstel (ganze Zahl) oder NaN */
+    if(x===undefined||x==='')return NaN;let s=normalizeInput(String(x));if(s===null)return NaN;
+    let m=/^(\d+)(?:\.(\d+))?$/.exec(s);if(!m)return NaN;let fr=(m[2]||'');if(fr.length>2&&/[1-9]/.test(fr.slice(2)))return NaN;
+    return (+m[1])*100+(+(fr+'00').slice(0,2));
+  }
+  function mkCheck(t){
+    let v=t.state.v,g=k=>mkVal(v[k]),res={},ok=true;
+    const same=(a,b)=>[...a].sort((x,y)=>x-y).join()===[...b].sort((x,y)=>x-y).join();
+    let R=[g('r0'),g('r1')],C=[g('c0'),g('c1')];
+    /* Beide Faktoren dürfen links oder oben stehen, in beliebiger Reihenfolge: (20 + 8) links und (10 + 4) oben – oder umgekehrt */
+    let RA=same(R,t.R),RB=same(R,t.C),CA=same(C,t.R),CB=same(C,t.C),rOk,cOk;
+    if((RA&&CB)||(RB&&CA)){rOk=cOk=true;}
+    else{rOk=RA||RB;cOk=rOk?(RA?CB:CA):(CA||CB);}
+    res.r0=res.r1=rOk;res.c0=res.c1=cOk;
+    if(!rOk)R=cOk?(same(C,t.C)?t.R:t.C):t.R;   /* bei falschen Randzahlen gegen die passende richtige Zerlegung prüfen */
+    if(!cOk)C=same(R,t.R)?t.C:t.R;
+    let S=[0,0];
+    [0,1].forEach(i=>[0,1].forEach(j=>{let p=R[i]*C[j]/100;res['p'+i+j]=g('p'+i+j)===p;S[i]+=p;}));
+    res.s0=g('s0')===S[0];res.s1=g('s1')===S[1];res.tot=g('tot')===t.T;
+    for(let k in res){if(!res[k])ok=false;if(t.state.el)t.state.el.querySelectorAll('[data-part="'+k+'"]').forEach(e=>e.classList.toggle('bad',!res[k]));}
+    return ok;
+  }
+  function mkHelp(x){
+    const f=v=>dfmt(v,2),P=x.P;
+    let l5=x.kind==='mk5';
+    return '<div class="ex">'+x.a+MUL_DOT+x.b+' = '+x.split+'</div>'+mkTable(x,true)+'<div class="helpline">'
+      +'<b>1.</b> Zerlege die Zahlen: '+x.a+' = '+f(x.R[0])+' + '+f(x.R[1])+' (links) und '+x.b+' = '+f(x.C[0])+' + '+f(x.C[1])+' (oben). Du darfst die beiden Zahlen auch vertauschen – das Ergebnis bleibt gleich.<br>'
+      +'<b>2.</b> Rechne jedes Feld: <b>Zahl links · Zahl oben</b>: '+[[0,0],[0,1],[1,0],[1,1]].map(([i,j])=>f(x.R[i])+MUL_DOT+f(x.C[j])+' = '+f(P[i][j])).join(', ')+'.'
+      +(l5?'<br>Tipp: '+f(x.R[1])+MUL_DOT+f(x.C[1])+' → rechne '+(x.R[1]/10)+MUL_DOT+(x.C[1]/10)+' = '+(x.R[1]*x.C[1]/100)+'. Beide Zahlen haben 1 Stelle nach dem Komma, das Ergebnis hat also <b>2 Stellen</b>: '+f(P[1][1])+'.':'')+'<br>'
+      +'<b>3.</b> Zähle jede Zeile zusammen: '+f(P[0][0])+' + '+f(P[0][1])+' = '+f(x.S[0])+' und '+f(P[1][0])+' + '+f(P[1][1])+' = '+f(x.S[1])+'.<br>'
+      +'<b>4.</b> Ergebnis: '+f(x.S[0])+' + '+f(x.S[1])+' = <b>'+f(x.T)+'</b>.</div>';
+  }
+  function makeMul(l){
+    if(l<3)return mulGen(l);
+    let t=mkGen(l);
+    t.html='<div class="zq">Rechne mit dem <b>Malkreuz</b>. Trage die Zahlen ein und berechne alle Felder.</div><div class="ex mkq">'+t.a+MUL_DOT+t.b+' = '+t.split+'</div>'+mkTable(t,false)
+      +'<div class="hint">Links und oben: die Teile der Zahlen (welche Zahl links und welche oben steht, darfst du wählen) · in der Mitte: Zahl links mal Zahl oben · rechts: Summe der Zeile · unten: Ergebnis</div>';
+    t.interactive=true;t.noInput=true;t.state={v:{}};
+    return t;
+  }
+  function mulCheck(t){
+    let ok=true;
+    t.rows.forEach((r,i)=>{
+      let x=t.state.v[i],s=x===undefined?null:normalizeInput(String(x));
+      let good=s!==null&&s===normalize(r.ans);if(!good)ok=false;
+      if(t.state.el)t.state.el.querySelectorAll('[data-part="r'+i+'"]').forEach(e=>e.classList.toggle('bad',!good));
+    });
+    return ok;
+  }
+  function mulMount(el,t){
+    let st=t.state;st.el=el;
+    el.querySelectorAll('input.mkin').forEach(function(inp){inp.addEventListener('input',function(){st.v[inp.getAttribute('data-k')]=inp.value;inp.classList.remove('bad');});});
+    let mk=[...el.querySelectorAll('input.mkin')];
+    if(mk.length&&!window.matchMedia('(pointer:coarse)').matches)setTimeout(()=>mk[0].focus(),0);
+    let ins=[...el.querySelectorAll('input.mulin')];
+    ins.forEach(function(inp,k){
+      inp.addEventListener('input',function(){st.v[inp.getAttribute('data-i')]=inp.value;inp.classList.remove('bad');});
+      inp.addEventListener('keydown',function(e){if(e.key==='ArrowDown'&&ins[k+1]){ins[k+1].focus();e.preventDefault();}if(e.key==='ArrowUp'&&ins[k-1]){ins[k-1].focus();e.preventDefault();}});
+    });
+    if(ins.length&&!window.matchMedia('(pointer:coarse)').matches)setTimeout(()=>ins[0].focus(),0);
+  }
+  function helpMul(t){
+    if(t.kind==='mk4'||t.kind==='mk5'){let x=t;if(!HX){let e=mkGen(t.level,t);if(e)x=e;}return '<b>Hilfsbeispiel:</b>'+mkHelp(x);}
+    let x=t;if(!HX){let e=mulGen(t.level,t);if(e)x=e;}
+    let h='<b>Hilfsbeispiel:</b>';
+    if(x.kind==='m1'){
+      let ex=x.swap?x.d+MUL_DOT+x.w:x.w+MUL_DOT+x.d;
+      return h+'<div class="ex">'+ex+'</div><div class="helpline">'+x.d+' sind <b>'+x.T+' Zehntel</b>.<br>'
+        +x.w+MUL_DOT+x.T+' Zehntel = <b>'+(x.w*x.T)+' Zehntel</b>.<br>'
+        +(x.w*x.T)+' Zehntel = <b>'+dfmt(x.w*x.T,1)+'</b>'+(x.w*x.T>=10?' (10 Zehntel sind 1 Ganzes)':'')+'.</div>';
+    }
+    if(x.kind==='m3'){
+      let ex=x.swap?x.d+MUL_DOT+x.w:x.w+MUL_DOT+x.d,E=Math.floor(x.T/10),z=x.T%10;
+      return h+'<div class="ex">'+ex+'</div><div class="helpline"><b>Weg 1 – zerlegen:</b> '+x.d+' = '+E+' + '+sfmt(z,1)+'<br>'
+        +x.w+MUL_DOT+E+' = '+(x.w*E)+' und '+x.w+MUL_DOT+sfmt(z,1)+' = '+dfmt(x.w*z,1)+'<br>'
+        +(x.w*E)+' + '+dfmt(x.w*z,1)+' = <b>'+dfmt(x.w*x.T,1)+'</b><br>'
+        +'<b>Weg 2 – ohne Komma rechnen:</b> '+x.w+MUL_DOT+x.T+' = '+(x.w*x.T)+'. '+x.d+' hat <b>1 Stelle</b> nach dem Komma, also hat auch das Ergebnis 1 Stelle nach dem Komma: <b>'+dfmt(x.w*x.T,1)+'</b>.</div>';
+    }
+    let base=x.a+MUL_DOT+x.b+' = '+(x.a*x.b);
+    return h+'<div class="mulrows">'+x.rows.map(r=>'<div class="mulrow"><span>'+r.txt+' = <b>'+r.ans+'</b></span></div>').join('')+'</div><div class="helpline">'
+      +'Alle Aufgaben haben die gleichen Ziffern: <b>'+base+'</b>.<br>'
+      +'Ist ein Faktor <b>10-mal kleiner</b> (z. B. 0.'+(x.which==='b'?x.b:x.a)+' statt '+(x.which==='b'?x.b:x.a)+'), ist auch das Ergebnis 10-mal kleiner: Das Komma rückt <b>1 Stelle nach links</b>.<br>'
+      +'Ist er <b>100-mal kleiner</b> (0.0'+(x.which==='b'?x.b:x.a)+'), rückt das Komma <b>2 Stellen</b> nach links.</div>';
+  }
+
+  /* ======================================================================
+     NEU: Kategorie "Division von Dezimalzahlen" (cat 'div') – alle Aufgaben gehen auf
+     Level 1: ganze Zahl : ganze Zahl bis 100, Ergebnis ganz (54 : 6 = 9)
+     Level 2: einstellige Dezimalzahl mit Zehnteln : ganze Zahl bis 9 (4.9 : 7 = 0.7)
+     Level 3: 2–3 verwandte Aufgaben (540 : 6 = 90, 54 : 6 = 9, 5.4 : 6 = 0.9)
+     Level 4: zweistellige Dezimalzahl mit Zehnteln : ganze Zahl (21.7 : 7 = 3.1)
+     Level 5: Mischung aus Level 1–4 mit schwierigeren Zahlen
+     Gerechnet wird in Zehnteln bzw. ganzen Zahlen (keine Rundungsfehler).
+     ====================================================================== */
+  const DIV_OP=' : ';
+  function divGen(l,ref){
+    let sub=ref?ref.sub:(l<4?l:ri(0,3)),hard=l===4;
+    for(let it=0;it<500;it++){
+      let t={cat:'div',level:l,sub:sub,hard:hard,kind:'d'+(sub+1)};
+      if(sub===0){   /* ganze Zahlen */
+        let b,q;
+        if(!hard){b=Math.random()<0.75?ri(2,10):ri(11,50);q=ri(2,Math.floor(100/b));if(q<2)continue;}
+        else{b=Math.random()<0.6?ri(3,12):ri(13,25);q=ri(Math.max(2,Math.ceil(101/b)),Math.floor(1000/b));}   /* schwerer: Dividend 101–1000 */
+        if(ref&&ref.b===b&&ref.q===q)continue;
+        Object.assign(t,{b:b,q:q,a:String(b*q)});t.ans=String(q);
+      }
+      if(sub===1||sub===3){   /* Dezimalzahl mit Zehnteln : ganze Zahl */
+        let b=hard?ri(3,12):ri(2,9),q,D;
+        let lo=sub===1?1:(hard?1001:101),hi=sub===1?99:(hard?9999:999);   /* D in Zehnteln: L2 0.1–9.9, L4 10.1–99.9, L5 auch 100.1–999.9 */
+        if(sub===1&&hard)hi=99;
+        q=ri(Math.ceil(lo/b),Math.floor(hi/b));D=b*q;
+        if(D%10===0||D<lo||D>hi)continue;   /* Dividend hat immer Zehntel */
+        if(sub===1&&!hard&&D<10&&Math.random()<0.5)continue;   /* nicht zu oft 0.x */
+        if(ref&&ref.b===b&&ref.q===q)continue;
+        Object.assign(t,{b:b,q:q,D:D,a:sfmt(D,1)});t.ans=dfmt(q,1);
+      }
+      if(sub===2){   /* verwandte Aufgaben */
+        let b=hard?ri(11,15):ri(2,9),q=ri(2,9),base=b*q;
+        if(ref&&ref.b===b&&ref.q===q)continue;
+        let ks=hard?pick([[2,1,0],[1,0,-1],[0,-1,-2]]):pick([[1,0,-1],[1,0,-1],[0,-1,-2],[1,0],[0,-1]]);   /* Zehnerpotenz des Dividenden */
+        let rows=ks.map(k=>({txt:dfmt(base*ipow(10,k+2),2)+DIV_OP+b,ans:dfmt(q*ipow(10,k+2),2)}));
+        Object.assign(t,{b:b,q:q,base:base,ks:ks,rows:rows});
+        t.text=rows.map(r=>r.txt).join(' | ');t.answer=rows.map(r=>r.ans).join(' / ');
+        t.html='<div class="zq">Löse die verwandten Aufgaben.</div><div class="mulrows">'+rows.map((r,i)=>'<div class="mulrow"><span>'+r.txt+' =</span><input class="bin mulin" data-i="'+i+'" data-part="r'+i+'" inputmode="decimal" autocomplete="off"></div>').join('')+'</div><div class="hint">Tipp: Vergleiche die Aufgaben miteinander.</div>';
+        t.interactive=true;t.noInput=true;t.state={v:{}};
+        return t;
+      }
+      let ex=t.a+DIV_OP+t.b;
+      t.text=ex+' = ?';t.html=ex+' = '+QM;t.answer=t.ans;
+      return t;
+    }
+  }
+  function makeDiv(l){return divGen(l);}
+  function helpDiv(t){
+    let x=t;if(!HX){let e=divGen(t.level,t);if(e)x=e;}
+    let h='<b>Hilfsbeispiel:</b>';
+    if(x.sub===0)return h+'<div class="ex">'+x.a+DIV_OP+x.b+'</div><div class="helpline">Frage dich: <b>'+x.b+' mal wie viel gibt '+x.a+'?</b><br>'+x.b+MUL_DOT+x.q+' = '+x.a+', also ist '+x.a+DIV_OP+x.b+' = <b>'+x.q+'</b>.'
+      +(x.q>=10&&x.b<=12?'<br>Tipp bei grossen Zahlen: zerlegen, z. B. '+x.a+' = '+(x.b*Math.floor(x.q/10)*10)+' + '+(x.b*(x.q%10))+' → '+(Math.floor(x.q/10)*10)+' + '+(x.q%10)+' = '+x.q+'.':'')+'</div>';
+    if(x.sub===2){
+      let base=x.base+DIV_OP+x.b+' = '+x.q;
+      return h+'<div class="mulrows">'+x.rows.map(r=>'<div class="mulrow"><span>'+r.txt+' = <b>'+r.ans+'</b></span></div>').join('')+'</div><div class="helpline">'
+        +'Alle Aufgaben haben die gleichen Ziffern: <b>'+base+'</b>.<br>'
+        +'Ist die erste Zahl <b>10-mal kleiner</b>, ist auch das Ergebnis 10-mal kleiner: Das Komma rückt <b>1 Stelle nach links</b>. Ist sie 10-mal grösser, rückt es 1 Stelle nach rechts.</div>';
+    }
+    let E=Math.floor(x.D/10),z=x.D%10,parts='';
+    if(E%x.b===0&&z%x.b===0&&E>0)parts='<br><b>Weg 2 – zerlegen:</b> '+x.a+' = '+E+' + '+sfmt(z,1)+'. '+E+DIV_OP+x.b+' = '+(E/x.b)+' und '+sfmt(z,1)+DIV_OP+x.b+' = '+dfmt(z/x.b,1)+'. Zusammen: <b>'+dfmt(x.q,1)+'</b>.';
+    return h+'<div class="ex">'+x.a+DIV_OP+x.b+'</div><div class="helpline"><b>Weg 1 – in Zehnteln rechnen:</b> '+x.a+' sind <b>'+x.D+' Zehntel</b>.<br>'
+      +x.D+' Zehntel'+DIV_OP+x.b+' = <b>'+x.q+' Zehntel</b> (denn '+x.b+MUL_DOT+x.q+' = '+x.D+').<br>'
+      +x.q+' Zehntel = <b>'+dfmt(x.q,1)+'</b>.'+parts+'</div>';
+  }
+
   const rFree={};
   function makeTask(l,opt){
     let cat=CATS[opt]?opt:pick(CAT_KEYS);
     if(cat==='komma')return makeKommaTask(l);
     if(cat==='dez')return makeDez(l);
     if(cat==='strahl')return makeStrahl(l);
+    if(cat==='stelle')return makeStelle(l);
+    if(cat==='bdg')return makeBdg(l);
+    if(cat==='mul')return makeMul(l);
+    if(cat==='div')return makeDiv(l);
     return makeKommaTask(l);
   }
   function mount(el,t){
     if(!t.interactive)return;
+    if(t.cat==='bdg'){bgMount(el,t);return;}
+    if(t.cat==='mul'||t.cat==='div'){mulMount(el,t);return;}
     let st=t.state;
     let zs=el.querySelector('svg.zs');
     if(zs&&(t.kind==='place'||t.kind==='frac'||t.kind==='pct')){   /* Schieberegler: Marke ziehen oder Stelle antippen, rastet auf den Strichen ein */
@@ -1008,15 +1868,107 @@ const TOPIC=(function(){
         if(e.key==='ArrowLeft'||e.key==='ArrowRight'){setI((st.i===undefined?(e.key==='ArrowRight'?-1:g.n+1):st.i)+(e.key==='ArrowRight'?1:-1));e.preventDefault();}
       });
     }
-    el.querySelectorAll('.yn button,.exq button').forEach(function(b){
+    let sd=el.querySelector('table.swd');
+    if(sd&&el.querySelector('.srcdot')){   /* nur bei Aufgaben zum Punkte-Legen */   /* Punkte legen: aus dem Vorrat in eine Spalte ziehen, zwischen Spalten verschieben, antippen oder hinausziehen = löschen */
+      const MAXD=9;
+      const zone=e=>sd.querySelector('.dz[data-e="'+e+'"]');
+      const draw=()=>sd.querySelectorAll('.dz').forEach(z=>{z.innerHTML=swDots(st.c[z.getAttribute('data-e')]||0);});
+      const add=(e,k)=>{k=k||1;let n=st.c[e]||0;if(n+k>MAXD){let z=zone(e);z.classList.remove('full');void z.offsetWidth;z.classList.add('full');return false;}st.c[e]=n+k;return true;};
+      const sub=e=>{if(st.c[e])st.c[e]--;};
+      let drag=null;
+      function zoneAt(x,y){let t=document.elementFromPoint(x,y);let z=t&&t.closest?t.closest('.dz'):null;return z&&sd.contains(z)?z:null;}
+      function start(ev,from){
+        drag={from:from,x:ev.clientX,y:ev.clientY,moved:false,g:null,over:null,id:ev.pointerId};
+        ev.preventDefault();ev.stopPropagation();
+      }
+      function move(ev){
+        if(!drag||ev.pointerId!==drag.id)return;
+        if(!drag.moved&&Math.hypot(ev.clientX-drag.x,ev.clientY-drag.y)<6)return;
+        if(!drag.moved){
+          drag.moved=true;
+          let gk=drag.from==='src5'?5:(drag.from==='src2'?2:1);
+          drag.g=document.createElement('div');drag.g.className='dotghost'+(gk>1?' g5':'');if(gk>1){drag.g.innerHTML='<i></i>'.repeat(gk);drag.g.style.gridTemplateColumns='repeat('+gk+',12px)';}document.body.appendChild(drag.g);
+          if(typeof drag.from==='number'){sub(drag.from);draw();}   /* Punkt aus der Spalte "aufheben" */
+        }
+        drag.g.style.left=ev.clientX+'px';drag.g.style.top=ev.clientY+'px';
+        let z=zoneAt(ev.clientX,ev.clientY);
+        if(z!==drag.over){if(drag.over)drag.over.classList.remove('over');if(z)z.classList.add('over');drag.over=z;}
+      }
+      function end(ev){
+        if(!drag||ev.pointerId!==drag.id)return;
+        let d=drag;drag=null;
+        if(d.g)d.g.remove();
+        if(d.over)d.over.classList.remove('over');
+        if(!d.moved){   /* nur angetippt */
+          if(typeof d.from==='number'){sub(d.from);draw();}   /* Punkt antippen = löschen */
+          return;
+        }
+        let z=zoneAt(ev.clientX,ev.clientY);
+        if(z){let e=+z.getAttribute('data-e');if(!add(e,d.from==='src5'?5:(d.from==='src2'?2:1))&&typeof d.from==='number')st.c[d.from]=(st.c[d.from]||0)+1;}   /* Spalte voll: Punkt zurück */
+        draw();   /* ausserhalb der Tafel losgelassen: Punkt ist gelöscht */
+      }
+      el.querySelector('.srcdot').addEventListener('pointerdown',ev=>start(ev,'src'));
+      el.querySelector('.srcdot5:not(.srcdot2)').addEventListener('pointerdown',ev=>start(ev,'src5'));
+      el.querySelector('.srcdot2').addEventListener('pointerdown',ev=>start(ev,'src2'));   /* 2er-Punkt: legt 2 Punkte auf einmal */   /* 5er-Punkt: legt 5 Punkte auf einmal */
+      sd.addEventListener('pointerdown',function(ev){
+        let dot=ev.target.closest('.dot'),z=ev.target.closest('.dz');
+        if(dot&&z)start(ev,+z.getAttribute('data-e'));
+      });
+      document.addEventListener('pointermove',move);
+      document.addEventListener('pointerup',end);
+      document.addEventListener('pointercancel',end);
+      el.querySelector('.swclr').addEventListener('click',function(){st.c=this.classList.contains('swrst')?Object.assign({},t.start):{};draw();this.blur();});   /* Level 4: zurück zur Startzahl */
+      /* alte Listener entfernen, sobald die Aufgabe nicht mehr angezeigt wird */
+      const obs=new MutationObserver(()=>{if(!document.body.contains(sd)){document.removeEventListener('pointermove',move);document.removeEventListener('pointerup',end);document.removeEventListener('pointercancel',end);obs.disconnect();}});
+      obs.observe(el,{childList:true});
+    }
+    let fi=[...el.querySelectorAll('input.fin')];
+    if(fi.length){   /* Bruch eingeben: Zähler und Nenner, nur Ziffern */
+      const upd=()=>{st.c={n:fi[0].value,d:fi[1].value};};
+      fi.forEach(function(inp,k){
+        inp.addEventListener('input',function(){inp.value=inp.value.replace(/\D/g,'').slice(0,6);upd();});
+        inp.addEventListener('keydown',function(e){
+          if((e.key==='ArrowDown'||e.key==='Tab'&&!e.shiftKey)&&k===0){fi[1].focus();e.preventDefault();}
+          if((e.key==='ArrowUp'||e.key==='Tab'&&e.shiftKey)&&k===1){fi[0].focus();e.preventDefault();}
+        });
+      });
+      upd();
+      if(!window.matchMedia('(pointer:coarse)').matches)setTimeout(()=>fi[0].focus(),0);
+    }
+    let ins=[...el.querySelectorAll('input.swin')];
+    if(ins.length){   /* Stellenwerttafel ausfüllen: eine Ziffer pro Feld, danach automatisch ins nächste Feld */
+      const upd=()=>{let c={};ins.forEach(i=>c[i.getAttribute('data-e')]=i.value);st.c=c;};
+      ins.forEach(function(inp,k){
+        inp.addEventListener('input',function(){
+          let d=inp.value.replace(/\D/g,'');inp.value=d.slice(-1);upd();
+          if(inp.value&&ins[k+1])ins[k+1].focus();
+        });
+        inp.addEventListener('keydown',function(e){
+          if(e.key==='Backspace'&&!inp.value&&ins[k-1]){ins[k-1].focus();ins[k-1].value='';upd();e.preventDefault();}
+          if(e.key==='ArrowLeft'&&ins[k-1]){ins[k-1].focus();e.preventDefault();}
+          if(e.key==='ArrowRight'&&ins[k+1]){ins[k+1].focus();e.preventDefault();}
+        });
+        inp.addEventListener('focus',function(){inp.select();});
+      });
+      upd();
+      if(!window.matchMedia('(pointer:coarse)').matches)setTimeout(()=>ins[0].focus(),0);
+    }
+    el.querySelectorAll('.yn button,.exq button,.swt button').forEach(function(b){
       b.addEventListener('click',function(){
         st.c=b.getAttribute('data-v');
-        el.querySelectorAll('.yn button,.exq button').forEach(function(x){x.classList.toggle('sel',x===b);});
+        el.querySelectorAll('.yn button,.exq button,.swt button').forEach(function(x){x.classList.toggle('sel',x===b);});
         b.blur();
       });
     });
   }
   function check(raw,t){
+    if(t.cat==='bdg'&&t.noInput)return bgCheck(t);
+    if(t.cat==='div'&&t.noInput)return mulCheck(t);
+    if(t.cat==='mul'&&t.noInput)return (t.kind==='mk4'||t.kind==='mk5')?mkCheck(t):mulCheck(t);
+    if(t.cat==='stelle'&&t.kind==='fill')return swFillOk(t);
+    if(t.cat==='stelle'&&t.kind==='dots')return swDotsOk(t);
+    if(t.cat==='stelle'&&t.kind==='d2f')return swFracOk(t);
+    if(t.cat==='stelle'&&t.kind==='change'){let c=t.state.c||{};return SW_E.every(e=>(c[e]||0)===(t.rd[e]||0));}
     if(t.noInput)return t.state.c===t.answer;
     if(t.cat==='strahl'&&(t.kind==='frac'||t.kind==='pct')){let v=normalizeInput(raw);return t.state.c===t.answer&&v!==null&&v===t.answer;}   /* Marke UND Dezimalzahl müssen stimmen */
     if(t.cat==='komma'){let v=normalizeInput(raw);return v!==null&&v===t.answer;}
@@ -1029,6 +1981,10 @@ const TOPIC=(function(){
     if(t.cat==='potenz')return helpPotenz(t);
     if(t.cat==='dez')return helpDez(t);
     if(t.cat==='strahl')return t.kind==='frac'?helpFrac(t):(t.kind==='pct'?helpPct(t):helpStrahl(t));
+    if(t.cat==='stelle')return helpStelle(t);
+    if(t.cat==='bdg')return helpBdg(t);
+    if(t.cat==='mul')return helpMul(t);
+    if(t.cat==='div')return helpDiv(t);
     if(t.cat==='komm')return helpKomm(t);
     if(t.cat==='rang')return helpRang(t);
     return helpKomma(t);
@@ -1040,9 +1996,13 @@ const TOPIC=(function(){
     subtitle:'Dezimalzahlen mit 10, 100 und 1000 multiplizieren und dividieren',
     subtitles:{
       komma:'Dezimalzahlen mit 10, 100 und 1000 multiplizieren und dividieren',
-      dez:'Dezimalzahlen addieren, subtrahieren, multiplizieren und dividieren',
+      dez:'Dezimalzahlen addieren und subtrahieren',
       strahl:'Dezimalzahlen am Zahlenstrahl ablesen und einzeichnen',
-      mix:'Alle Kategorien gemischt: Komma verschieben, Rechnen mit Dezimalzahlen und Zahlenstrahl'
+      stelle:'Dezimalzahlen in der Stellenwerttafel lesen, legen und verändern',
+      bdg:'Brüche, Dezimalzahlen und Prozent im Kreis, auf der Strecke und bei Grössen',
+      mul:'Dezimalzahlen multiplizieren: mit ganzen Zahlen, verwandte Aufgaben und Malkreuz',
+      div:'Dezimalzahlen durch ganze Zahlen dividieren – es geht immer auf',
+      mix:'Alle Kategorien gemischt: Komma verschieben, Addition und Subtraktion, Multiplikation, Division, Zahlenstrahl, Stellenwerttafel und Brüche bei Grössen'
     },
     levels:LEVELS,
     raceLevel:2,
@@ -1051,7 +2011,7 @@ const TOPIC=(function(){
       choices:CAT_KEYS.map(k=>({v:k,label:CATS[k].icon+' '+CATS[k].name})).concat([{v:'mix',label:'🎲 Gemischt'}]),
       default:'komma'
     },
-    css:'.helpcalc{font-size:30px;font-weight:bold;margin:12px 0 6px}.cOld{color:#d32f2f;font-weight:bold}.cNew{color:#2e7d32;font-weight:bold}.helpcalc .cOld,.helpcalc .cNew{font-size:1.5em}.cross{background:#fff176;border-radius:4px;padding:0 2px}.legend{font-size:14px;color:#444}.pw{font-size:1.1em}.pw sup,.task sup{font-size:.6em;font-weight:bold}.qm{display:inline-block;min-width:30px;border-bottom:3px solid #c62828;color:#c62828;font-weight:bold;text-align:center}.hint{font-size:14px;font-weight:normal;color:#555;margin-top:8px}.ex{font-size:26px;font-weight:bold;margin:8px 0}.yn{display:flex;gap:16px;justify-content:center;margin-top:12px}.yn button{font-size:22px;font-weight:bold;padding:10px 34px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.yn.opts{flex-direction:column;align-items:stretch;max-width:420px;margin-left:auto;margin-right:auto}.yn.opts button{font-size:22px;padding:10px 16px;text-align:left}.col{font-family:ui-monospace,Consolas,monospace;font-size:24px;line-height:1.3;text-align:left;display:inline-block;margin:8px 0;background:#f5f5f5;padding:6px 14px;border-radius:8px}.exq button{font:inherit;font-size:28px;font-weight:bold;min-width:46px;height:46px;margin:0 4px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.exq button.sel,.yn button.sel{background:#1976d2;border-color:#1976d2;color:#fff}.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 4px;line-height:1.1;font-size:28px;font-weight:bold}.fr .fn{border-bottom:3px solid currentColor;padding:0 6px}.fr .fd{padding:0 6px}.zq{font-size:22px;font-weight:normal;margin-bottom:6px}.zs{width:100%;max-width:700px;height:auto;display:block;margin:6px auto;user-select:none}svg.zs{touch-action:none;cursor:pointer;outline:none}.zh{cursor:grab}.zh polygon,.zh circle,.zh text{fill:#9e9e9e}.zh line{stroke:#9e9e9e}.zh.on polygon,.zh.on circle,.zh.on text{fill:#1976d2}.zh.on line{stroke:#1976d2}.helpcalc .zs{max-width:520px}',
+    css:'.helpcalc{font-size:30px;font-weight:bold;margin:12px 0 6px}.cOld{color:#d32f2f;font-weight:bold}.cNew{color:#2e7d32;font-weight:bold}.helpcalc .cOld,.helpcalc .cNew{font-size:1.5em}.cross{background:#fff176;border-radius:4px;padding:0 2px}.legend{font-size:14px;color:#444}.pw{font-size:1.1em}.pw sup,.task sup{font-size:.6em;font-weight:bold}.qm{display:inline-block;min-width:30px;border-bottom:3px solid #c62828;color:#c62828;font-weight:bold;text-align:center}.hint{font-size:14px;font-weight:normal;color:#555;margin-top:8px}.ex{font-size:26px;font-weight:bold;margin:8px 0}.yn{display:flex;gap:16px;justify-content:center;margin-top:12px}.yn button{font-size:22px;font-weight:bold;padding:10px 34px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.yn.opts{flex-direction:column;align-items:stretch;max-width:420px;margin-left:auto;margin-right:auto}.yn.opts button{font-size:22px;padding:10px 16px;text-align:left}.col{font-family:ui-monospace,Consolas,monospace;font-size:24px;line-height:1.3;text-align:left;display:inline-block;margin:8px 0;background:#f5f5f5;padding:6px 14px;border-radius:8px}.exq button{font:inherit;font-size:28px;font-weight:bold;min-width:46px;height:46px;margin:0 4px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.exq button.sel,.yn button.sel{background:#1976d2;border-color:#1976d2;color:#fff}.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 4px;line-height:1.1;font-size:28px;font-weight:bold}.fr .fn{border-bottom:3px solid currentColor;padding:0 6px}.fr .fd{padding:0 6px}.zq{font-size:22px;font-weight:normal;margin-bottom:6px}.zs{width:100%;max-width:700px;height:auto;display:block;margin:6px auto;user-select:none}svg.zs{touch-action:none;cursor:pointer;outline:none}.zh{cursor:grab}.zh polygon,.zh circle,.zh text{fill:#9e9e9e}.zh line{stroke:#9e9e9e}.zh.on polygon,.zh.on circle,.zh.on text{fill:#1976d2}.zh.on line{stroke:#1976d2}.helpcalc .zs{max-width:520px}.swt{border-collapse:collapse;margin:10px auto;font-size:28px;font-weight:bold;width:100%;table-layout:fixed;max-width:calc(var(--n,7)*58px)}.swt.swd{max-width:calc(var(--n,7)*84px)}.helpcalc .swt{max-width:calc(var(--n,7)*44px)}.helpcalc .swt.swd{max-width:calc(var(--n,7)*66px)}.swt.sw9 th{font-size:20px}.swt th,.swt td{border:2px solid #90a4ae;height:50px;text-align:center;padding:0;overflow:hidden}.helpcalc .swt th,.helpcalc .swt td{height:38px}.swt th{background:#e3f2fd;font-size:22px}.swt .kc{border-left:5px solid #d32f2f}.swt td.mk{background:#fff176}.swt th button{font:inherit;width:100%;height:100%;min-height:46px;border:0;background:none;cursor:pointer;color:inherit}.swt th button:hover{background:#bbdefb}.swt th button.sel{background:#1976d2;color:#fff}.swleg{font-size:13px;font-weight:normal;color:#555;text-align:center}.swnum{font-size:34px;font-weight:bold;letter-spacing:2px;margin:6px 0}.swin{width:100%;height:100%;min-height:46px;box-sizing:border-box;border:0;text-align:center;font:inherit;background:#fffde7;color:#1b2733;padding:0}.swin:focus{outline:3px solid #1976d2;outline-offset:-3px;background:#fff}.swt.swd td{vertical-align:top}.dz{display:grid;grid-template-columns:repeat(5,minmax(0,13px));gap:3px;justify-content:center;align-content:start;min-height:66px;padding:6px 2px;touch-action:none;box-sizing:border-box}.dz.over{background:#bbdefb}.dz.full{animation:swfull .35s}@keyframes swfull{0%,100%{background:none}50%{background:#ffcdd2}}.dot{width:100%;max-width:13px;aspect-ratio:1/1;border-radius:50%;background:#1976d2;cursor:grab;touch-action:none}.helpcalc .dz{cursor:default;min-height:0}@media(max-width:700px){.swt{font-size:22px}.swt th{font-size:16px}.swt.sw9{font-size:17px}.swt.sw9 th{font-size:13px}.swt th,.swt td{height:42px}.dz{gap:2px;padding:4px 1px}}.swsrc{display:flex;align-items:center;justify-content:center;gap:14px;margin:8px 0;font-size:15px;font-weight:normal;text-align:left;color:#444;flex-wrap:wrap}.srcdot{width:46px;height:46px;border-radius:50%;background:#1976d2;cursor:grab;touch-action:none;box-shadow:0 2px 6px rgba(0,0,0,.3),inset 0 -4px 0 rgba(0,0,0,.15)}.srcdot5{display:grid;grid-template-columns:repeat(5,12px);gap:3px;padding:9px 10px;border-radius:24px;background:#e3f2fd;border:2px solid #1976d2;cursor:grab;touch-action:none;box-shadow:0 2px 6px rgba(0,0,0,.25)}.srcdot5.srcdot2{grid-template-columns:repeat(2,12px)}.srcdot5 i,.dotghost.g5 i{display:block;width:12px;height:12px;border-radius:50%;background:#1976d2;pointer-events:none}.dotghost.g5{display:grid;grid-template-columns:repeat(5,12px);gap:3px;width:auto;height:auto;padding:5px 7px;margin:-11px 0 0 -40px;border-radius:14px;background:rgba(227,242,253,.9);border:2px solid #1976d2}.swclr{font-size:14px;padding:6px 10px;border-radius:8px;border:1px solid #b0bec5;background:#fff;cursor:pointer}.dotghost{position:fixed;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:#1976d2;opacity:.85;pointer-events:none;z-index:50;box-shadow:0 2px 6px rgba(0,0,0,.35)}.frin{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;gap:4px}.frin .fin{width:90px;font-size:28px;font-weight:bold;text-align:center;padding:4px;border:2px solid #90a4ae;border-radius:8px}.frin .fin:focus{outline:none;border-color:#1976d2}.frl{display:block;width:100px;border-top:3px solid currentColor}.bgpie{width:170px;height:170px;display:block;margin:6px auto;touch-action:none;overflow:visible}.bgpie path{fill:#fff;stroke:#37474f;stroke-width:1.5}.bgpie path.on,.bgpie .bgarc{fill:#9ccc65}.bgpie .bgarc{stroke:#37474f;stroke-width:1.5}.bgpie .bgbase{fill:#fff}.bgpie .bgout{fill:none;stroke:#37474f;stroke-width:2.5}.bgpie.live path[data-i]{cursor:pointer}.bgpie.live path[data-i]:hover{fill:#e8f5e9}.bgpie.live path.on:hover{fill:#8bc34a}.bgpie.drag{cursor:pointer}.bgknob{fill:#1976d2;stroke:#fff;stroke-width:2}.bgpie.bad{outline:3px solid #e53935;outline-offset:4px;border-radius:50%}.bgbar{position:relative;width:100%;max-width:380px;height:28px;border:2px solid #37474f;background:#fff;margin:30px auto 34px;touch-action:none;box-sizing:border-box}.bgbar.live{cursor:pointer}.bgfill{position:absolute;left:0;top:0;bottom:0;background:#9ccc65}.bgtick{position:absolute;top:0;bottom:0;border-left:1.5px solid #37474f}.bgtick.tenth{border-left:2px solid #000;margin-left:-.5px}.bgtick.dash{border-left:1.5px dashed #37474f}.bgl0,.bgl1{position:absolute;top:-22px;font-size:14px;font-weight:normal;color:#555}.bgl0{left:-4px}.bglm{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:14px;font-weight:normal;color:#555}.bgl1{right:-4px}.bghandle{position:absolute;top:-8px;height:42px;width:4px;margin-left:-2px;background:#1976d2;border-radius:2px;cursor:ew-resize;outline:none}.bghandle::after{content:"";position:absolute;left:-11px;bottom:-16px;width:26px;height:26px;border-radius:50%;background:#1976d2;box-shadow:0 2px 5px rgba(0,0,0,.35)}.bghandle:focus::after{box-shadow:0 0 0 4px #bbdefb}.bgbar.bad,.bggrid.bad{outline:3px solid #e53935;outline-offset:3px}.bggrid{display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(10,1fr);width:150px;height:150px;border:2px solid #37474f;margin:6px auto;touch-action:none;box-sizing:border-box}.bggrid i{display:block;border:.5px solid #78909c}.bggrid i.on{background:#9ccc65}.bggrid.live i{cursor:pointer}.bin{width:90px;font-size:22px;font-weight:bold;padding:4px 6px;text-align:center;border:2px solid #90a4ae;border-radius:8px;box-sizing:border-box}.bin:focus{outline:none;border-color:#1976d2}.bin.bad,.frin.bad .bin{border-color:#e53935;background:#ffebee}.frin .bfn{width:76px}.bgline{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;font-size:22px;margin:12px 0}.bgline.sm{font-size:17px;gap:5px}.bggiven{font-weight:bold;font-size:26px}.bgv{font-size:20px}.bgrow{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:stretch;margin:8px 0}.bgcell{background:#fbe9e7;border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:120px}.bgcell h4{margin:0 0 4px;font-size:13px;color:#6d4c41;align-self:flex-start}.bgcell .bgbar{width:240px;margin:26px 8px 30px}.bgcell .bgpie{width:150px;height:150px}.bgcell .bggrid{width:130px;height:130px}.bglev{display:flex;align-items:center;gap:6px;margin-top:2px}.bglev .bgbar{width:150px;margin:8px 4px 24px;height:20px}.bglev .bgl0,.bglev .bgl1{display:none}.bglev .bgfill{background:#9ccc65}.bglev .bghandle{height:32px;top:-7px}.bglev .bghandle::after{width:22px;height:22px;left:-9px;bottom:-14px}.bgstep{width:34px;height:34px;border-radius:50%;border:2px solid #1976d2;background:#fff;color:#1976d2;font-size:22px;font-weight:bold;line-height:1;cursor:pointer;padding:0}.bgstep:active{background:#e3f2fd}.helpline .fr,.bgline .fr{vertical-align:middle}.bgline.nw{flex-wrap:nowrap;gap:6px;max-width:640px;margin-left:auto;margin-right:auto}.bgline.nw .bgu{display:flex;align-items:center;gap:4px;white-space:nowrap;flex:1 1 0;min-width:0;justify-content:center}.bgline.nw .bin{flex:1 1 auto;width:100%;max-width:110px;min-width:0}@media(max-width:700px){.bgline.nw{font-size:15px;gap:2px}.bgline.nw .bgu{gap:2px}.bgline.nw .bin{font-size:15px;padding:4px 1px;border-width:1.5px}.bgline.nw .bgv{font-size:15px}}@media(max-width:520px){.bgline.sm .bin{width:66px;font-size:19px}}.mk{border-collapse:collapse;margin:12px auto;font-size:22px}.mk td{border:1.5px solid #37474f;width:96px;height:56px;text-align:center;padding:3px}.mk td.mk0{border:none}.mk td.mkh{background:#fff;font-weight:bold}.mk .mkc00{background:#fff59d}.mk .mkc01{background:#f8bbd0}.mk .mkc10{background:#90caf9}.mk .mkc11{background:#c5e1a5}.mk td.mks{border-left-width:3px}.mk td.mkt{border-width:3px}.mk tr:nth-child(2) td.mkc00,.mk tr:nth-child(2) td.mkc01{border-top-width:3px}.mk tr:nth-child(3) td.mkc10,.mk tr:nth-child(3) td.mkc11{border-bottom-width:3px}.mk td.mkc00,.mk td.mkc10{border-left-width:3px}.mk td.mkc01,.mk td.mkc11{border-right-width:3px}.mk .bin{width:100%;max-width:88px;font-size:20px;background:rgba(255,255,255,.85)}.mk .bin.bad{background:#ffebee}.ex.mkq{font-size:26px;font-weight:bold;text-align:center}@media(max-width:520px){.mk{font-size:17px}.mk td{width:74px;height:48px;padding:2px}.mk .bin{font-size:16px;padding:4px 2px}.ex.mkq{font-size:19px}}.mulrows{display:flex;flex-direction:column;align-items:center;gap:10px;margin:10px 0}.mulrow{display:flex;align-items:center;gap:10px;font-size:28px;font-weight:bold}.mulrow span{min-width:170px;text-align:right}.mulrow .bin{width:110px;font-size:24px}.helpcalc .mulrow,.mulrows .mulrow b{font-size:inherit}@media(max-width:520px){.mulrow{font-size:22px}.mulrow span{min-width:130px}.mulrow .bin{width:90px}}.swmk{background:#fff176;border-bottom:4px solid #d32f2f;padding:0 3px}.helpcalc .swt{font-size:22px}',
     makeTask:makeTask,
     mount:mount,
     check:check,
