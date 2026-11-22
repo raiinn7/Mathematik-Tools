@@ -58,7 +58,7 @@ h1{font-size:26px;margin:4px 0 6px}
      ╚══════════════════════════════════════════════════════════════════════╝ -->
 <script>
 /* =========================================================================
-   THEMA: Dezimalzahl Trainer – Komma verschieben und Rechnen mit Dezimalzahlen
+   THEMA: Dezimalzahl Trainer – Komma verschieben, Addition und Subtraktion von Dezimalzahlen
 
    Aufbau wie beim Komma- und Masseinheiten-Trainer: Nur dieser Block gehört zum Thema.
    Die ENGINE weiter unten (Oberfläche, Levels/XP, Cookies, Achievements, Zeitrennen, Speichern/Laden)
@@ -706,7 +706,7 @@ const TOPIC=(function(){
   const RANG_RULE='Reihenfolge: <b>1. Klammern</b> (von innen nach aussen), <b>2. Punkt vor Strich</b> (· und ÷ vor + und −), <b>3. von links nach rechts</b>, wenn nur + und − (oder nur · und ÷) vorkommen. Beispiel: 12 − 5 + 4 = 7 + 4 = 11.';
 
   /* ======================================================================
-     Rechnen mit Dezimalzahlen (genau mit ganzen Zahlen gerechnet, kein Rundungsfehler)
+     Addition und Subtraktion von Dezimalzahlen (genau mit ganzen Zahlen gerechnet, kein Rundungsfehler)
      ====================================================================== */
   function p10(n){let r=1;for(let i=0;i<n;i++)r*=10;return r;}
   function sc(str){let p=str.split('.');return {v:parseInt(p[0]+(p[1]||''),10),p:(p[1]||'').length};}
@@ -943,7 +943,7 @@ const TOPIC=(function(){
   ];
   const CATS={
     komma:{icon:'🔢',name:'Komma verschieben'},
-    dez:{icon:'➕',name:'Rechnen mit Dezimalzahlen'},
+    dez:{icon:'➕',name:'Addition und Subtraktion von Dezimalzahlen'},
     strahl:{icon:'📏',name:'Zahlenstrahl'},
     stelle:{icon:'🧮',name:'Stellenwerttafel'}
   };
@@ -1523,10 +1523,10 @@ const TOPIC=(function(){
     subtitle:'Dezimalzahlen mit 10, 100 und 1000 multiplizieren und dividieren',
     subtitles:{
       komma:'Dezimalzahlen mit 10, 100 und 1000 multiplizieren und dividieren',
-      dez:'Dezimalzahlen addieren, subtrahieren, multiplizieren und dividieren',
+      dez:'Dezimalzahlen addieren und subtrahieren',
       strahl:'Dezimalzahlen am Zahlenstrahl ablesen und einzeichnen',
       stelle:'Dezimalzahlen in der Stellenwerttafel lesen, legen und verändern',
-      mix:'Alle Kategorien gemischt: Komma verschieben, Rechnen mit Dezimalzahlen, Zahlenstrahl und Stellenwerttafel'
+      mix:'Alle Kategorien gemischt: Komma verschieben, Addition und Subtraktion von Dezimalzahlen, Zahlenstrahl und Stellenwerttafel'
     },
     levels:LEVELS,
     raceLevel:2,
