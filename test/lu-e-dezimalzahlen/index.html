@@ -945,7 +945,8 @@ const TOPIC=(function(){
     komma:{icon:'🔢',name:'Komma verschieben'},
     dez:{icon:'➕',name:'Addition und Subtraktion von Dezimalzahlen'},
     strahl:{icon:'📏',name:'Zahlenstrahl'},
-    stelle:{icon:'🧮',name:'Stellenwerttafel'}
+    stelle:{icon:'🧮',name:'Stellenwerttafel'},
+    bdg:{icon:'🥧',name:'Brüche und Dezimalzahlen bei Grössen bestimmen'}
   };
   const CAT_KEYS=Object.keys(CATS);
 
@@ -1371,6 +1372,243 @@ const TOPIC=(function(){
       +'<b>3.</b> Die Zahl ist <b>'+swFmt(x.answer)+'</b>.</div>';
   }
 
+  /* ======================================================================
+     NEU: Kategorie "Brüche und Dezimalzahlen bei Grössen bestimmen" (cat 'bdg')
+     Aufgabenarten (kind):
+       kr2b  Kreis mit gefärbten Teilen -> Bruch            st2b  Strecke mit gefärbten Teilen -> Bruch
+       b2kr  Bruch -> Teile im Kreis anmalen                b2st  Bruch -> Hebel auf der Strecke verschieben
+       b2d   Bruch -> Dezimalzahl                           d2b   Dezimalzahl -> Bruch
+       m3    Kreis/Strecke -> Bruch, Dezimalzahl, Prozent   r3    Dezimalzahl oder Prozent -> Bruch, das andere, Modell
+       unit  Grösse in l/dl/cl/ml oder m/dm/cm/mm -> die anderen 3 Einheiten
+       row   Tabellenzeile: Bruch, Kreis, Strecke, l = cl = ml, Prozent (eine Angabe gegeben)
+     Alle Brüche sind kleiner als 1. Rechnen mit ganzen Zahlen (kein Rundungsfehler).
+     Teile (parts): fr = Bruch, dec = Dezimalzahl, pct = Prozent, pie = Kreis, bar = Strecke, grid = Hunderterfeld,
+                    l/cl/ml bzw. u0…u3 = Einheiten
+     ====================================================================== */
+  function bgGcd(a,b){while(b){[a,b]=[b,a%b];}return a;}
+  function bgDec(n,d){return dfmt(n*1000/d,3);}     /* d teilt 1000 */
+  function bgFr(dens,reduced){for(;;){let d=pick(dens),n=ri(1,d-1);if(!reduced||bgGcd(n,d)===1)return {n:n,d:d};}}
+  /* ---------- Darstellungen ---------- */
+  function bgPt(a){let w=2*Math.PI*a;return (100+90*Math.sin(w)).toFixed(2)+' '+(100-90*Math.cos(w)).toFixed(2);}
+  function bgArc(a0,a1){if(a1-a0>=0.9999)return 'M100 10 A90 90 0 1 1 99.99 10 Z';return 'M100 100 L'+bgPt(a0)+' A90 90 0 '+((a1-a0)>0.5?1:0)+' 1 '+bgPt(a1)+' Z';}
+  /* Kreis: g Teile, k davon gefärbt (von oben im Uhrzeigersinn). drag = ohne Teilstriche, Fläche wird gezogen */
+  function bgPie(g,k,live,drag,part){
+    let o='<svg class="bgpie'+(live?' live':'')+(drag?' drag':'')+'" viewBox="0 0 200 200" data-g="'+g+'"'+(part?' data-part="'+part+'"':'')+'>';
+    if(drag){o+='<circle cx="100" cy="100" r="90" class="bgbase"></circle><path class="bgarc" d="'+(k>0?bgArc(0,k/g):'')+'"></path>'+(live?'<circle class="bgknob" r="9" cx="100" cy="10"></circle>':'');}
+    else for(let i=0;i<g;i++)o+='<path data-i="'+i+'" class="'+(i<k?'on':'')+'" d="'+(g===1?bgArc(0,1):bgArc(i/g,(i+1)/g))+'"></path>';
+    return o+'<circle cx="100" cy="100" r="90" class="bgout"></circle></svg>';
+  }
+  /* Strecke von 0 bis 1 mit g Teilen, k gefärbt; live = Hebel zum Verschieben */
+  function bgBar(g,k,live,part){
+    let o='<div class="bgbar'+(live?' live':'')+'" data-g="'+g+'"'+(part?' data-part="'+part+'"':'')+'><div class="bgfill" style="width:'+(100*k/g)+'%"></div>';
+    if(g<=20)for(let i=1;i<g;i++)o+='<span class="bgtick" style="left:'+(100*i/g)+'%"></span>';
+    else for(let i=1;i<10;i++)o+='<span class="bgtick" style="left:'+(10*i)+'%"></span>';   /* 100 Teile: nur Zehnerstriche */
+    o+='<span class="bgl0">0</span><span class="bgl1">1</span>';
+    if(live)o+='<div class="bghandle" tabindex="0" role="slider" aria-label="Hebel" style="left:'+(100*k/g)+'%"></div>';
+    return o+'</div>';
+  }
+  /* Hunderterfeld: p von 100 Feldern gefärbt (zeilenweise von oben links) */
+  function bgGrid(p,live,part){
+    let o='<div class="bggrid'+(live?' live':'')+'"'+(part?' data-part="'+part+'"':'')+'>';
+    for(let i=0;i<100;i++)o+='<i data-i="'+i+'" class="'+(i<p?'on':'')+'"></i>';
+    return o+'</div>';
+  }
+  function bgIn(k,w){return '<input class="bin" data-k="'+k+'" data-part="'+k+'" inputmode="decimal" autocomplete="off"'+(w?' style="width:'+w+'px"':'')+'>';}
+  function bgFrIn(){return '<span class="frin" data-part="fr"><input class="bin bfn" data-k="fn" inputmode="numeric" autocomplete="off" aria-label="Zähler"><span class="frl"></span><input class="bin bfn" data-k="fd" inputmode="numeric" autocomplete="off" aria-label="Nenner"></span>';}
+  /* Modell für einen Bruch wählen: Kreis mit d Teilen (d ≤ 10) bzw. Strecke mit d Teilen (d ≤ 20), sonst ohne Teilstriche */
+  function bgPieG(d){return d<=10?d:100;}
+  function bgBarG(d){return d<=20?d:100;}
+  const BG_VOL=['l','dl','cl','ml'],BG_LEN=['m','dm','cm','mm'];
+  /* ---------- Aufgaben erzeugen ---------- */
+  const BG_KINDS=[[['kr2b',1],['st2b',1],['b2kr',1],['b2st',1]],[['b2d',1],['d2b',1]],[['m3',1],['r3',1]],[['unit',1]],[['row',1]]];
+  function bgGen(l,kind,ref){
+    for(let it=0;it<300;it++){
+      let t={cat:'bdg',level:l,kind:kind},f;
+      if(kind==='kr2b'||kind==='b2kr'){f=bgFr([2,3,4,5,6,8,10]);t.g=f.d;}
+      if(kind==='st2b'){f=bgFr([2,3,4,5,6,8,10,12]);t.g=f.d;}
+      if(kind==='b2st'){f=bgFr([2,3,4,5,6,8,10]);t.g=(f.d<=5&&Math.random()<0.35)?2*f.d:f.d;}   /* manchmal feinere Einteilung: 2/5 auf 10 Teilen */
+      if(kind==='b2d'||kind==='d2b')f=bgFr([2,4,5,8,10,20,25,50,100,100],kind==='d2b');
+      if(kind==='m3'){t.model=pick(['pie','bar']);f=bgFr(t.model==='pie'?[2,4,5,10]:[2,4,5,10,20]);t.g=f.d;}
+      if(kind==='r3'){f=bgFr([2,4,5,10,20,25,50],true);t.from=pick(['dec','pct']);t.model=f.d<=10&&Math.random()<0.6?'pie':'bar';t.g=t.model==='pie'?bgPieG(f.d):bgBarG(f.d);}
+      if(kind==='row'){
+        t.given=ref?ref.given:pick(['fr','pie','bar','l','cl','ml','grid']);
+        f=bgFr(t.given==='pie'?[2,4,5,10]:(t.given==='bar'?[2,4,5,10,20]:[2,4,5,10,20,25,50,100]),true);
+        t.pg=bgPieG(f.d);t.bg=bgBarG(f.d);
+      }
+      if(kind==='unit'){
+        t.sys=ref?ref.sys:pick(['vol','vol','len']);t.u=ref?ref.u:pick([0,0,1,1,2,3]);
+        let V=pick([ri(1,9),ri(10,99),ri(100,999),ri(100,999),ri(1000,9999)]);   /* in ml bzw. mm */
+        let p=3-t.u;if(t.u<3&&V%ipow(10,p)===0)continue;   /* gegebene Zahl ist eine Dezimalzahl (ausser bei ml/mm) */
+        if(ref&&V===ref.V)continue;
+        t.V=V;t.units=t.sys==='vol'?BG_VOL:BG_LEN;t.vals=[0,1,2,3].map(j=>dfmt(V,3-j));
+        t.answer=t.vals.filter((x,j)=>j!==t.u).join(' / ');
+        return t;
+      }
+      if(ref&&ref.n===f.n&&ref.d===f.d)continue;
+      if(ref&&kind==='row'&&f.d>10&&ref.d<=10)continue;   /* Hilfsbeispiel ähnlich schwer */
+      t.n=f.n;t.d=f.d;t.answer=kind==='b2d'?bgDec(f.n,f.d):f.n+'/'+f.d;
+      return t;
+    }
+  }
+  function bgRowCells(t,sol){   /* Tabellenzeile wie im Arbeitsblatt; sol=true: alles ausgefüllt (Hilfe) */
+    let n=t.n,d=t.d,G=t.given,cl=n*100/d,ml=n*1000/d,p=n*100/d,show=k=>sol||G===k;
+    let fr=show('fr')?'<div class="bggiven">'+frHtml(n,d)+'</div>':bgFrIn();
+    let pie=show('pie')?bgPie(t.pg,Math.round(t.pg*n/d),false,t.pg>10):bgPie(t.pg,0,true,t.pg>10,'pie');
+    let bar=show('bar')?bgBar(t.bg,Math.round(t.bg*n/d),false):bgBar(t.bg,0,true,'bar');
+    let v=(k,val)=>show(k)?'<b class="bgv">'+val+'</b>':bgIn(k,80);
+    let vol='<div class="bgline sm">'+v('l',bgDec(n,d))+' l = '+v('cl',String(cl))+' cl = '+v('ml',String(ml))+' ml</div>';
+    let grid=show('grid')?bgGrid(p,false):bgGrid(0,true,'grid');
+    return '<div class="bgrow"><div class="bgcell"><h4>Bruch</h4>'+fr+'</div><div class="bgcell"><h4>Kreismodell</h4>'+pie+'</div><div class="bgcell"><h4>Streckenmodell</h4>'+bar+'</div><div class="bgcell"><h4>Angabe in l, cl und ml</h4>'+vol+'</div><div class="bgcell"><h4>Prozent</h4>'+grid+'</div></div>';
+  }
+  function makeBdg(l){
+    let kind=wpick(BG_KINDS[l]),t=bgGen(l,kind),n=t.n,d=t.d;
+    t.interactive=true;t.noInput=true;t.state={v:{},pie:0,bar:0,grid:0};
+    if(kind==='kr2b'){t.text='Welcher Bruch ist im Kreis gefärbt?';t.html='<div class="zq">Welcher Bruch ist gefärbt?</div>'+bgPie(t.g,n)+'<div class="bgline">'+bgFrIn()+'</div>';t.parts=['fr'];}
+    if(kind==='st2b'){t.text='Welcher Bruch ist auf der Strecke gefärbt?';t.html='<div class="zq">Welcher Bruch der Strecke ist gefärbt?</div>'+bgBar(t.g,n,false)+'<div class="bgline">'+bgFrIn()+'</div>';t.parts=['fr'];}
+    if(kind==='b2kr'){t.text='Male '+n+'/'+d+' im Kreis an';t.html='<div class="zq">Male '+frHtml(n,d)+' im Kreis an.</div>'+bgPie(t.g,0,true,false,'pie')+'<div class="hint">Tippe auf die Teile, die gefärbt sein sollen.</div>';t.parts=['pie'];}
+    if(kind==='b2st'){t.text='Zeige '+n+'/'+d+' auf der Strecke';t.html='<div class="zq">Schiebe den Hebel auf '+frHtml(n,d)+' der Strecke.</div>'+bgBar(t.g,0,true,'bar')+'<div class="hint">Ziehe den blauen Hebel oder tippe auf die Strecke.</div>';t.parts=['bar'];}
+    if(kind==='b2d'){t.text='Schreibe '+n+'/'+d+' als Dezimalzahl';t.html='<div class="zq">Schreibe den Bruch als <b>Dezimalzahl</b>.</div><div class="swnum">'+frHtml(n,d)+' = '+QM+'</div>';t.interactive=false;t.noInput=false;t.answer=bgDec(n,d);}
+    if(kind==='d2b'){t.text='Schreibe '+bgDec(n,d)+' als Bruch';t.html='<div class="zq">Schreibe die Dezimalzahl als <b>Bruch</b>.</div><div class="bgline"><span class="bggiven">'+bgDec(n,d)+' =</span>'+bgFrIn()+'</div><div class="hint">Jeder gleichwertige Bruch ist richtig.</div>';t.parts=['fr'];}
+    if(kind==='m3'){
+      t.text='Bruch, Dezimalzahl und Prozent zum '+(t.model==='pie'?'Kreis':'Streckenmodell');
+      t.html='<div class="zq">Welcher Anteil ist gefärbt? Gib ihn als <b>Bruch</b>, als <b>Dezimalzahl</b> und in <b>Prozent</b> an.</div>'+(t.model==='pie'?bgPie(t.g,n):bgBar(t.g,n,false))
+        +'<div class="bgline">'+bgFrIn()+' = '+bgIn('dec')+' = '+bgIn('pct',70)+' %</div>';
+      t.parts=['fr','dec','pct'];
+    }
+    if(kind==='r3'){
+      let given=t.from==='dec'?bgDec(n,d):(n*100/d)+' %';
+      t.text=given+' als Bruch, '+(t.from==='dec'?'Prozent':'Dezimalzahl')+' und im Modell';
+      t.html='<div class="zq">Gib <b>'+given+'</b> auch als Bruch und als '+(t.from==='dec'?'Prozent':'Dezimalzahl')+' an und zeige den Anteil im '+(t.model==='pie'?'Kreis':'Streckenmodell')+'.</div>'
+        +'<div class="bgline"><span class="bggiven">'+given+' =</span>'+bgFrIn()+' = '+(t.from==='dec'?bgIn('pct',70)+' %':bgIn('dec'))+'</div>'
+        +(t.model==='pie'?bgPie(t.g,0,true,t.g>10,'pie')+'<div class="hint">'+(t.g>10?'Ziehe im Kreis, bis der richtige Anteil gefärbt ist.':'Tippe auf die Teile, die gefärbt sein sollen.')+'</div>':bgBar(t.g,0,true,'bar')+'<div class="hint">Ziehe den blauen Hebel an die richtige Stelle.</div>');
+      t.parts=['fr',t.from==='dec'?'pct':'dec',t.model];
+    }
+    if(kind==='unit'){
+      let U=t.units,cells=U.map((u,j)=>(j===t.u?'<b class="bgv">'+t.vals[j]+'</b>':bgIn('u'+j,100))+' '+u);
+      t.text=t.vals[t.u]+' '+U[t.u]+' in '+U.filter((x,j)=>j!==t.u).join(', ');
+      t.html='<div class="zq">Rechne <b>'+t.vals[t.u]+' '+U[t.u]+'</b> in die anderen Einheiten um.</div><div class="bgline">'+cells.join(' = ')+'</div><div class="hint">Schreibe die Zahlen als Dezimalzahlen (z. B. 0.35), nicht als Bruch.</div>';
+      t.parts=[0,1,2,3].filter(j=>j!==t.u).map(j=>'u'+j);
+    }
+    if(kind==='row'){
+      t.text='Tabellenzeile vervollständigen ('+({fr:'Bruch',pie:'Kreis',bar:'Strecke',l:'l',cl:'cl',ml:'ml',grid:'Prozent'})[t.given]+' gegeben)';
+      t.html='<div class="zq">Vervollständige die Zeile. Eine Angabe ist gegeben, alle anderen gehören zum <b>gleichen Anteil</b> (1 Ganzes = 1 l = 100 %).</div>'+bgRowCells(t,false)
+        +'<div class="hint">Kreis: Teile antippen bzw. ziehen · Strecke: Hebel ziehen · Prozent: Felder antippen oder darüberwischen</div>';
+      t.parts=['fr','pie','bar','l','cl','ml','grid'].filter(k=>k!==t.given);
+    }
+    return t;
+  }
+  /* ---------- Prüfen ---------- */
+  function bgPartOk(t,k){
+    let st=t.state,v=st.v,n=t.n,d=t.d;
+    const num=(x,exp)=>{if(x===undefined)return false;let s=normalizeInput(String(x).replace('%',''));return s!==null&&s===normalize(String(exp));};
+    if(k==='fr'){let a=v.fn,b=v.fd;if(!/^\d+$/.test(a||'')||!/^\d+$/.test(b||''))return false;return +b>0&&(+a)*d===n*(+b);}
+    if(k==='dec')return num(v.dec,bgDec(n,d));
+    if(k==='pct')return num(v.pct,dfmt(n*100000/d,3));
+    if(k==='l')return num(v.l,bgDec(n,d));
+    if(k==='cl')return num(v.cl,dfmt(n*100000/d,3));
+    if(k==='ml')return num(v.ml,String(n*1000/d));
+    if(k==='grid')return st.grid*d===n*100;
+    if(k==='pie'||k==='bar'){
+      let g=k==='pie'?(t.kind==='row'?t.pg:t.g):(t.kind==='row'?t.bg:t.g),c=st[k];
+      if(g===100)return Math.abs(c/g-n/d)<=0.02+1e-9;   /* ohne Teilstriche: 2 % Spielraum */
+      return c*d===n*g;
+    }
+    if(k[0]==='u'){let j=+k[1];return num(v[k],t.vals[j]);}
+    return false;
+  }
+  function bgCheck(t){
+    let ok=true,root=document.getElementById('task');
+    t.parts.forEach(k=>{
+      let good=bgPartOk(t,k);if(!good)ok=false;
+      if(root&&root.contains&&t.state.el&&root.contains(t.state.el))t.state.el.querySelectorAll('[data-part="'+k+'"]').forEach(e=>e.classList.toggle('bad',!good));
+    });
+    return ok;
+  }
+  /* ---------- Bedienung ---------- */
+  function bgMount(el,t){
+    let st=t.state;st.el=el;
+    const clear=e=>{let p=e.closest('[data-part]');if(p)p.classList.remove('bad');};
+    let ins=[...el.querySelectorAll('input.bin')];
+    ins.forEach(function(inp,i){
+      inp.addEventListener('input',function(){if(inp.classList.contains('bfn'))inp.value=inp.value.replace(/\D/g,'').slice(0,6);st.v[inp.getAttribute('data-k')]=inp.value;clear(inp);});
+      inp.addEventListener('keydown',function(e){
+        if(inp.getAttribute('data-k')==='fn'&&e.key==='ArrowDown'){let nx=inp.parentNode.querySelector('[data-k="fd"]');if(nx){nx.focus();e.preventDefault();}}
+        if(inp.getAttribute('data-k')==='fd'&&e.key==='ArrowUp'){let nx=inp.parentNode.querySelector('[data-k="fn"]');if(nx){nx.focus();e.preventDefault();}}
+      });
+    });
+    if(ins.length&&!window.matchMedia('(pointer:coarse)').matches)setTimeout(()=>ins[0].focus(),0);
+    /* Kreis */
+    el.querySelectorAll('svg.bgpie.live').forEach(function(sv){
+      let g=+sv.getAttribute('data-g');
+      if(!sv.classList.contains('drag')){
+        sv.addEventListener('click',function(e){let p=e.target.closest('path[data-i]');if(!p)return;p.classList.toggle('on');st.pie=sv.querySelectorAll('path.on').length;sv.classList.remove('bad');});
+        return;
+      }
+      let arc=sv.querySelector('.bgarc'),knob=sv.querySelector('.bgknob'),drag=false;
+      function setK(k){k=Math.max(0,Math.min(g,k));st.pie=k;arc.setAttribute('d',k>0?bgArc(0,k/g):'');let p=bgPt(k/g).split(' ');knob.setAttribute('cx',p[0]);knob.setAttribute('cy',p[1]);sv.classList.remove('bad');}
+      function fromEv(e){let r=sv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*200-100,y=(e.clientY-r.top)/r.height*200-100;
+        let a=Math.atan2(x,-y)/(2*Math.PI);if(a<0)a+=1;let k=Math.round(a*g);if(k===0&&st.pie>g/2)k=g;if(k===g&&st.pie<g/2&&a>0.9)k=g;return k;}
+      sv.addEventListener('pointerdown',function(e){drag=true;try{sv.setPointerCapture(e.pointerId);}catch(x){}setK(fromEv(e));e.preventDefault();});
+      sv.addEventListener('pointermove',function(e){if(drag)setK(fromEv(e));});
+      sv.addEventListener('pointerup',()=>drag=false);sv.addEventListener('pointercancel',()=>drag=false);
+    });
+    /* Strecke mit Hebel */
+    el.querySelectorAll('.bgbar.live').forEach(function(bar){
+      let g=+bar.getAttribute('data-g'),fill=bar.querySelector('.bgfill'),h=bar.querySelector('.bghandle'),drag=false;
+      function setK(k){k=Math.max(0,Math.min(g,k));st.bar=k;fill.style.width=(100*k/g)+'%';h.style.left=(100*k/g)+'%';bar.classList.remove('bad');}
+      function fromEv(e){let r=bar.getBoundingClientRect();return Math.round((e.clientX-r.left)/r.width*g);}
+      bar.addEventListener('pointerdown',function(e){drag=true;try{bar.setPointerCapture(e.pointerId);}catch(x){}setK(fromEv(e));h.focus({preventScroll:true});e.preventDefault();});
+      bar.addEventListener('pointermove',function(e){if(drag)setK(fromEv(e));});
+      bar.addEventListener('pointerup',()=>drag=false);bar.addEventListener('pointercancel',()=>drag=false);
+      h.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='ArrowUp'){setK(st.bar+1);e.preventDefault();}if(e.key==='ArrowLeft'||e.key==='ArrowDown'){setK(st.bar-1);e.preventDefault();}});
+    });
+    /* Hunderterfeld: antippen oder darüberwischen */
+    el.querySelectorAll('.bggrid.live').forEach(function(gr){
+      let mode=null;
+      const cnt=()=>{st.grid=gr.querySelectorAll('i.on').length;gr.classList.remove('bad');};
+      function at(e){let x=document.elementFromPoint(e.clientX,e.clientY);return x&&x.parentNode===gr?x:null;}
+      gr.addEventListener('pointerdown',function(e){let c=at(e);if(!c)return;mode=!c.classList.contains('on');c.classList.toggle('on',mode);cnt();e.preventDefault();});
+      gr.addEventListener('pointermove',function(e){if(mode===null)return;let c=at(e);if(c){c.classList.toggle('on',mode);cnt();}});
+      document.addEventListener('pointerup',()=>mode=null);
+    });
+  }
+  /* ---------- Hilfe ---------- */
+  function bgExp(n,d){   /* Bruch auf 10, 100 oder 1000 erweitern */
+    let N=[10,100,1000].find(x=>x%d===0);
+    return {N:N,Z:n*N/d,f:N/d};
+  }
+  function helpBdg(t){
+    let x=t;if(!HX){let e=bgGen(t.level,t.kind,t);if(e)x=Object.assign(e,{model:e.model||t.model});}
+    let h='<b>Hilfsbeispiel:</b>',n=x.n,d=x.d;
+    const exp=()=>{let E=bgExp(n,d);return (E.f>1?frHtml(n,d)+' = '+frHtml(n+' · '+E.f,d+' · '+E.f)+' = ':'')+frHtml(E.Z,E.N)+' = <b>'+bgDec(n,d)+'</b>';};
+    const pct=()=>{let f=100/d;return frHtml(n,d)+' = '+(f>1?frHtml(n+' · '+f,d+' · '+f)+' = ':'')+frHtml(n*f,100)+' = <b>'+(n*f)+' %</b>';};
+    if(x.kind==='kr2b'||x.kind==='b2kr'||x.kind==='st2b'||x.kind==='b2st'){
+      let pie=x.kind==='kr2b'||x.kind==='b2kr',g=x.g||d,k=g*n/d;
+      return h+'<div class="bgline">'+frHtml(n,d)+'</div>'+(pie?bgPie(g,k):bgBar(g,k,false))+'<div class="helpline">'
+        +'<b>Nenner '+d+'</b>: Das Ganze ist in <b>'+d+' gleich grosse Teile</b> geteilt.<br><b>Zähler '+n+'</b>: <b>'+n+' Teile</b> sind gefärbt.'
+        +(g!==d?'<br>Hier hat die Strecke '+g+' Teile: '+frHtml(n,d)+' = '+frHtml(k,g)+', also '+k+' Teile bis zum Hebel.':'')+'</div>';
+    }
+    if(x.kind==='b2d')return h+'<div class="swnum">'+frHtml(n,d)+' = ?</div><div class="helpline">Erweitere den Bruch so, dass unten <b>10, 100 oder 1000</b> steht. Dann kannst du ihn als Dezimalzahl schreiben:<br>'+exp()+'</div>';
+    if(x.kind==='d2b'){let E=bgExp(n,d),g=bgGcd(E.Z,E.N);
+      return h+'<div class="swnum">'+bgDec(n,d)+' = ?</div><div class="helpline">Die letzte Ziffer steht bei den <b>'+({10:'Zehnteln',100:'Hundertsteln',1000:'Tausendsteln'})[E.N]+'</b>, also ist der Nenner <b>'+E.N+'</b>: '+bgDec(n,d)+' = '+frHtml(E.Z,E.N)+'.'+(g>1?'<br>Du kannst kürzen: '+frHtml(E.Z,E.N)+' = <b>'+frHtml(E.Z/g,E.N/g)+'</b>.':'')+'</div>';}
+    if(x.kind==='m3'||x.kind==='r3'){
+      let g=x.g||d,k=Math.round(g*n/d),mod=(x.model==='pie')?bgPie(g,k,false,g>10):bgBar(g,k,false);
+      return h+mod+'<div class="helpline"><b>Bruch:</b> '+frHtml(n,d)+' ('+n+' von '+d+' gleich grossen Teilen)<br><b>Dezimalzahl:</b> '+exp()+'<br><b>Prozent:</b> '+pct()+'<br>Merke: <b>Prozent heisst „von 100“</b>, darum erweiterst du auf 100.</div>';
+    }
+    if(x.kind==='unit'){
+      let U=x.units,big=U[0];
+      return h+'<div class="bgline"><b>'+x.vals[x.u]+' '+U[x.u]+'</b></div><div class="helpline">1 '+big+' = 10 '+U[1]+' = 100 '+U[2]+' = 1000 '+U[3]+'.<br>'
+        +'Zur nächst <b>kleineren</b> Einheit: mal 10, das Komma rückt <b>1 Stelle nach rechts</b>. Zur nächst <b>grösseren</b>: durch 10, das Komma rückt 1 Stelle nach links.</div>'
+        +'<div class="bgline">'+U.map((u,j)=>'<b>'+x.vals[j]+'</b> '+u).join(' = ')+'</div>';
+    }
+    if(x.kind==='row'){
+      return h+bgRowCells(x,true)+'<div class="helpline">Erweitere den Bruch auf <b>100</b>: '+pct()+'.<br>'
+        +'1 Ganzes = 1 l = 100 cl = 1000 ml. Also: '+frHtml(n,d)+' l = <b>'+bgDec(n,d)+' l</b> = <b>'+(n*100/d)+' cl</b> = <b>'+(n*1000/d)+' ml</b>.<br>'
+        +'Im Hunderterfeld färbst du '+(n*100/d)+' Felder. Im Kreis und auf der Strecke färbst du '+n+' von '+d+' gleich grossen Teilen.</div>';
+    }
+    return '';
+  }
+
   const rFree={};
   function makeTask(l,opt){
     let cat=CATS[opt]?opt:pick(CAT_KEYS);
@@ -1378,10 +1616,12 @@ const TOPIC=(function(){
     if(cat==='dez')return makeDez(l);
     if(cat==='strahl')return makeStrahl(l);
     if(cat==='stelle')return makeStelle(l);
+    if(cat==='bdg')return makeBdg(l);
     return makeKommaTask(l);
   }
   function mount(el,t){
     if(!t.interactive)return;
+    if(t.cat==='bdg'){bgMount(el,t);return;}
     let st=t.state;
     let zs=el.querySelector('svg.zs');
     if(zs&&(t.kind==='place'||t.kind==='frac'||t.kind==='pct')){   /* Schieberegler: Marke ziehen oder Stelle antippen, rastet auf den Strichen ein */
@@ -1495,6 +1735,7 @@ const TOPIC=(function(){
     });
   }
   function check(raw,t){
+    if(t.cat==='bdg'&&t.noInput)return bgCheck(t);
     if(t.cat==='stelle'&&t.kind==='fill')return swFillOk(t);
     if(t.cat==='stelle'&&t.kind==='dots')return swDotsOk(t);
     if(t.cat==='stelle'&&t.kind==='d2f')return swFracOk(t);
@@ -1512,6 +1753,7 @@ const TOPIC=(function(){
     if(t.cat==='dez')return helpDez(t);
     if(t.cat==='strahl')return t.kind==='frac'?helpFrac(t):(t.kind==='pct'?helpPct(t):helpStrahl(t));
     if(t.cat==='stelle')return helpStelle(t);
+    if(t.cat==='bdg')return helpBdg(t);
     if(t.cat==='komm')return helpKomm(t);
     if(t.cat==='rang')return helpRang(t);
     return helpKomma(t);
@@ -1526,7 +1768,8 @@ const TOPIC=(function(){
       dez:'Dezimalzahlen addieren und subtrahieren',
       strahl:'Dezimalzahlen am Zahlenstrahl ablesen und einzeichnen',
       stelle:'Dezimalzahlen in der Stellenwerttafel lesen, legen und verändern',
-      mix:'Alle Kategorien gemischt: Komma verschieben, Addition und Subtraktion von Dezimalzahlen, Zahlenstrahl und Stellenwerttafel'
+      bdg:'Brüche, Dezimalzahlen und Prozent im Kreis, auf der Strecke und bei Grössen',
+      mix:'Alle Kategorien gemischt: Komma verschieben, Addition und Subtraktion von Dezimalzahlen, Zahlenstrahl, Stellenwerttafel und Brüche bei Grössen'
     },
     levels:LEVELS,
     raceLevel:2,
@@ -1535,7 +1778,7 @@ const TOPIC=(function(){
       choices:CAT_KEYS.map(k=>({v:k,label:CATS[k].icon+' '+CATS[k].name})).concat([{v:'mix',label:'🎲 Gemischt'}]),
       default:'komma'
     },
-    css:'.helpcalc{font-size:30px;font-weight:bold;margin:12px 0 6px}.cOld{color:#d32f2f;font-weight:bold}.cNew{color:#2e7d32;font-weight:bold}.helpcalc .cOld,.helpcalc .cNew{font-size:1.5em}.cross{background:#fff176;border-radius:4px;padding:0 2px}.legend{font-size:14px;color:#444}.pw{font-size:1.1em}.pw sup,.task sup{font-size:.6em;font-weight:bold}.qm{display:inline-block;min-width:30px;border-bottom:3px solid #c62828;color:#c62828;font-weight:bold;text-align:center}.hint{font-size:14px;font-weight:normal;color:#555;margin-top:8px}.ex{font-size:26px;font-weight:bold;margin:8px 0}.yn{display:flex;gap:16px;justify-content:center;margin-top:12px}.yn button{font-size:22px;font-weight:bold;padding:10px 34px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.yn.opts{flex-direction:column;align-items:stretch;max-width:420px;margin-left:auto;margin-right:auto}.yn.opts button{font-size:22px;padding:10px 16px;text-align:left}.col{font-family:ui-monospace,Consolas,monospace;font-size:24px;line-height:1.3;text-align:left;display:inline-block;margin:8px 0;background:#f5f5f5;padding:6px 14px;border-radius:8px}.exq button{font:inherit;font-size:28px;font-weight:bold;min-width:46px;height:46px;margin:0 4px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.exq button.sel,.yn button.sel{background:#1976d2;border-color:#1976d2;color:#fff}.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 4px;line-height:1.1;font-size:28px;font-weight:bold}.fr .fn{border-bottom:3px solid currentColor;padding:0 6px}.fr .fd{padding:0 6px}.zq{font-size:22px;font-weight:normal;margin-bottom:6px}.zs{width:100%;max-width:700px;height:auto;display:block;margin:6px auto;user-select:none}svg.zs{touch-action:none;cursor:pointer;outline:none}.zh{cursor:grab}.zh polygon,.zh circle,.zh text{fill:#9e9e9e}.zh line{stroke:#9e9e9e}.zh.on polygon,.zh.on circle,.zh.on text{fill:#1976d2}.zh.on line{stroke:#1976d2}.helpcalc .zs{max-width:520px}.swt{border-collapse:collapse;margin:10px auto;font-size:28px;font-weight:bold;width:100%;table-layout:fixed;max-width:calc(var(--n,7)*58px)}.swt.swd{max-width:calc(var(--n,7)*84px)}.helpcalc .swt{max-width:calc(var(--n,7)*44px)}.helpcalc .swt.swd{max-width:calc(var(--n,7)*66px)}.swt.sw9 th{font-size:20px}.swt th,.swt td{border:2px solid #90a4ae;height:50px;text-align:center;padding:0;overflow:hidden}.helpcalc .swt th,.helpcalc .swt td{height:38px}.swt th{background:#e3f2fd;font-size:22px}.swt .kc{border-left:5px solid #d32f2f}.swt td.mk{background:#fff176}.swt th button{font:inherit;width:100%;height:100%;min-height:46px;border:0;background:none;cursor:pointer;color:inherit}.swt th button:hover{background:#bbdefb}.swt th button.sel{background:#1976d2;color:#fff}.swleg{font-size:13px;font-weight:normal;color:#555;text-align:center}.swnum{font-size:34px;font-weight:bold;letter-spacing:2px;margin:6px 0}.swin{width:100%;height:100%;min-height:46px;box-sizing:border-box;border:0;text-align:center;font:inherit;background:#fffde7;color:#1b2733;padding:0}.swin:focus{outline:3px solid #1976d2;outline-offset:-3px;background:#fff}.swt.swd td{vertical-align:top}.dz{display:grid;grid-template-columns:repeat(5,minmax(0,13px));gap:3px;justify-content:center;align-content:start;min-height:66px;padding:6px 2px;touch-action:none;box-sizing:border-box}.dz.over{background:#bbdefb}.dz.full{animation:swfull .35s}@keyframes swfull{0%,100%{background:none}50%{background:#ffcdd2}}.dot{width:100%;max-width:13px;aspect-ratio:1/1;border-radius:50%;background:#1976d2;cursor:grab;touch-action:none}.helpcalc .dz{cursor:default;min-height:0}@media(max-width:700px){.swt{font-size:22px}.swt th{font-size:16px}.swt.sw9{font-size:17px}.swt.sw9 th{font-size:13px}.swt th,.swt td{height:42px}.dz{gap:2px;padding:4px 1px}}.swsrc{display:flex;align-items:center;justify-content:center;gap:14px;margin:8px 0;font-size:15px;font-weight:normal;text-align:left;color:#444;flex-wrap:wrap}.srcdot{width:46px;height:46px;border-radius:50%;background:#1976d2;cursor:grab;touch-action:none;box-shadow:0 2px 6px rgba(0,0,0,.3),inset 0 -4px 0 rgba(0,0,0,.15)}.srcdot5{display:grid;grid-template-columns:repeat(5,12px);gap:3px;padding:9px 10px;border-radius:24px;background:#e3f2fd;border:2px solid #1976d2;cursor:grab;touch-action:none;box-shadow:0 2px 6px rgba(0,0,0,.25)}.srcdot5.srcdot2{grid-template-columns:repeat(2,12px)}.srcdot5 i,.dotghost.g5 i{display:block;width:12px;height:12px;border-radius:50%;background:#1976d2;pointer-events:none}.dotghost.g5{display:grid;grid-template-columns:repeat(5,12px);gap:3px;width:auto;height:auto;padding:5px 7px;margin:-11px 0 0 -40px;border-radius:14px;background:rgba(227,242,253,.9);border:2px solid #1976d2}.swclr{font-size:14px;padding:6px 10px;border-radius:8px;border:1px solid #b0bec5;background:#fff;cursor:pointer}.dotghost{position:fixed;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:#1976d2;opacity:.85;pointer-events:none;z-index:50;box-shadow:0 2px 6px rgba(0,0,0,.35)}.frin{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;gap:4px}.frin .fin{width:90px;font-size:28px;font-weight:bold;text-align:center;padding:4px;border:2px solid #90a4ae;border-radius:8px}.frin .fin:focus{outline:none;border-color:#1976d2}.frl{display:block;width:100px;border-top:3px solid currentColor}.swmk{background:#fff176;border-bottom:4px solid #d32f2f;padding:0 3px}.helpcalc .swt{font-size:22px}',
+    css:'.helpcalc{font-size:30px;font-weight:bold;margin:12px 0 6px}.cOld{color:#d32f2f;font-weight:bold}.cNew{color:#2e7d32;font-weight:bold}.helpcalc .cOld,.helpcalc .cNew{font-size:1.5em}.cross{background:#fff176;border-radius:4px;padding:0 2px}.legend{font-size:14px;color:#444}.pw{font-size:1.1em}.pw sup,.task sup{font-size:.6em;font-weight:bold}.qm{display:inline-block;min-width:30px;border-bottom:3px solid #c62828;color:#c62828;font-weight:bold;text-align:center}.hint{font-size:14px;font-weight:normal;color:#555;margin-top:8px}.ex{font-size:26px;font-weight:bold;margin:8px 0}.yn{display:flex;gap:16px;justify-content:center;margin-top:12px}.yn button{font-size:22px;font-weight:bold;padding:10px 34px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.yn.opts{flex-direction:column;align-items:stretch;max-width:420px;margin-left:auto;margin-right:auto}.yn.opts button{font-size:22px;padding:10px 16px;text-align:left}.col{font-family:ui-monospace,Consolas,monospace;font-size:24px;line-height:1.3;text-align:left;display:inline-block;margin:8px 0;background:#f5f5f5;padding:6px 14px;border-radius:8px}.exq button{font:inherit;font-size:28px;font-weight:bold;min-width:46px;height:46px;margin:0 4px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.exq button.sel,.yn button.sel{background:#1976d2;border-color:#1976d2;color:#fff}.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 4px;line-height:1.1;font-size:28px;font-weight:bold}.fr .fn{border-bottom:3px solid currentColor;padding:0 6px}.fr .fd{padding:0 6px}.zq{font-size:22px;font-weight:normal;margin-bottom:6px}.zs{width:100%;max-width:700px;height:auto;display:block;margin:6px auto;user-select:none}svg.zs{touch-action:none;cursor:pointer;outline:none}.zh{cursor:grab}.zh polygon,.zh circle,.zh text{fill:#9e9e9e}.zh line{stroke:#9e9e9e}.zh.on polygon,.zh.on circle,.zh.on text{fill:#1976d2}.zh.on line{stroke:#1976d2}.helpcalc .zs{max-width:520px}.swt{border-collapse:collapse;margin:10px auto;font-size:28px;font-weight:bold;width:100%;table-layout:fixed;max-width:calc(var(--n,7)*58px)}.swt.swd{max-width:calc(var(--n,7)*84px)}.helpcalc .swt{max-width:calc(var(--n,7)*44px)}.helpcalc .swt.swd{max-width:calc(var(--n,7)*66px)}.swt.sw9 th{font-size:20px}.swt th,.swt td{border:2px solid #90a4ae;height:50px;text-align:center;padding:0;overflow:hidden}.helpcalc .swt th,.helpcalc .swt td{height:38px}.swt th{background:#e3f2fd;font-size:22px}.swt .kc{border-left:5px solid #d32f2f}.swt td.mk{background:#fff176}.swt th button{font:inherit;width:100%;height:100%;min-height:46px;border:0;background:none;cursor:pointer;color:inherit}.swt th button:hover{background:#bbdefb}.swt th button.sel{background:#1976d2;color:#fff}.swleg{font-size:13px;font-weight:normal;color:#555;text-align:center}.swnum{font-size:34px;font-weight:bold;letter-spacing:2px;margin:6px 0}.swin{width:100%;height:100%;min-height:46px;box-sizing:border-box;border:0;text-align:center;font:inherit;background:#fffde7;color:#1b2733;padding:0}.swin:focus{outline:3px solid #1976d2;outline-offset:-3px;background:#fff}.swt.swd td{vertical-align:top}.dz{display:grid;grid-template-columns:repeat(5,minmax(0,13px));gap:3px;justify-content:center;align-content:start;min-height:66px;padding:6px 2px;touch-action:none;box-sizing:border-box}.dz.over{background:#bbdefb}.dz.full{animation:swfull .35s}@keyframes swfull{0%,100%{background:none}50%{background:#ffcdd2}}.dot{width:100%;max-width:13px;aspect-ratio:1/1;border-radius:50%;background:#1976d2;cursor:grab;touch-action:none}.helpcalc .dz{cursor:default;min-height:0}@media(max-width:700px){.swt{font-size:22px}.swt th{font-size:16px}.swt.sw9{font-size:17px}.swt.sw9 th{font-size:13px}.swt th,.swt td{height:42px}.dz{gap:2px;padding:4px 1px}}.swsrc{display:flex;align-items:center;justify-content:center;gap:14px;margin:8px 0;font-size:15px;font-weight:normal;text-align:left;color:#444;flex-wrap:wrap}.srcdot{width:46px;height:46px;border-radius:50%;background:#1976d2;cursor:grab;touch-action:none;box-shadow:0 2px 6px rgba(0,0,0,.3),inset 0 -4px 0 rgba(0,0,0,.15)}.srcdot5{display:grid;grid-template-columns:repeat(5,12px);gap:3px;padding:9px 10px;border-radius:24px;background:#e3f2fd;border:2px solid #1976d2;cursor:grab;touch-action:none;box-shadow:0 2px 6px rgba(0,0,0,.25)}.srcdot5.srcdot2{grid-template-columns:repeat(2,12px)}.srcdot5 i,.dotghost.g5 i{display:block;width:12px;height:12px;border-radius:50%;background:#1976d2;pointer-events:none}.dotghost.g5{display:grid;grid-template-columns:repeat(5,12px);gap:3px;width:auto;height:auto;padding:5px 7px;margin:-11px 0 0 -40px;border-radius:14px;background:rgba(227,242,253,.9);border:2px solid #1976d2}.swclr{font-size:14px;padding:6px 10px;border-radius:8px;border:1px solid #b0bec5;background:#fff;cursor:pointer}.dotghost{position:fixed;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:#1976d2;opacity:.85;pointer-events:none;z-index:50;box-shadow:0 2px 6px rgba(0,0,0,.35)}.frin{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;gap:4px}.frin .fin{width:90px;font-size:28px;font-weight:bold;text-align:center;padding:4px;border:2px solid #90a4ae;border-radius:8px}.frin .fin:focus{outline:none;border-color:#1976d2}.frl{display:block;width:100px;border-top:3px solid currentColor}.bgpie{width:170px;height:170px;display:block;margin:6px auto;touch-action:none;overflow:visible}.bgpie path{fill:#fff;stroke:#37474f;stroke-width:1.5}.bgpie path.on,.bgpie .bgarc{fill:#9ccc65}.bgpie .bgarc{stroke:#37474f;stroke-width:1.5}.bgpie .bgbase{fill:#fff}.bgpie .bgout{fill:none;stroke:#37474f;stroke-width:2.5}.bgpie.live path[data-i]{cursor:pointer}.bgpie.live path[data-i]:hover{fill:#e8f5e9}.bgpie.live path.on:hover{fill:#8bc34a}.bgpie.drag{cursor:pointer}.bgknob{fill:#1976d2;stroke:#fff;stroke-width:2}.bgpie.bad{outline:3px solid #e53935;outline-offset:4px;border-radius:50%}.bgbar{position:relative;width:100%;max-width:380px;height:28px;border:2px solid #37474f;background:#fff;margin:30px auto 34px;touch-action:none;box-sizing:border-box}.bgbar.live{cursor:pointer}.bgfill{position:absolute;left:0;top:0;bottom:0;background:#9ccc65}.bgtick{position:absolute;top:0;bottom:0;border-left:1.5px solid #37474f}.bgl0,.bgl1{position:absolute;top:-22px;font-size:14px;font-weight:normal;color:#555}.bgl0{left:-4px}.bgl1{right:-4px}.bghandle{position:absolute;top:-8px;height:42px;width:4px;margin-left:-2px;background:#1976d2;border-radius:2px;cursor:ew-resize;outline:none}.bghandle::after{content:"";position:absolute;left:-11px;bottom:-16px;width:26px;height:26px;border-radius:50%;background:#1976d2;box-shadow:0 2px 5px rgba(0,0,0,.35)}.bghandle:focus::after{box-shadow:0 0 0 4px #bbdefb}.bgbar.bad,.bggrid.bad{outline:3px solid #e53935;outline-offset:3px}.bggrid{display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(10,1fr);width:150px;height:150px;border:2px solid #37474f;margin:6px auto;touch-action:none;box-sizing:border-box}.bggrid i{display:block;border:.5px solid #78909c}.bggrid i.on{background:#9ccc65}.bggrid.live i{cursor:pointer}.bin{width:90px;font-size:22px;font-weight:bold;padding:4px 6px;text-align:center;border:2px solid #90a4ae;border-radius:8px;box-sizing:border-box}.bin:focus{outline:none;border-color:#1976d2}.bin.bad,.frin.bad .bin{border-color:#e53935;background:#ffebee}.frin .bfn{width:76px}.bgline{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;font-size:22px;margin:12px 0}.bgline.sm{font-size:17px;gap:5px}.bggiven{font-weight:bold;font-size:26px}.bgv{font-size:20px}.bgrow{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:stretch;margin:8px 0}.bgcell{background:#fbe9e7;border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:120px}.bgcell h4{margin:0 0 4px;font-size:13px;color:#6d4c41;align-self:flex-start}.bgcell .bgbar{width:240px;margin:26px 8px 30px}.bgcell .bgpie{width:130px;height:130px}.bgcell .bggrid{width:130px;height:130px}.helpline .fr,.bgline .fr{vertical-align:middle}@media(max-width:520px){.bgline.sm .bin{width:66px;font-size:19px}}.swmk{background:#fff176;border-bottom:4px solid #d32f2f;padding:0 3px}.helpcalc .swt{font-size:22px}',
     makeTask:makeTask,
     mount:mount,
     check:check,
