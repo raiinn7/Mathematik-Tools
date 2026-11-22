@@ -713,6 +713,14 @@ const TOPIC=(function(){
   function sfmt(v,p){let s=String(v);if(p===0)return s;while(s.length<=p)s='0'+s;return s.slice(0,-p)+'.'+s.slice(-p);}   /* genau p Nachkommastellen */
   function dfmt(v,p){return normalize(sfmt(v,p));}                                                                     /* ohne überflüssige Nullen */
   function randDec(places,intMax,intMin){intMin=intMin||0;let d='';for(let i=0;i<places;i++)d+=(i===places-1)?ri(1,9):ri(0,9);return ri(intMin,intMax)+'.'+d;}   /* letzte Stelle nie 0 */
+  /* Sprung über das Komma: Übertrag von den Zehnteln zu den Einern (Plus) bzw. Entbündeln eines Einers in Zehntel (Minus).
+     a, b in Einheiten der letzten Stelle, p = Anzahl Nachkommastellen */
+  function crossPoint(a,b,op,p){
+    let c=0;
+    for(let i=0;i<p;i++){let da=a%10,db=b%10;a=Math.floor(a/10);b=Math.floor(b/10);
+      if(op==='+')c=(da+db+c>=10)?1:0;else c=(da-c<db)?1:0;}
+    return c===1;
+  }
   function carryIn(a,b,op){   /* gibt es in irgendeiner Stelle einen Übertritt (beim Minus: Entbündeln)? */
     while(a>0||b>0){let da=a%10,db=b%10;a=Math.floor(a/10);b=Math.floor(b/10);
       if(op==='+'){if(da+db>=10)return true;}   /* kein Übertrag aus der Vorstelle, sonst wäre schon true */
@@ -798,8 +806,9 @@ const TOPIC=(function(){
                                      Level 4: bis 10 (z. B. 3.47 + 5.86 = 9.33), Level 5: bis 100 (z. B. 34.56 + 27.38 = 61.94) */
     max=max||(ref&&ref.max)||100;
     let op=ref?ref.op:pick(['+','\u2212']);
-    let want=ref?ref.carry:Math.random()<0.7;   /* meist mit Übertrag bzw. Entbündeln */
-    for(let k=0;k<2000;k++){
+    let want=ref?ref.carry:Math.random()<0.5;          /* Level 4: etwa die Hälfte mit Übertrag zwischen Hundertsteln und Zehnteln */
+    let wantX=ref?ref.cross:Math.random()<0.3;         /* Level 5: höchstens ca. 1/3 mit Sprung über das Komma */
+    for(let k=0;k<3000;k++){
       let ia,ib;
       if(max===10){ia=Math.random()<0.15?0:ri(1,9);ib=Math.random()<0.15?0:ri(1,9);}   /* ab und zu eine Zahl unter 1 (0.56) */
       else{ia=Math.random()<0.25?ri(1,9):ri(10,99);ib=Math.random()<0.25?ri(1,9):ri(10,99);}
@@ -807,11 +816,12 @@ const TOPIC=(function(){
       if(op==='\u2212'&&A<=B)continue;
       let R=op==='+'?A+B:A-B;
       if(R<=0||R>=max*100)continue;
-      let carry=carryIn(A,B,op==='+'?'+':'-');
-      if(carry!==want)continue;
+      let carry=carryIn(A,B,op==='+'?'+':'-'),cross=crossPoint(A,B,op==='+'?'+':'-',2);
+      if(max===10){if(cross||carry!==want)continue;}   /* Level 4: nie über das Komma */
+      else if(cross!==wantX)continue;
       let a=sfmt(A,2),b=sfmt(B,2);
       if(ref&&a===ref.a&&b===ref.b)continue;
-      let t={cat:'dez',kind:max===10?'as10':'as100',lvl:l,op:op,a:a,b:b,A:A,B:B,R:R,P:2,carry:carry,max:max};
+      let t={cat:'dez',kind:max===10?'as10':'as100',lvl:l,op:op,a:a,b:b,A:A,B:B,R:R,P:2,carry:carry,cross:cross,max:max};
       t.text=a+' '+op+' '+b+' = ?';t.html=a+' '+op+' '+b+' = '+QM;t.answer=dfmt(R,2);
       return t;
     }
