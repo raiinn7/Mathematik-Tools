@@ -1658,13 +1658,13 @@ const TOPIC=(function(){
     }
   }
   /* ---------- Level 4/5: Malkreuz ----------
-     Level 4: zwei zweistellige ganze Zahlen, zerlegt in Zehner + Einer (16 · 14 = (10 + 6) · (10 + 4))
+     Level 4: zwei ganze Zahlen von 11 bis 19, zerlegt in Zehner + Einer (16 · 14 = (10 + 6) · (10 + 4))
      Level 5: zwei Dezimalzahlen unter 10 mit Zehnteln, zerlegt in Ganze + Zehntel (4.3 · 5.2 = (4 + 0.3) · (5 + 0.2))
      Intern alles in Hundertsteln (ganze Zahlen). Felder: r0 r1 (Zeilen), c0 c1 (Spalten), p00…p11, s0 s1 (Zeilensummen), tot */
   function mkGen(l,ref){
     for(let it=0;it<300;it++){
       let t={cat:'mul',level:l,kind:l===3?'mk4':'mk5'},A,B,R,C;
-      if(l===3){let a=ri(11,49),b=ri(11,49);if(a%10===0||b%10===0)continue;A=a;B=b;R=[a-a%10,a%10].map(x=>x*100);C=[b-b%10,b%10].map(x=>x*100);t.a=String(a);t.b=String(b);}
+      if(l===3){let a=ri(11,19),b=ri(11,19);   /* höchstens 20: (10 + x) · (10 + y) */A=a;B=b;R=[a-a%10,a%10].map(x=>x*100);C=[b-b%10,b%10].map(x=>x*100);t.a=String(a);t.b=String(b);}
       else{let a=ri(1,9)*10+ri(1,9),b=ri(1,9)*10+ri(1,9);A=a;B=b;R=[a-a%10,a%10].map(x=>x*10);C=[b-b%10,b%10].map(x=>x*10);t.a=sfmt(a,1);t.b=sfmt(b,1);}   /* a, b in Zehnteln */
       if(ref&&ref.a===t.a&&ref.b===t.b)continue;
       t.R=R;t.C=C;t.P=[[R[0]*C[0]/100,R[0]*C[1]/100],[R[1]*C[0]/100,R[1]*C[1]/100]];
