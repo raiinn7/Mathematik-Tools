@@ -1493,7 +1493,7 @@ const TOPIC=(function(){
     }
     if(kind==='row'){
       t.text='Tabellenzeile vervollständigen ('+({fr:'Bruch',pie:'Kreis',bar:'Strecke',l:'l',cl:'cl',ml:'ml',grid:'Prozent'})[t.given]+' gegeben)';
-      t.html='<div class="zq">Vervollständige die Zeile. Eine Angabe ist gegeben, alle anderen gehören zum <b>gleichen Anteil</b> (1 Ganzes = 1 l = 100 %).</div>'+bgRowCells(t,false)
+      t.html='<div class="zq">Stelle die gegebene Angabe in den verschiedenen Darstellungen dar.</div>'+bgRowCells(t,false)
         +'<div class="hint">Kreis: Teile antippen · Strecke: Hebel ziehen · Prozent: Hebel ziehen, mit − und + genau einstellen</div>';
       t.parts=['fr','pie','bar','l','grid'].filter(k=>k!==t.given);
     }
