@@ -1690,9 +1690,13 @@ const TOPIC=(function(){
     let v=t.state.v,g=k=>mkVal(v[k]),res={},ok=true;
     const same=(a,b)=>[...a].sort((x,y)=>x-y).join()===[...b].sort((x,y)=>x-y).join();
     let R=[g('r0'),g('r1')],C=[g('c0'),g('c1')];
-    let rOk=same(R,t.R),cOk=same(C,t.C);
+    /* Beide Faktoren dürfen links oder oben stehen, in beliebiger Reihenfolge: (20 + 8) links und (10 + 4) oben – oder umgekehrt */
+    let RA=same(R,t.R),RB=same(R,t.C),CA=same(C,t.R),CB=same(C,t.C),rOk,cOk;
+    if((RA&&CB)||(RB&&CA)){rOk=cOk=true;}
+    else{rOk=RA||RB;cOk=rOk?(RA?CB:CA):(CA||CB);}
     res.r0=res.r1=rOk;res.c0=res.c1=cOk;
-    if(!rOk)R=t.R;if(!cOk)C=t.C;   /* bei falschen Randzahlen gegen die richtige Zerlegung prüfen */
+    if(!rOk)R=cOk?(same(C,t.C)?t.R:t.C):t.R;   /* bei falschen Randzahlen gegen die passende richtige Zerlegung prüfen */
+    if(!cOk)C=same(R,t.R)?t.C:t.R;
     let S=[0,0];
     [0,1].forEach(i=>[0,1].forEach(j=>{let p=R[i]*C[j]/100;res['p'+i+j]=g('p'+i+j)===p;S[i]+=p;}));
     res.s0=g('s0')===S[0];res.s1=g('s1')===S[1];res.tot=g('tot')===t.T;
@@ -1703,7 +1707,7 @@ const TOPIC=(function(){
     const f=v=>dfmt(v,2),P=x.P;
     let l5=x.kind==='mk5';
     return '<div class="ex">'+x.a+MUL_DOT+x.b+' = '+x.split+'</div>'+mkTable(x,true)+'<div class="helpline">'
-      +'<b>1.</b> Zerlege die Zahlen: '+x.a+' = '+f(x.R[0])+' + '+f(x.R[1])+' (links) und '+x.b+' = '+f(x.C[0])+' + '+f(x.C[1])+' (oben).<br>'
+      +'<b>1.</b> Zerlege die Zahlen: '+x.a+' = '+f(x.R[0])+' + '+f(x.R[1])+' (links) und '+x.b+' = '+f(x.C[0])+' + '+f(x.C[1])+' (oben). Du darfst die beiden Zahlen auch vertauschen – das Ergebnis bleibt gleich.<br>'
       +'<b>2.</b> Rechne jedes Feld: <b>Zahl links · Zahl oben</b>: '+[[0,0],[0,1],[1,0],[1,1]].map(([i,j])=>f(x.R[i])+MUL_DOT+f(x.C[j])+' = '+f(P[i][j])).join(', ')+'.'
       +(l5?'<br>Tipp: '+f(x.R[1])+MUL_DOT+f(x.C[1])+' → rechne '+(x.R[1]/10)+MUL_DOT+(x.C[1]/10)+' = '+(x.R[1]*x.C[1]/100)+'. Beide Zahlen haben 1 Stelle nach dem Komma, das Ergebnis hat also <b>2 Stellen</b>: '+f(P[1][1])+'.':'')+'<br>'
       +'<b>3.</b> Zähle jede Zeile zusammen: '+f(P[0][0])+' + '+f(P[0][1])+' = '+f(x.S[0])+' und '+f(P[1][0])+' + '+f(P[1][1])+' = '+f(x.S[1])+'.<br>'
@@ -1713,7 +1717,7 @@ const TOPIC=(function(){
     if(l<3)return mulGen(l);
     let t=mkGen(l);
     t.html='<div class="zq">Rechne mit dem <b>Malkreuz</b>. Trage die Zahlen ein und berechne alle Felder.</div><div class="ex mkq">'+t.a+MUL_DOT+t.b+' = '+t.split+'</div>'+mkTable(t,false)
-      +'<div class="hint">Links und oben: die Teile der Zahlen · in der Mitte: Zahl links mal Zahl oben · rechts: Summe der Zeile · unten: Ergebnis</div>';
+      +'<div class="hint">Links und oben: die Teile der Zahlen (welche Zahl links und welche oben steht, darfst du wählen) · in der Mitte: Zahl links mal Zahl oben · rechts: Summe der Zeile · unten: Ergebnis</div>';
     t.interactive=true;t.noInput=true;t.state={v:{}};
     return t;
   }
