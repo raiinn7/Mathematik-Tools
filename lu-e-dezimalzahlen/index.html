@@ -942,11 +942,11 @@ const TOPIC=(function(){
     {name:'Anfänger',icon:'👶'},{name:'Fortgeschritten',icon:'🛹'},{name:'Profi',icon:'😎'},{name:'Experte',icon:'🚀'},{name:'Meister',icon:'👑'}
   ];
   const CATS={   /* Reihenfolge = Reihenfolge im Menü */
-    komma:{icon:'🔢',name:'Komma verschieben'},
     strahl:{icon:'📏',name:'Zahlenstrahl'},
-    bdg:{icon:'🥧',name:'Brüche und Dezimalzahlen bei Grössen bestimmen'},
     stelle:{icon:'🧮',name:'Stellenwerttafel'},
+    bdg:{icon:'🥧',name:'Brüche und Dezimalzahlen bei Grössen bestimmen'},
     dez:{icon:'➕',name:'Addition und Subtraktion von Dezimalzahlen'},
+    komma:{icon:'🔢',name:'Komma verschieben'},
     mul:{icon:'✖️',name:'Multiplikation von Dezimalzahlen'},
     div:{icon:'➗',name:'Division von Dezimalzahlen'}
   };
@@ -1183,7 +1183,7 @@ const TOPIC=(function(){
       let c=dots?'<div class="dz" data-e="'+e+'">'+swDots(cells[e]||0)+'</div>':inp?'<input class="swin" data-e="'+e+'" inputmode="numeric" autocomplete="off" aria-label="'+SW_N[e]+'">':(cells[e]===undefined?'':cells[e]);
       b+='<td'+k+'>'+c+'</td>';
     });
-    return h+'</tr>'+b+'</tr></table><div class="swleg">'+cols.map(e=>SW_S[e]+' = '+SW_N[e]).join(' · ')+'</div>';
+    return h+'</tr>'+b+'</tr></table>';
   }
   /* Brüche für Level 4: Zehnerbrüche (Nenner 10, 100, 1000) und einfache Brüche (Nenner 2, 4, 5, 8, 20, 25, 50) */
   function swFrac(){
@@ -1253,9 +1253,9 @@ const TOPIC=(function(){
       let amt=t.k===1?SW_U[t.e]:dfmt(t.k*swP10(t.e),3);
       let what=t.k+' '+SW_N[t.e];
       t.text='Mache die Zahl in der Tafel um '+amt+' '+(t.up?'grösser':'kleiner');
-      t.html='<div class="zq">Verändere die Punkte so, dass die Zahl um <b>'+amt+'</b> ('+what+') <b>'+(t.up?'grösser':'kleiner')+'</b> wird.</div>'
-        +'<div class="swsrc"><span class="srcdot" title="1 Punkt in die Tafel ziehen"></span><span class="srcdot5 srcdot2" title="2 Punkte auf einmal in die Tafel ziehen"><i></i><i></i></span><span class="srcdot5" title="5 Punkte auf einmal in die Tafel ziehen"><i></i><i></i><i></i><i></i><i></i></span><span>Ziehe Punkte hinein.<br>Punkt antippen oder hinausziehen = löschen.</span><button type="button" class="swclr swrst">↺ Von vorne</button></div>'
-        +swTable(t.start,t.cols,true)+'<div class="hint">In einer Spalte haben höchstens 9 Punkte Platz.</div>';
+      t.html='<div class="zq">Verändere die Punkte so, dass die Zahl um <b>'+amt+'</b> ('+what+') <b>'+(t.up?'grösser':'kleiner')+'</b> wird.</div><div class="swnum" title="Startzahl">'+swFmt(dfmt(t.v,3))+'</div>'
+        +'<div class="swsrc"><span class="srcdot" title="1 Punkt in die Tafel ziehen"><i></i></span><span class="srcdot5 srcdot2" title="2 Punkte auf einmal in die Tafel ziehen"><i></i><i></i></span><span class="srcdot5" title="5 Punkte auf einmal in die Tafel ziehen"><i></i><i></i><i></i><i></i><i></i></span><span>Tippe auf eine Spalte, um Punkte zu legen.<br>Punkt antippen oder hinausziehen = löschen.</span><button type="button" class="swclr swrst">↺ Von vorne</button></div>'
+        +swTable(t.start,t.cols,true);
       t.interactive=true;t.noInput=true;t.state={c:swCells(t.start)};
     }
     if(kind==='readdots'){
@@ -1266,7 +1266,7 @@ const TOPIC=(function(){
     if(kind==='dots'){
       t.text='Lege '+swStr(t.d)+' mit Punkten in die Stellenwerttafel';
       t.html='<div class="zq">Lege die Zahl mit Punkten in die Stellenwerttafel.</div><div class="swnum">'+swFmt(swStr(t.d))+'</div>'
-        +'<div class="swsrc"><span class="srcdot" title="1 Punkt in die Tafel ziehen"></span><span class="srcdot5 srcdot2" title="2 Punkte auf einmal in die Tafel ziehen"><i></i><i></i></span><span class="srcdot5" title="5 Punkte auf einmal in die Tafel ziehen"><i></i><i></i><i></i><i></i><i></i></span><span>Ziehe 1, 2 oder 5 Punkte in die Spalten.<br>Punkt antippen oder hinausziehen = löschen.</span><button type="button" class="swclr">🗑️ Alle löschen</button></div>'
+        +'<div class="swsrc"><span class="srcdot" title="1 Punkt in die Tafel ziehen"><i></i></span><span class="srcdot5 srcdot2" title="2 Punkte auf einmal in die Tafel ziehen"><i></i><i></i></span><span class="srcdot5" title="5 Punkte auf einmal in die Tafel ziehen"><i></i><i></i><i></i><i></i><i></i></span><span>Tippe auf eine Spalte, um Punkte zu legen, oder ziehe 1, 2 oder 5 Punkte hinein.<br>Punkt antippen oder hinausziehen = löschen.</span><button type="button" class="swclr">🗑️ Alle löschen</button></div>'
         +swTable({},t.cols,true);
       t.interactive=true;t.noInput=true;t.state={c:{}};
     }
@@ -1623,15 +1623,15 @@ const TOPIC=(function(){
 
   /* ======================================================================
      NEU: Kategorie "Multiplikation von Dezimalzahlen" (cat 'mul')
-     Level 1: ganze Zahl · Zehntel von 0.1 bis 0.9 (z. B. 7 · 0.3)
-     Level 2: 2–3 verwandte Aufgaben (z. B. 3 · 4, 3 · 0.4, 3 · 0.04)
-     Level 3: ganze Zahl · Dezimalzahl bis 10 mit Zehnteln (z. B. 7 · 2.3)
+     Level 1: 2–3 verwandte Aufgaben (z. B. 3 · 4, 3 · 0.4, 3 · 0.04)
+     Level 2: ganze Zahl · Zehntel von 0.1 bis 0.9 (z. B. 7 · 0.3)
+     Level 3: ganze Zahl · Dezimalzahl bis 10 mit Zehnteln (z. B. 7 · 2.3); die ersten 3 Aufgaben und danach 25 % als einfaches Malkreuz (2 · 3.7)
      Level 4: Malkreuz mit ganzen Zahlen (16 · 14)   Level 5: Malkreuz mit Dezimalzahlen unter 10 (4.3 · 5.2)
      Gerechnet wird mit ganzen Zahlen (Zehntel bzw. Hundertstel), damit keine Rundungsfehler entstehen.
      ====================================================================== */
   const MUL_DOT=' · ';
   function mulGen(l,ref){
-    let L=Math.min(l,2);   /* Level 4/5 vorläufig wie Level 3 */
+    let L=[1,0,2][Math.min(l,2)];   /* Level 1: verwandte Aufgaben, Level 2: ganze Zahl · Zehntel, Level 3: ganze Zahl · Dezimalzahl */
     for(let it=0;it<300;it++){
       let t={cat:'mul',level:l,kind:['m1','m2','m3'][L]};
       if(L===0||L===2){
@@ -1652,7 +1652,7 @@ const TOPIC=(function(){
         return {txt:y+MUL_DOT+x,ans:dfmt(a*b,p)};});
       Object.assign(t,{a:a,b:b,which:which,pl:pl,rows:rows});
       t.text=rows.map(r=>r.txt).join(' | ');
-      t.html='<div class="zq">Löse die verwandten Aufgaben.</div><div class="mulrows">'+rows.map((r,i)=>'<div class="mulrow"><span>'+r.txt+' =</span><input class="bin mulin" data-i="'+i+'" data-part="r'+i+'" inputmode="decimal" autocomplete="off"></div>').join('')+'</div><div class="hint">Tipp: Vergleiche die Aufgaben miteinander.</div>';
+      t.html='<div class="zq">Löse die verwandten Aufgaben.</div><div class="mulrows">'+rows.map((r,i)=>'<div class="mulrow"><span>'+r.txt+' =</span><input class="bin mulin" data-i="'+i+'" data-part="r'+i+'" inputmode="decimal" autocomplete="off"></div>').join('')+'</div>';
       t.answer=rows.map(r=>r.ans).join(' / ');
       t.interactive=true;t.noInput=true;t.state={v:{}};
       return t;
@@ -1714,7 +1714,51 @@ const TOPIC=(function(){
       +'<b>3.</b> Zähle jede Zeile zusammen: '+f(P[0][0])+' + '+f(P[0][1])+' = '+f(x.S[0])+' und '+f(P[1][0])+' + '+f(P[1][1])+' = '+f(x.S[1])+'.<br>'
       +'<b>4.</b> Ergebnis: '+f(x.S[0])+' + '+f(x.S[1])+' = <b>'+f(x.T)+'</b>.</div>';
   }
+  const SEQ={};   /* Anzahl Aufgaben seit Eintritt in das aktuelle Level (pro Kategorie) */
+  function seqN(cat,l){let s=SEQ[cat]||(SEQ[cat]={l:-1,n:0});if(s.l!==l){s.l=l;s.n=0;}return s.n++;}
+  /* Level 3: einfaches Malkreuz mit einer Zeile (2 · 3.7 = 2 · 3 + 2 · 0.7) */
+  function mk3Gen(ref){
+    for(let it=0;it<300;it++){
+      let w=ri(2,9),T=ri(1,9)*10+ri(1,9);
+      if(ref&&ref.w===w&&ref.T===T)continue;
+      let E=Math.floor(T/10),z=T%10,t={cat:'mul',level:2,kind:'mk3',w:w,T:T};
+      t.C=[E*100,z*10];t.R=w*100;t.P=[w*E*100,w*z*10];t.TOT=t.P[0]+t.P[1];
+      t.a=String(w);t.b=sfmt(T,1);
+      t.text=w+MUL_DOT+t.b+' = '+w+MUL_DOT+E+' + '+w+MUL_DOT+sfmt(z,1);t.answer=dfmt(t.TOT,2);
+      return t;
+    }
+  }
+  function mk3Table(t,sol){
+    const f=x=>dfmt(x,2),cell=(k,v,cls)=>'<td class="'+(cls||'')+'">'+(sol?'<b>'+f(v)+'</b>':'<input class="bin mkin" data-k="'+k+'" data-part="'+k+'" inputmode="decimal" autocomplete="off">')+'</td>';
+    return '<table class="mk"><tr><td class="mk0"></td>'+cell('c0',t.C[0],'mkh')+cell('c1',t.C[1],'mkh')+'<td class="mk0"></td></tr>'
+      +'<tr>'+cell('r0',t.R,'mkh')+cell('p0',t.P[0],'mkc00')+cell('p1',t.P[1],'mkc01')+cell('tot',t.TOT,'mkt')+'</tr></table>';
+  }
+  function mk3Check(t){
+    let v=t.state.v,g=k=>mkVal(v[k]),res={},ok=true;
+    let c0=g('c0'),c1=g('c1'),r=g('r0');
+    let cOk=(c0===t.C[0]&&c1===t.C[1])||(c0===t.C[1]&&c1===t.C[0]);
+    res.c0=res.c1=cOk;res.r0=r===t.R;
+    let C=cOk?[c0,c1]:t.C;
+    res.p0=g('p0')===t.R*C[0]/100;res.p1=g('p1')===t.R*C[1]/100;res.tot=g('tot')===t.TOT;
+    for(let k in res){if(!res[k])ok=false;if(t.state.el)t.state.el.querySelectorAll('[data-part="'+k+'"]').forEach(e=>e.classList.toggle('bad',!res[k]));}
+    return ok;
+  }
+  function mk3Help(x){
+    const f=v=>dfmt(v,2);
+    return '<div class="ex">'+x.a+MUL_DOT+x.b+'</div>'+mk3Table(x,true)+'<div class="helpline">'
+      +'<b>1.</b> Zerlege '+x.b+' in '+f(x.C[0])+' + '+f(x.C[1])+' (oben). '+x.a+' kommt nach links.<br>'
+      +'<b>2.</b> Rechne jedes Feld: '+x.a+MUL_DOT+f(x.C[0])+' = '+f(x.P[0])+' und '+x.a+MUL_DOT+f(x.C[1])+' = '+f(x.P[1])+'.<br>'
+      +'<b>3.</b> Zähle zusammen: '+f(x.P[0])+' + '+f(x.P[1])+' = <b>'+f(x.TOT)+'</b>.</div>';
+  }
   function makeMul(l){
+    let n=seqN('mul',l);
+    if(l===2&&(n<3||Math.random()<0.25)){
+      let t=mk3Gen();
+      t.html='<div class="zq">Rechne mit dem <b>Malkreuz</b>.</div><div class="ex mkq">'+t.a+MUL_DOT+t.b+'</div>'+mk3Table(t,false)
+        +'<div class="hint">Oben: die Teile der Dezimalzahl · links: die ganze Zahl · in der Mitte: links mal oben · rechts: Ergebnis</div>';
+      t.interactive=true;t.noInput=true;t.state={v:{}};
+      return t;
+    }
     if(l<3)return mulGen(l);
     let t=mkGen(l);
     t.html='<div class="zq">Rechne mit dem <b>Malkreuz</b>. Trage die Zahlen ein und berechne alle Felder.</div><div class="ex mkq">'+t.a+MUL_DOT+t.b+' = '+t.split+'</div>'+mkTable(t,false)
@@ -1744,6 +1788,7 @@ const TOPIC=(function(){
     if(ins.length&&!window.matchMedia('(pointer:coarse)').matches)setTimeout(()=>ins[0].focus(),0);
   }
   function helpMul(t){
+    if(t.kind==='mk3'){let x=t;if(!HX){let e=mk3Gen(t);if(e)x=e;}return '<b>Hilfsbeispiel:</b>'+mk3Help(x);}
     if(t.kind==='mk4'||t.kind==='mk5'){let x=t;if(!HX){let e=mkGen(t.level,t);if(e)x=e;}return '<b>Hilfsbeispiel:</b>'+mkHelp(x);}
     let x=t;if(!HX){let e=mulGen(t.level,t);if(e)x=e;}
     let h='<b>Hilfsbeispiel:</b>';
@@ -1768,63 +1813,89 @@ const TOPIC=(function(){
   }
 
   /* ======================================================================
-     NEU: Kategorie "Division von Dezimalzahlen" (cat 'div') – alle Aufgaben gehen auf
-     Level 1: ganze Zahl : ganze Zahl bis 100, Ergebnis ganz (54 : 6 = 9)
-     Level 2: einstellige Dezimalzahl mit Zehnteln : ganze Zahl bis 9 (4.9 : 7 = 0.7)
-     Level 3: 2–3 verwandte Aufgaben (540 : 6 = 90, 54 : 6 = 9, 5.4 : 6 = 0.9)
-     Level 4: zweistellige Dezimalzahl mit Zehnteln : ganze Zahl (21.7 : 7 = 3.1)
-     Level 5: Mischung aus Level 1–4 mit schwierigeren Zahlen
-     Gerechnet wird in Zehnteln bzw. ganzen Zahlen (keine Rundungsfehler).
+     NEU: Kategorie "Division von Dezimalzahlen" (cat 'div')
      ====================================================================== */
   const DIV_OP=' : ';
-  function divGen(l,ref){
-    let sub=ref?ref.sub:(l<4?l:ri(0,3)),hard=l===4;
-    for(let it=0;it<500;it++){
-      let t={cat:'div',level:l,sub:sub,hard:hard,kind:'d'+(sub+1)};
-      if(sub===0){   /* ganze Zahlen */
-        let b,q;
-        if(!hard){b=Math.random()<0.75?ri(2,10):ri(11,50);q=ri(2,Math.floor(100/b));if(q<2)continue;}
-        else{b=Math.random()<0.6?ri(3,12):ri(13,25);q=ri(Math.max(2,Math.ceil(101/b)),Math.floor(1000/b));}   /* schwerer: Dividend 101–1000 */
+  /* Division, Aufbau:
+     Level 1: einfache verwandte Aufgaben (40 : 8 = 5, 4 : 8 = 0.5, 0.4 : 8 = 0.05); die ersten 3 Aufgaben immer, danach 50 % verwandte Aufgaben / 50 % eine einzelne Aufgabe mit Dezimalzahl-Ergebnis
+     Level 2: verwandte Aufgaben (540 : 6, 54 : 6, 5.4 : 6); die ersten 3 Aufgaben immer, danach 50 % verwandte Aufgaben / 50 % Dezimalzahl : ganze Zahl (4.9 : 7 = 0.7)
+     Level 3: keine verwandten Aufgaben: 80 % aus Level 2 (Dezimalzahl : ganze Zahl), 20 % aus Level 1 (einzelne einfache Aufgabe)
+     Level 4: Zwischenstufe: Dezimalzahl 10.1–49.9 : ganze Zahl (21.7 : 7 = 3.1)
+     Level 5: Dezimalzahl 10.1–99.9 : ganze Zahl
+     Gerechnet wird in Hundertsteln bzw. ganzen Zahlen (keine Rundungsfehler). */
+  const DIV_SIMPLE=(function(){let a=[];for(let b=2;b<=9;b++)for(let q=2;q<=10;q++)if((b*q)%10===0&&(q<10||b===9))a.push([b,q]);return a;})();   /* 40 : 8, 90 : 9, 20 : 5 … */
+  function divRows(D0,b,q,js){   /* Dividend D0 · 10^-j  :  b  =  q · 10^-j */
+    return js.map(j=>({txt:dfmt(D0*ipow(10,2-j),2)+DIV_OP+b,ans:dfmt(q*ipow(10,2-j),2)}));
+  }
+  function divRel(l,ref,safe){   /* verwandte Aufgaben; l=0 einfach, sonst wie bisher */
+    for(let it=0;it<300;it++){
+      let t={cat:'div',level:l,sub:2,kind:'rel',safe:!!safe},b,q,D0,rows,ks;
+      if(l===0){
+        let pr=pick(DIV_SIMPLE);b=pr[0];q=pr[1];D0=b*q;
         if(ref&&ref.b===b&&ref.q===q)continue;
-        Object.assign(t,{b:b,q:q,a:String(b*q)});t.ans=String(q);
-      }
-      if(sub===1||sub===3){   /* Dezimalzahl mit Zehnteln : ganze Zahl */
-        let b=hard?ri(3,12):ri(2,9),q,D;
-        let lo=sub===1?1:(hard?1001:101),hi=sub===1?99:(hard?9999:999);   /* D in Zehnteln: L2 0.1–9.9, L4 10.1–99.9, L5 auch 100.1–999.9 */
-        if(sub===1&&hard)hi=99;
-        q=ri(Math.ceil(lo/b),Math.floor(hi/b));D=b*q;
-        if(D%10===0||D<lo||D>hi)continue;   /* Dividend hat immer Zehntel */
-        if(sub===1&&!hard&&D<10&&Math.random()<0.5)continue;   /* nicht zu oft 0.x */
+        rows=divRows(D0,b,q,[0,1,2]);Object.assign(t,{b:b,q:q,base:D0,simple:true});
+      }else{
+        b=ri(2,9);q=ri(2,9);
         if(ref&&ref.b===b&&ref.q===q)continue;
-        Object.assign(t,{b:b,q:q,D:D,a:sfmt(D,1)});t.ans=dfmt(q,1);
+        ks=safe?[1,0,-1]:pick([[1,0,-1],[1,0,-1],[0,-1,-2],[1,0],[0,-1]]);   /* Zehnerpotenz des Dividenden */
+        rows=ks.map(k=>({txt:dfmt(b*q*ipow(10,k+2),2)+DIV_OP+b,ans:dfmt(q*ipow(10,k+2),2)}));
+        Object.assign(t,{b:b,q:q,base:b*q,ks:ks});
       }
-      if(sub===2){   /* verwandte Aufgaben */
-        let b=hard?ri(11,15):ri(2,9),q=ri(2,9),base=b*q;
-        if(ref&&ref.b===b&&ref.q===q)continue;
-        let ks=hard?pick([[2,1,0],[1,0,-1],[0,-1,-2]]):pick([[1,0,-1],[1,0,-1],[0,-1,-2],[1,0],[0,-1]]);   /* Zehnerpotenz des Dividenden */
-        let rows=ks.map(k=>({txt:dfmt(base*ipow(10,k+2),2)+DIV_OP+b,ans:dfmt(q*ipow(10,k+2),2)}));
-        Object.assign(t,{b:b,q:q,base:base,ks:ks,rows:rows});
-        t.text=rows.map(r=>r.txt).join(' | ');t.answer=rows.map(r=>r.ans).join(' / ');
-        t.html='<div class="zq">Löse die verwandten Aufgaben.</div><div class="mulrows">'+rows.map((r,i)=>'<div class="mulrow"><span>'+r.txt+' =</span><input class="bin mulin" data-i="'+i+'" data-part="r'+i+'" inputmode="decimal" autocomplete="off"></div>').join('')+'</div><div class="hint">Tipp: Vergleiche die Aufgaben miteinander.</div>';
-        t.interactive=true;t.noInput=true;t.state={v:{}};
-        return t;
-      }
-      let ex=t.a+DIV_OP+t.b;
-      t.text=ex+' = ?';t.html=ex+' = '+QM;t.answer=t.ans;
+      t.rows=rows;
+      t.text=rows.map(r=>r.txt).join(' | ');t.answer=rows.map(r=>r.ans).join(' / ');
+      t.html='<div class="zq">Löse die verwandten Aufgaben.</div><div class="mulrows">'+rows.map((r,i)=>'<div class="mulrow"><span>'+r.txt+' =</span><input class="bin mulin" data-i="'+i+'" data-part="r'+i+'" inputmode="decimal" autocomplete="off"></div>').join('')+'</div>';
+      t.interactive=true;t.noInput=true;t.state={v:{}};
       return t;
     }
   }
-  function makeDiv(l){return divGen(l);}
+  function divOne(ref){   /* einzelne einfache Aufgabe mit Dezimalzahl-Ergebnis (4 : 8 = 0.5) */
+    for(let it=0;it<300;it++){
+      let pr=pick(DIV_SIMPLE),b=pr[0],q=pr[1],j=ri(1,2),D0=b*q;
+      if(ref&&ref.b===b&&ref.q===q&&ref.j===j)continue;
+      let r=divRows(D0,b,q,[j])[0];
+      let t={cat:'div',level:ref?ref.level:0,sub:4,kind:'one',b:b,q:q,j:j,base:D0,a:r.txt.split(DIV_OP)[0]};
+      t.text=r.txt+' = ?';t.html=r.txt+' = '+QM;t.answer=r.ans;
+      return t;
+    }
+  }
+  function divDec(l,lo,hi,ref){   /* Dezimalzahl mit Zehnteln : ganze Zahl; D in Zehnteln */
+    for(let it=0;it<500;it++){
+      let b=ri(2,9),q=ri(Math.ceil(lo/b),Math.floor(hi/b)),D=b*q;
+      if(D%10===0||D<lo||D>hi)continue;   /* Dividend hat immer Zehntel */
+      if(hi<100&&D<10&&Math.random()<0.5)continue;   /* nicht zu oft 0.x */
+      if(ref&&ref.b===b&&ref.q===q)continue;
+      let t={cat:'div',level:l,sub:1,kind:'dec',lo:lo,hi:hi,b:b,q:q,D:D,a:sfmt(D,1)};t.ans=dfmt(q,1);
+      let ex=t.a+DIV_OP+b;t.text=ex+' = ?';t.html=ex+' = '+QM;t.answer=t.ans;
+      return t;
+    }
+  }
+  function divGen(l,ref,n){
+    if(ref){
+      if(ref.kind==='rel')return divRel(l,ref,ref.safe);
+      if(ref.kind==='one')return divOne(ref);
+      return divDec(l,ref.lo,ref.hi,ref);
+    }
+    if(l===0){if(n<3)return divRel(0,null,true);return Math.random()<0.5?divRel(0,null):divOne();}
+    if(l===1){if(n<3)return divRel(1,null,true);return Math.random()<0.5?divRel(1,null):divDec(1,1,99);}
+    if(l===2)return Math.random()<0.8?divDec(2,1,99):divOne();
+    if(l===3)return divDec(3,101,499);
+    return divDec(4,101,999);
+  }
+  function makeDiv(l){return divGen(l,null,seqN('div',l));}
   function helpDiv(t){
     let x=t;if(!HX){let e=divGen(t.level,t);if(e)x=e;}
     let h='<b>Hilfsbeispiel:</b>';
-    if(x.sub===0)return h+'<div class="ex">'+x.a+DIV_OP+x.b+'</div><div class="helpline">Frage dich: <b>'+x.b+' mal wie viel gibt '+x.a+'?</b><br>'+x.b+MUL_DOT+x.q+' = '+x.a+', also ist '+x.a+DIV_OP+x.b+' = <b>'+x.q+'</b>.'
-      +(x.q>=10&&x.b<=12?'<br>Tipp bei grossen Zahlen: zerlegen, z. B. '+x.a+' = '+(x.b*Math.floor(x.q/10)*10)+' + '+(x.b*(x.q%10))+' → '+(Math.floor(x.q/10)*10)+' + '+(x.q%10)+' = '+x.q+'.':'')+'</div>';
-    if(x.sub===2){
-      let base=x.base+DIV_OP+x.b+' = '+x.q;
+    if(x.kind==='rel'){
+      let base=x.simple?(x.base+DIV_OP+x.b+' = '+x.q):(x.base+DIV_OP+x.b+' = '+x.q);
       return h+'<div class="mulrows">'+x.rows.map(r=>'<div class="mulrow"><span>'+r.txt+' = <b>'+r.ans+'</b></span></div>').join('')+'</div><div class="helpline">'
         +'Alle Aufgaben haben die gleichen Ziffern: <b>'+base+'</b>.<br>'
         +'Ist die erste Zahl <b>10-mal kleiner</b>, ist auch das Ergebnis 10-mal kleiner: Das Komma rückt <b>1 Stelle nach links</b>. Ist sie 10-mal grösser, rückt es 1 Stelle nach rechts.</div>';
+    }
+    if(x.kind==='one'){
+      let rows=divRows(x.base,x.b,x.q,x.j===2?[0,1,2]:[0,1]);
+      return h+'<div class="ex">'+x.text.replace(' = ?','')+'</div><div class="mulrows">'+rows.map(r=>'<div class="mulrow"><span>'+r.txt+' = <b>'+r.ans+'</b></span></div>').join('')+'</div><div class="helpline">'
+        +'Starte mit der einfachen Aufgabe <b>'+x.base+DIV_OP+x.b+' = '+x.q+'</b>.<br>'
+        +'Ist die erste Zahl <b>10-mal kleiner</b>, ist auch das Ergebnis 10-mal kleiner: Das Komma rückt <b>1 Stelle nach links</b>.</div>';
     }
     let E=Math.floor(x.D/10),z=x.D%10,parts='';
     if(E%x.b===0&&z%x.b===0&&E>0)parts='<br><b>Weg 2 – zerlegen:</b> '+x.a+' = '+E+' + '+sfmt(z,1)+'. '+E+DIV_OP+x.b+' = '+(E/x.b)+' und '+sfmt(z,1)+DIV_OP+x.b+' = '+dfmt(z/x.b,1)+'. Zusammen: <b>'+dfmt(x.q,1)+'</b>.';
@@ -1912,7 +1983,9 @@ const TOPIC=(function(){
       el.querySelector('.srcdot2').addEventListener('pointerdown',ev=>start(ev,'src2'));   /* 2er-Punkt: legt 2 Punkte auf einmal */   /* 5er-Punkt: legt 5 Punkte auf einmal */
       sd.addEventListener('pointerdown',function(ev){
         let dot=ev.target.closest('.dot'),z=ev.target.closest('.dz');
-        if(dot&&z)start(ev,+z.getAttribute('data-e'));
+        if(dot&&z){start(ev,+z.getAttribute('data-e'));return;}
+        let td=ev.target.closest('td');
+        if(!dot&&td&&sd.contains(td)){let zz=td.querySelector('.dz');if(zz){add(+zz.getAttribute('data-e'),1);draw();ev.preventDefault();}}   /* Spalte antippen = 1 Punkt legen */
       });
       document.addEventListener('pointermove',move);
       document.addEventListener('pointerup',end);
@@ -1964,7 +2037,7 @@ const TOPIC=(function(){
   function check(raw,t){
     if(t.cat==='bdg'&&t.noInput)return bgCheck(t);
     if(t.cat==='div'&&t.noInput)return mulCheck(t);
-    if(t.cat==='mul'&&t.noInput)return (t.kind==='mk4'||t.kind==='mk5')?mkCheck(t):mulCheck(t);
+    if(t.cat==='mul'&&t.noInput)return t.kind==='mk3'?mk3Check(t):(t.kind==='mk4'||t.kind==='mk5')?mkCheck(t):mulCheck(t);
     if(t.cat==='stelle'&&t.kind==='fill')return swFillOk(t);
     if(t.cat==='stelle'&&t.kind==='dots')return swDotsOk(t);
     if(t.cat==='stelle'&&t.kind==='d2f')return swFracOk(t);
@@ -2011,7 +2084,7 @@ const TOPIC=(function(){
       choices:CAT_KEYS.map(k=>({v:k,label:CATS[k].icon+' '+CATS[k].name})).concat([{v:'mix',label:'🎲 Gemischt'}]),
       default:'komma'
     },
-    css:'.helpcalc{font-size:30px;font-weight:bold;margin:12px 0 6px}.cOld{color:#d32f2f;font-weight:bold}.cNew{color:#2e7d32;font-weight:bold}.helpcalc .cOld,.helpcalc .cNew{font-size:1.5em}.cross{background:#fff176;border-radius:4px;padding:0 2px}.legend{font-size:14px;color:#444}.pw{font-size:1.1em}.pw sup,.task sup{font-size:.6em;font-weight:bold}.qm{display:inline-block;min-width:30px;border-bottom:3px solid #c62828;color:#c62828;font-weight:bold;text-align:center}.hint{font-size:14px;font-weight:normal;color:#555;margin-top:8px}.ex{font-size:26px;font-weight:bold;margin:8px 0}.yn{display:flex;gap:16px;justify-content:center;margin-top:12px}.yn button{font-size:22px;font-weight:bold;padding:10px 34px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.yn.opts{flex-direction:column;align-items:stretch;max-width:420px;margin-left:auto;margin-right:auto}.yn.opts button{font-size:22px;padding:10px 16px;text-align:left}.col{font-family:ui-monospace,Consolas,monospace;font-size:24px;line-height:1.3;text-align:left;display:inline-block;margin:8px 0;background:#f5f5f5;padding:6px 14px;border-radius:8px}.exq button{font:inherit;font-size:28px;font-weight:bold;min-width:46px;height:46px;margin:0 4px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.exq button.sel,.yn button.sel{background:#1976d2;border-color:#1976d2;color:#fff}.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 4px;line-height:1.1;font-size:28px;font-weight:bold}.fr .fn{border-bottom:3px solid currentColor;padding:0 6px}.fr .fd{padding:0 6px}.zq{font-size:22px;font-weight:normal;margin-bottom:6px}.zs{width:100%;max-width:700px;height:auto;display:block;margin:6px auto;user-select:none}svg.zs{touch-action:none;cursor:pointer;outline:none}.zh{cursor:grab}.zh polygon,.zh circle,.zh text{fill:#9e9e9e}.zh line{stroke:#9e9e9e}.zh.on polygon,.zh.on circle,.zh.on text{fill:#1976d2}.zh.on line{stroke:#1976d2}.helpcalc .zs{max-width:520px}.swt{border-collapse:collapse;margin:10px auto;font-size:28px;font-weight:bold;width:100%;table-layout:fixed;max-width:calc(var(--n,7)*58px)}.swt.swd{max-width:calc(var(--n,7)*84px)}.helpcalc .swt{max-width:calc(var(--n,7)*44px)}.helpcalc .swt.swd{max-width:calc(var(--n,7)*66px)}.swt.sw9 th{font-size:20px}.swt th,.swt td{border:2px solid #90a4ae;height:50px;text-align:center;padding:0;overflow:hidden}.helpcalc .swt th,.helpcalc .swt td{height:38px}.swt th{background:#e3f2fd;font-size:22px}.swt .kc{border-left:5px solid #d32f2f}.swt td.mk{background:#fff176}.swt th button{font:inherit;width:100%;height:100%;min-height:46px;border:0;background:none;cursor:pointer;color:inherit}.swt th button:hover{background:#bbdefb}.swt th button.sel{background:#1976d2;color:#fff}.swleg{font-size:13px;font-weight:normal;color:#555;text-align:center}.swnum{font-size:34px;font-weight:bold;letter-spacing:2px;margin:6px 0}.swin{width:100%;height:100%;min-height:46px;box-sizing:border-box;border:0;text-align:center;font:inherit;background:#fffde7;color:#1b2733;padding:0}.swin:focus{outline:3px solid #1976d2;outline-offset:-3px;background:#fff}.swt.swd td{vertical-align:top}.dz{display:grid;grid-template-columns:repeat(5,minmax(0,13px));gap:3px;justify-content:center;align-content:start;min-height:66px;padding:6px 2px;touch-action:none;box-sizing:border-box}.dz.over{background:#bbdefb}.dz.full{animation:swfull .35s}@keyframes swfull{0%,100%{background:none}50%{background:#ffcdd2}}.dot{width:100%;max-width:13px;aspect-ratio:1/1;border-radius:50%;background:#1976d2;cursor:grab;touch-action:none}.helpcalc .dz{cursor:default;min-height:0}@media(max-width:700px){.swt{font-size:22px}.swt th{font-size:16px}.swt.sw9{font-size:17px}.swt.sw9 th{font-size:13px}.swt th,.swt td{height:42px}.dz{gap:2px;padding:4px 1px}}.swsrc{display:flex;align-items:center;justify-content:center;gap:14px;margin:8px 0;font-size:15px;font-weight:normal;text-align:left;color:#444;flex-wrap:wrap}.srcdot{width:46px;height:46px;border-radius:50%;background:#1976d2;cursor:grab;touch-action:none;box-shadow:0 2px 6px rgba(0,0,0,.3),inset 0 -4px 0 rgba(0,0,0,.15)}.srcdot5{display:grid;grid-template-columns:repeat(5,12px);gap:3px;padding:9px 10px;border-radius:24px;background:#e3f2fd;border:2px solid #1976d2;cursor:grab;touch-action:none;box-shadow:0 2px 6px rgba(0,0,0,.25)}.srcdot5.srcdot2{grid-template-columns:repeat(2,12px)}.srcdot5 i,.dotghost.g5 i{display:block;width:12px;height:12px;border-radius:50%;background:#1976d2;pointer-events:none}.dotghost.g5{display:grid;grid-template-columns:repeat(5,12px);gap:3px;width:auto;height:auto;padding:5px 7px;margin:-11px 0 0 -40px;border-radius:14px;background:rgba(227,242,253,.9);border:2px solid #1976d2}.swclr{font-size:14px;padding:6px 10px;border-radius:8px;border:1px solid #b0bec5;background:#fff;cursor:pointer}.dotghost{position:fixed;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:#1976d2;opacity:.85;pointer-events:none;z-index:50;box-shadow:0 2px 6px rgba(0,0,0,.35)}.frin{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;gap:4px}.frin .fin{width:90px;font-size:28px;font-weight:bold;text-align:center;padding:4px;border:2px solid #90a4ae;border-radius:8px}.frin .fin:focus{outline:none;border-color:#1976d2}.frl{display:block;width:100px;border-top:3px solid currentColor}.bgpie{width:170px;height:170px;display:block;margin:6px auto;touch-action:none;overflow:visible}.bgpie path{fill:#fff;stroke:#37474f;stroke-width:1.5}.bgpie path.on,.bgpie .bgarc{fill:#9ccc65}.bgpie .bgarc{stroke:#37474f;stroke-width:1.5}.bgpie .bgbase{fill:#fff}.bgpie .bgout{fill:none;stroke:#37474f;stroke-width:2.5}.bgpie.live path[data-i]{cursor:pointer}.bgpie.live path[data-i]:hover{fill:#e8f5e9}.bgpie.live path.on:hover{fill:#8bc34a}.bgpie.drag{cursor:pointer}.bgknob{fill:#1976d2;stroke:#fff;stroke-width:2}.bgpie.bad{outline:3px solid #e53935;outline-offset:4px;border-radius:50%}.bgbar{position:relative;width:100%;max-width:380px;height:28px;border:2px solid #37474f;background:#fff;margin:30px auto 34px;touch-action:none;box-sizing:border-box}.bgbar.live{cursor:pointer}.bgfill{position:absolute;left:0;top:0;bottom:0;background:#9ccc65}.bgtick{position:absolute;top:0;bottom:0;border-left:1.5px solid #37474f}.bgtick.tenth{border-left:2px solid #000;margin-left:-.5px}.bgtick.dash{border-left:1.5px dashed #37474f}.bgl0,.bgl1{position:absolute;top:-22px;font-size:14px;font-weight:normal;color:#555}.bgl0{left:-4px}.bglm{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:14px;font-weight:normal;color:#555}.bgl1{right:-4px}.bghandle{position:absolute;top:-8px;height:42px;width:4px;margin-left:-2px;background:#1976d2;border-radius:2px;cursor:ew-resize;outline:none}.bghandle::after{content:"";position:absolute;left:-11px;bottom:-16px;width:26px;height:26px;border-radius:50%;background:#1976d2;box-shadow:0 2px 5px rgba(0,0,0,.35)}.bghandle:focus::after{box-shadow:0 0 0 4px #bbdefb}.bgbar.bad,.bggrid.bad{outline:3px solid #e53935;outline-offset:3px}.bggrid{display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(10,1fr);width:150px;height:150px;border:2px solid #37474f;margin:6px auto;touch-action:none;box-sizing:border-box}.bggrid i{display:block;border:.5px solid #78909c}.bggrid i.on{background:#9ccc65}.bggrid.live i{cursor:pointer}.bin{width:90px;font-size:22px;font-weight:bold;padding:4px 6px;text-align:center;border:2px solid #90a4ae;border-radius:8px;box-sizing:border-box}.bin:focus{outline:none;border-color:#1976d2}.bin.bad,.frin.bad .bin{border-color:#e53935;background:#ffebee}.frin .bfn{width:76px}.bgline{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;font-size:22px;margin:12px 0}.bgline.sm{font-size:17px;gap:5px}.bggiven{font-weight:bold;font-size:26px}.bgv{font-size:20px}.bgrow{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:stretch;margin:8px 0}.bgcell{background:#fbe9e7;border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:120px}.bgcell h4{margin:0 0 4px;font-size:13px;color:#6d4c41;align-self:flex-start}.bgcell .bgbar{width:240px;margin:26px 8px 30px}.bgcell .bgpie{width:150px;height:150px}.bgcell .bggrid{width:130px;height:130px}.bglev{display:flex;align-items:center;gap:6px;margin-top:2px}.bglev .bgbar{width:150px;margin:8px 4px 24px;height:20px}.bglev .bgl0,.bglev .bgl1{display:none}.bglev .bgfill{background:#9ccc65}.bglev .bghandle{height:32px;top:-7px}.bglev .bghandle::after{width:22px;height:22px;left:-9px;bottom:-14px}.bgstep{width:34px;height:34px;border-radius:50%;border:2px solid #1976d2;background:#fff;color:#1976d2;font-size:22px;font-weight:bold;line-height:1;cursor:pointer;padding:0}.bgstep:active{background:#e3f2fd}.helpline .fr,.bgline .fr{vertical-align:middle}.bgline.nw{flex-wrap:nowrap;gap:6px;max-width:640px;margin-left:auto;margin-right:auto}.bgline.nw .bgu{display:flex;align-items:center;gap:4px;white-space:nowrap;flex:1 1 0;min-width:0;justify-content:center}.bgline.nw .bin{flex:1 1 auto;width:100%;max-width:110px;min-width:0}@media(max-width:700px){.bgline.nw{font-size:15px;gap:2px}.bgline.nw .bgu{gap:2px}.bgline.nw .bin{font-size:15px;padding:4px 1px;border-width:1.5px}.bgline.nw .bgv{font-size:15px}}@media(max-width:520px){.bgline.sm .bin{width:66px;font-size:19px}}.mk{border-collapse:collapse;margin:12px auto;font-size:22px}.mk td{border:1.5px solid #37474f;width:96px;height:56px;text-align:center;padding:3px}.mk td.mk0{border:none}.mk td.mkh{background:#fff;font-weight:bold}.mk .mkc00{background:#fff59d}.mk .mkc01{background:#f8bbd0}.mk .mkc10{background:#90caf9}.mk .mkc11{background:#c5e1a5}.mk td.mks{border-left-width:3px}.mk td.mkt{border-width:3px}.mk tr:nth-child(2) td.mkc00,.mk tr:nth-child(2) td.mkc01{border-top-width:3px}.mk tr:nth-child(3) td.mkc10,.mk tr:nth-child(3) td.mkc11{border-bottom-width:3px}.mk td.mkc00,.mk td.mkc10{border-left-width:3px}.mk td.mkc01,.mk td.mkc11{border-right-width:3px}.mk .bin{width:100%;max-width:88px;font-size:20px;background:rgba(255,255,255,.85)}.mk .bin.bad{background:#ffebee}.ex.mkq{font-size:26px;font-weight:bold;text-align:center}@media(max-width:520px){.mk{font-size:17px}.mk td{width:74px;height:48px;padding:2px}.mk .bin{font-size:16px;padding:4px 2px}.ex.mkq{font-size:19px}}.mulrows{display:flex;flex-direction:column;align-items:center;gap:10px;margin:10px 0}.mulrow{display:flex;align-items:center;gap:10px;font-size:28px;font-weight:bold}.mulrow span{min-width:170px;text-align:right}.mulrow .bin{width:110px;font-size:24px}.helpcalc .mulrow,.mulrows .mulrow b{font-size:inherit}@media(max-width:520px){.mulrow{font-size:22px}.mulrow span{min-width:130px}.mulrow .bin{width:90px}}.swmk{background:#fff176;border-bottom:4px solid #d32f2f;padding:0 3px}.helpcalc .swt{font-size:22px}',
+    css:'.helpcalc{font-size:30px;font-weight:bold;margin:12px 0 6px}.cOld{color:#d32f2f;font-weight:bold}.cNew{color:#2e7d32;font-weight:bold}.helpcalc .cOld,.helpcalc .cNew{font-size:1.5em}.cross{background:#fff176;border-radius:4px;padding:0 2px}.legend{font-size:14px;color:#444}.pw{font-size:1.1em}.pw sup,.task sup{font-size:.6em;font-weight:bold}.qm{display:inline-block;min-width:30px;border-bottom:3px solid #c62828;color:#c62828;font-weight:bold;text-align:center}.hint{font-size:14px;font-weight:normal;color:#555;margin-top:8px}.ex{font-size:26px;font-weight:bold;margin:8px 0}.yn{display:flex;gap:16px;justify-content:center;margin-top:12px}.yn button{font-size:22px;font-weight:bold;padding:10px 34px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.yn.opts{flex-direction:column;align-items:stretch;max-width:420px;margin-left:auto;margin-right:auto}.yn.opts button{font-size:22px;padding:10px 16px;text-align:left}.col{font-family:ui-monospace,Consolas,monospace;font-size:24px;line-height:1.3;text-align:left;display:inline-block;margin:8px 0;background:#f5f5f5;padding:6px 14px;border-radius:8px}.exq button{font:inherit;font-size:28px;font-weight:bold;min-width:46px;height:46px;margin:0 4px;border-radius:10px;border:2px solid #90a4ae;background:#fff;cursor:pointer}.exq button.sel,.yn button.sel{background:#1976d2;border-color:#1976d2;color:#fff}.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 4px;line-height:1.1;font-size:28px;font-weight:bold}.fr .fn{border-bottom:3px solid currentColor;padding:0 6px}.fr .fd{padding:0 6px}.zq{font-size:22px;font-weight:normal;margin-bottom:6px}.zs{width:100%;max-width:700px;height:auto;display:block;margin:6px auto;user-select:none}svg.zs{touch-action:none;cursor:pointer;outline:none}.zh{cursor:grab}.zh polygon,.zh circle,.zh text{fill:#9e9e9e}.zh line{stroke:#9e9e9e}.zh.on polygon,.zh.on circle,.zh.on text{fill:#1976d2}.zh.on line{stroke:#1976d2}.helpcalc .zs{max-width:520px}.swt{border-collapse:collapse;margin:10px auto;font-size:28px;font-weight:bold;width:100%;table-layout:fixed;max-width:calc(var(--n,7)*58px)}.swt.swd{max-width:calc(var(--n,7)*84px)}.helpcalc .swt{max-width:calc(var(--n,7)*44px)}.helpcalc .swt.swd{max-width:calc(var(--n,7)*66px)}.swt.sw9 th{font-size:20px}.swt th,.swt td{border:2px solid #90a4ae;height:50px;text-align:center;padding:0;overflow:hidden}.helpcalc .swt th,.helpcalc .swt td{height:38px}.swt th{background:#e3f2fd;font-size:22px}.swt .kc{border-left:5px solid #d32f2f}.swt td.mk{background:#fff176}.swt th button{font:inherit;width:100%;height:100%;min-height:46px;border:0;background:none;cursor:pointer;color:inherit}.swt th button:hover{background:#bbdefb}.swt th button.sel{background:#1976d2;color:#fff}.swleg{font-size:13px;font-weight:normal;color:#555;text-align:center}.swnum{font-size:34px;font-weight:bold;letter-spacing:2px;margin:6px 0}.swin{width:100%;height:100%;min-height:46px;box-sizing:border-box;border:0;text-align:center;font:inherit;background:#fffde7;color:#1b2733;padding:0}.swin:focus{outline:3px solid #1976d2;outline-offset:-3px;background:#fff}.swt.swd td{vertical-align:top}.dz{display:grid;grid-template-columns:repeat(5,minmax(0,13px));gap:3px;justify-content:center;align-content:start;min-height:66px;padding:6px 2px;touch-action:none;box-sizing:border-box}.dz.over{background:#bbdefb}.dz.full{animation:swfull .35s}@keyframes swfull{0%,100%{background:none}50%{background:#ffcdd2}}.dot{width:100%;max-width:13px;aspect-ratio:1/1;border-radius:50%;background:#1976d2;cursor:grab;touch-action:none}.helpcalc .dz{cursor:pointer;min-height:0}@media(max-width:700px){.swt{font-size:22px}.swt th{font-size:16px}.swt.sw9{font-size:17px}.swt.sw9 th{font-size:13px}.swt th,.swt td{height:42px}.dz{gap:2px;padding:4px 1px}}.swsrc{display:flex;align-items:center;justify-content:center;gap:14px;margin:8px 0;font-size:15px;font-weight:normal;text-align:left;color:#444;flex-wrap:wrap}.srcdot{display:grid;grid-template-columns:12px;gap:3px;padding:9px 10px;border-radius:24px;background:#e3f2fd;border:2px solid #1976d2;cursor:grab;touch-action:none;box-shadow:0 2px 6px rgba(0,0,0,.25)}.srcdot5{display:grid;grid-template-columns:repeat(5,12px);gap:3px;padding:9px 10px;border-radius:24px;background:#e3f2fd;border:2px solid #1976d2;cursor:grab;touch-action:none;box-shadow:0 2px 6px rgba(0,0,0,.25)}.srcdot5.srcdot2{grid-template-columns:repeat(2,12px)}.srcdot i,.srcdot5 i,.dotghost.g5 i{display:block;width:12px;height:12px;border-radius:50%;background:#1976d2;pointer-events:none}.dotghost.g5{display:grid;grid-template-columns:repeat(5,12px);gap:3px;width:auto;height:auto;padding:5px 7px;margin:-11px 0 0 -40px;border-radius:14px;background:rgba(227,242,253,.9);border:2px solid #1976d2}.swclr{font-size:14px;padding:6px 10px;border-radius:8px;border:1px solid #b0bec5;background:#fff;cursor:pointer}.dotghost{position:fixed;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:#1976d2;opacity:.85;pointer-events:none;z-index:50;box-shadow:0 2px 6px rgba(0,0,0,.35)}.frin{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;gap:4px}.frin .fin{width:90px;font-size:28px;font-weight:bold;text-align:center;padding:4px;border:2px solid #90a4ae;border-radius:8px}.frin .fin:focus{outline:none;border-color:#1976d2}.frl{display:block;width:100px;border-top:3px solid currentColor}.bgpie{width:170px;height:170px;display:block;margin:6px auto;touch-action:none;overflow:visible}.bgpie path{fill:#fff;stroke:#37474f;stroke-width:1.5}.bgpie path.on,.bgpie .bgarc{fill:#9ccc65}.bgpie .bgarc{stroke:#37474f;stroke-width:1.5}.bgpie .bgbase{fill:#fff}.bgpie .bgout{fill:none;stroke:#37474f;stroke-width:2.5}.bgpie.live path[data-i]{cursor:pointer}.bgpie.live path[data-i]:hover{fill:#e8f5e9}.bgpie.live path.on:hover{fill:#8bc34a}.bgpie.drag{cursor:pointer}.bgknob{fill:#1976d2;stroke:#fff;stroke-width:2}.bgpie.bad{outline:3px solid #e53935;outline-offset:4px;border-radius:50%}.bgbar{position:relative;width:100%;max-width:380px;height:28px;border:2px solid #37474f;background:#fff;margin:30px auto 34px;touch-action:none;box-sizing:border-box}.bgbar.live{cursor:pointer}.bgfill{position:absolute;left:0;top:0;bottom:0;background:#9ccc65}.bgtick{position:absolute;top:0;bottom:0;border-left:1.5px solid #37474f}.bgtick.tenth{border-left:2px solid #000;margin-left:-.5px}.bgtick.dash{border-left:1.5px dashed #37474f}.bgl0,.bgl1{position:absolute;top:-22px;font-size:14px;font-weight:normal;color:#555}.bgl0{left:-4px}.bglm{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:14px;font-weight:normal;color:#555}.bgl1{right:-4px}.bghandle{position:absolute;top:-8px;height:42px;width:4px;margin-left:-2px;background:#1976d2;border-radius:2px;cursor:ew-resize;outline:none}.bghandle::after{content:"";position:absolute;left:-11px;bottom:-16px;width:26px;height:26px;border-radius:50%;background:#1976d2;box-shadow:0 2px 5px rgba(0,0,0,.35)}.bghandle:focus::after{box-shadow:0 0 0 4px #bbdefb}.bgbar.bad,.bggrid.bad{outline:3px solid #e53935;outline-offset:3px}.bggrid{display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(10,1fr);width:150px;height:150px;border:2px solid #37474f;margin:6px auto;touch-action:none;box-sizing:border-box}.bggrid i{display:block;border:.5px solid #78909c}.bggrid i.on{background:#9ccc65}.bggrid.live i{cursor:pointer}.bin{width:90px;font-size:22px;font-weight:bold;padding:4px 6px;text-align:center;border:2px solid #90a4ae;border-radius:8px;box-sizing:border-box}.bin:focus{outline:none;border-color:#1976d2}.bin.bad,.frin.bad .bin{border-color:#e53935;background:#ffebee}.frin .bfn{width:76px}.bgline{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;font-size:22px;margin:12px 0}.bgline.sm{font-size:17px;gap:5px}.bggiven{font-weight:bold;font-size:26px}.bgv{font-size:20px}.bgrow{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:stretch;margin:8px 0}.bgcell{background:#fbe9e7;border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:120px}.bgcell h4{margin:0 0 4px;font-size:13px;color:#6d4c41;align-self:flex-start}.bgcell .bgbar{width:240px;margin:26px 8px 30px}.bgcell .bgpie{width:150px;height:150px}.bgcell .bggrid{width:130px;height:130px}.bglev{display:flex;align-items:center;gap:6px;margin-top:2px}.bglev .bgbar{width:150px;margin:8px 4px 24px;height:20px}.bglev .bgl0,.bglev .bgl1{display:none}.bglev .bgfill{background:#9ccc65}.bglev .bghandle{height:32px;top:-7px}.bglev .bghandle::after{width:22px;height:22px;left:-9px;bottom:-14px}.bgstep{width:34px;height:34px;border-radius:50%;border:2px solid #1976d2;background:#fff;color:#1976d2;font-size:22px;font-weight:bold;line-height:1;cursor:pointer;padding:0}.bgstep:active{background:#e3f2fd}.helpline .fr,.bgline .fr{vertical-align:middle}.bgline.nw{flex-wrap:nowrap;gap:6px;max-width:640px;margin-left:auto;margin-right:auto}.bgline.nw .bgu{display:flex;align-items:center;gap:4px;white-space:nowrap;flex:1 1 0;min-width:0;justify-content:center}.bgline.nw .bin{flex:1 1 auto;width:100%;max-width:110px;min-width:0}@media(max-width:700px){.bgline.nw{font-size:15px;gap:2px}.bgline.nw .bgu{gap:2px}.bgline.nw .bin{font-size:15px;padding:4px 1px;border-width:1.5px}.bgline.nw .bgv{font-size:15px}}@media(max-width:520px){.bgline.sm .bin{width:66px;font-size:19px}}.mk{border-collapse:collapse;margin:12px auto;font-size:22px}.mk td{border:1.5px solid #37474f;width:96px;height:56px;text-align:center;padding:3px}.mk td.mk0{border:none}.mk td.mkh{background:#fff;font-weight:bold}.mk .mkc00{background:#fff59d}.mk .mkc01{background:#f8bbd0}.mk .mkc10{background:#90caf9}.mk .mkc11{background:#c5e1a5}.mk td.mks{border-left-width:3px}.mk td.mkt{border-width:3px}.mk tr:nth-child(2) td.mkc00,.mk tr:nth-child(2) td.mkc01{border-top-width:3px}.mk tr:nth-child(3) td.mkc10,.mk tr:nth-child(3) td.mkc11{border-bottom-width:3px}.mk td.mkc00,.mk td.mkc10{border-left-width:3px}.mk td.mkc01,.mk td.mkc11{border-right-width:3px}.mk .bin{width:100%;max-width:88px;font-size:20px;background:rgba(255,255,255,.85)}.mk .bin.bad{background:#ffebee}.ex.mkq{font-size:26px;font-weight:bold;text-align:center}@media(max-width:520px){.mk{font-size:17px}.mk td{width:74px;height:48px;padding:2px}.mk .bin{font-size:16px;padding:4px 2px}.ex.mkq{font-size:19px}}.mulrows{display:flex;flex-direction:column;align-items:center;gap:10px;margin:10px 0}.mulrow{display:flex;align-items:center;gap:10px;font-size:28px;font-weight:bold}.mulrow span{min-width:170px;text-align:right}.mulrow .bin{width:110px;font-size:24px}.helpcalc .mulrow,.mulrows .mulrow b{font-size:inherit}@media(max-width:520px){.mulrow{font-size:22px}.mulrow span{min-width:130px}.mulrow .bin{width:90px}}.swmk{background:#fff176;border-bottom:4px solid #d32f2f;padding:0 3px}.helpcalc .swt{font-size:22px}',
     makeTask:makeTask,
     mount:mount,
     check:check,
