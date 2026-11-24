@@ -1255,7 +1255,7 @@ const TOPIC=(function(){
       let what=t.k+' '+SW_N[t.e];
       t.text='Mache die Zahl in der Tafel um '+amt+' '+(t.up?'grösser':'kleiner');
       t.html='<div class="zq">Verändere die Punkte so, dass die Zahl um <b>'+amt+'</b> ('+what+') <b>'+(t.up?'grösser':'kleiner')+'</b> wird.</div><div class="swnum" title="Startzahl">'+swFmt(dfmt(t.v,3))+'</div>'
-        +'<div class="swsrc"><span class="srcdot" title="1 Punkt in die Tafel ziehen"><i></i></span><span class="srcdot5 srcdot2" title="2 Punkte auf einmal in die Tafel ziehen"><i></i><i></i></span><span class="srcdot5" title="5 Punkte auf einmal in die Tafel ziehen"><i></i><i></i><i></i><i></i><i></i></span><span>Tippe auf eine Spalte, um Punkte zu legen.<br>Punkt antippen oder hinausziehen = löschen.</span><button type="button" class="swclr swrst">↺ Von vorne</button></div>'
+        +'<div class="swsrc"><span class="srcdot" title="1 Punkt in die Tafel ziehen"><i></i></span><span class="srcdot5 srcdot2" title="2 Punkte auf einmal in die Tafel ziehen"><i></i><i></i></span><span class="srcdot5" title="5 Punkte auf einmal in die Tafel ziehen"><i></i><i></i><i></i><i></i><i></i></span><button type="button" class="swclr swrst">↺ Von vorne</button></div>'
         +swTable(t.start,t.cols,true);
       t.interactive=true;t.noInput=true;t.state={c:swCells(t.start)};
     }
@@ -1267,7 +1267,7 @@ const TOPIC=(function(){
     if(kind==='dots'){
       t.text='Lege '+swStr(t.d)+' mit Punkten in die Stellenwerttafel';
       t.html='<div class="zq">Lege die Zahl mit Punkten in die Stellenwerttafel.</div><div class="swnum">'+swFmt(swStr(t.d))+'</div>'
-        +'<div class="swsrc"><span class="srcdot" title="1 Punkt in die Tafel ziehen"><i></i></span><span class="srcdot5 srcdot2" title="2 Punkte auf einmal in die Tafel ziehen"><i></i><i></i></span><span class="srcdot5" title="5 Punkte auf einmal in die Tafel ziehen"><i></i><i></i><i></i><i></i><i></i></span><span>Tippe auf eine Spalte, um Punkte zu legen, oder ziehe 1, 2 oder 5 Punkte hinein.<br>Punkt antippen oder hinausziehen = löschen.</span><button type="button" class="swclr">🗑️ Alle löschen</button></div>'
+        +'<div class="swsrc"><span class="srcdot" title="1 Punkt in die Tafel ziehen"><i></i></span><span class="srcdot5 srcdot2" title="2 Punkte auf einmal in die Tafel ziehen"><i></i><i></i></span><span class="srcdot5" title="5 Punkte auf einmal in die Tafel ziehen"><i></i><i></i><i></i><i></i><i></i></span><button type="button" class="swclr">🗑️ Alle löschen</button></div>'
         +swTable({},t.cols,true);
       t.interactive=true;t.noInput=true;t.state={c:{}};
     }
