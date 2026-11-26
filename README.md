@@ -4,6 +4,7 @@
 
 | Lernumgebung | Trainer | Ordner |
 | --- | --- | --- |
+| LU 0 Grundoperationen | Kopfrechnen Trainer | `lu-0-grundoperationen/` |
 | LU A Funktionen | – | `lu-a-funktionen/` |
 | LU B Grössen | Masseinheiten Trainer | `lu-b-groessen/` |
 | LU C Brüche | Brüche Trainer | `lu-c-brueche/` |

@@ -1,0 +1,1381 @@
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kopfrechnen Trainer</title><style>body{font-family:Arial,sans-serif;background:#eef4f8;color:#1b2733;margin:0;padding:20px}.container{color:#1b2733}.container{max-width:1100px;margin:auto;background:#fff;padding:25px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.1)}.top{display:flex;gap:20px;align-items:flex-start}.main{flex:1}.ach{position:relative;width:320px;background:#f8f9fa;padding:12px;border-radius:12px}.cookies{position:absolute;top:10px;right:12px;font-size:18px;background:#fff;border-radius:14px;padding:3px 12px;box-shadow:0 1px 3px rgba(0,0,0,.18)}.ach li.gap{margin-top:12px}.ach ul{padding-left:20px}.achwrap{display:grid}.achwrap>ul{grid-area:1/1}#achSizer{visibility:hidden;pointer-events:none}#recordBox{display:none}#recordBox h3{margin-top:22px}.sub{color:#555;margin:-6px 0 14px}.task{font-size:30px;font-weight:bold;text-align:center;margin:30px 0}.progress{height:26px;background:#ddd;border-radius:20px;overflow:hidden;position:relative}.loss{position:absolute;top:0;height:100%;background:#e53935;display:none}.fill{height:100%;background:#4caf50;width:0}.answer{font-size:24px;padding:10px;width:220px}.btn{padding:10px 16px}.answer,.check{vertical-align:middle}.check{font-size:20px;font-weight:bold;padding:11px 26px;margin-left:0.5cm;cursor:pointer}.footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}.btn.small{font-size:12px;padding:4px 10px}.popup{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center}.box{background:white;padding:25px;border-radius:15px;text-align:center;max-width:500px}.racebar{display:none;background:#ff9800;color:#fff;font-size:28px;font-weight:bold;text-align:center;padding:10px;border-radius:12px;margin:10px 0}.racebar.low{background:#d32f2f}.gameov{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:20}.gamebox{background:#fff;border-radius:16px;padding:19px 24px;text-align:center;max-width:96vw;max-height:96vh;overflow:auto}.gamebox h2{margin:0 0 8px}.gamebox canvas{border-radius:10px;max-width:100%;touch-action:none;cursor:pointer}.gamehint{font-size:13px;color:#555;margin:6px 0}#gameResult{min-height:24px;font-size:18px;margin:6px 0}.gamebtns{display:flex;gap:10px;justify-content:center}@media(max-width:900px){.top{flex-direction:column;align-items:stretch}.ach{width:auto}}
+/* ---- Smartphone-Ansicht (Laptop bleibt unverändert) ---- */
+.keypad{display:none}
+@media(max-width:700px){
+body{padding:8px}
+.container{padding:14px;border-radius:12px}
+h1{font-size:26px;margin:4px 0 6px}
+.sub{font-size:14px;margin:0 0 10px}
+#name{width:calc(100% - 62px);font-size:16px;padding:6px;box-sizing:border-box}
+#optRow:not([style*="none"]){display:block!important;margin:8px 0 0!important}
+#topicOpt{width:100%;font-size:16px!important;padding:8px!important}
+.task{font-size:24px;margin:14px 0}
+.answer{width:100%;box-sizing:border-box;font-size:24px;text-align:center}
+.check{width:100%;margin:10px 0 0;padding:14px}
+#answer:not([style*="display: none"]) ~ .check{display:none}
+.keypad{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+#answer[style*="display: none"] ~ .keypad{display:none}
+.keypad button{font-size:22px;font-weight:bold;padding:0;height:48px;border-radius:10px;border:1px solid #b8c4cf;background:#f3f6f9;touch-action:manipulation}
+.keypad button:active{background:#dbe5ee}
+.keypad button.kok{grid-column:span 2;background:#4caf50;border-color:#3d8b40;color:#fff;font-size:20px}
+.keypad button.kdel{background:#fdecea;border-color:#e5a8a2}
+.keypad.num button.kok{grid-column:4;grid-row:3 / span 2;font-size:20px;height:auto}
+.keypad.num button.kzero{grid-column:1 / span 3}
+.btn{touch-action:manipulation}
+.ach{padding:10px 12px}
+.ach h3{margin:4px 0;cursor:pointer;font-size:17px}
+.ach h3::after{content:" ▾";color:#777}
+.ach.open h3::after{content:" ▴"}
+.ach:not(.open) .achwrap,.ach:not(.open) #recordBox{display:none}
+.cookies{top:8px}
+.footer{flex-wrap:wrap;justify-content:stretch}
+.footer #lvlSel{flex:1 1 100%;font-size:16px;padding:8px}
+.footer .btn.small{flex:1 1 calc(50% - 8px);font-size:14px;padding:10px 6px}
+#feedback{overflow-x:auto}
+.box{max-width:88vw;padding:18px;box-sizing:border-box}
+.gamebox{padding:12px}
+}
+/* ---- iPad / Tablet (Touch, breiter als 700px): eigene Zahlentasten statt Bildschirmtastatur, sonst Laptop-Ansicht ---- */
+@media (pointer:coarse) and (min-width:701px){
+.keypad{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px;max-width:520px}
+#answer[style*="display: none"] ~ .keypad{display:none}
+#answer:not([style*="display: none"]) ~ .check{display:none}
+.keypad button{font-size:28px;font-weight:bold;padding:0;height:64px;border-radius:12px;border:1px solid #b8c4cf;background:#f3f6f9;touch-action:manipulation}
+.keypad button:active{background:#dbe5ee}
+.keypad button.kok{grid-column:span 2;background:#4caf50;border-color:#3d8b40;color:#fff;font-size:24px}
+.keypad button.kdel{background:#fdecea;border-color:#e5a8a2}
+.btn{touch-action:manipulation}
+}
+.gpick{display:flex;flex-direction:column;gap:10px;margin:10px 0;min-width:min(300px,76vw)}
+.gpbtn{display:flex!important;align-items:center;gap:12px;text-align:left;padding:12px!important;font-size:16px!important}
+.gpbtn .gpi{font-size:30px}.gpbtn small{display:block;font-weight:normal;color:#667;font-size:12px}
+.gshop{margin-top:6px;font-size:14px;text-align:center}
+.exrow{display:block;padding:7px 4px;font-size:16px;cursor:pointer}.exrow input{width:18px;height:18px;vertical-align:-3px;margin-right:6px}.exlinks{font-size:13px;margin:6px 0 12px}.exlinks a{color:#1565c0;cursor:pointer;text-decoration:underline;margin-right:12px}.exbar{background:#5e35b1}.exc{border:1px solid #d5dde5;border-radius:10px;padding:8px 10px;margin:8px 0;cursor:pointer;background:#fafcfe}.exc:hover{background:#eef4fb}.exc.exdone{cursor:default;background:#f3faf3}.exwrong{border:1px solid #f0c4c4;background:#fff8f8;border-radius:10px;padding:10px;margin:10px 0;text-align:center}.exhelp{text-align:left;font-size:14px;border-top:1px dashed #d9b3b3;margin-top:8px;padding-top:8px}</style><style id="themeCss"></style></head><body><div class="container"><div class="top"><div class="main"><h1 id="topicTitle"></h1><div class="sub" id="topicSubtitle"></div><div id="storeWarn" style="display:none;background:#fff3cd;border:1px solid #e0b100;border-radius:8px;padding:8px 12px;margin:0 0 12px;font-size:14px">⚠️ Dein Browser speichert den Lernstand nicht (z. B. in einem InPrivate-Fenster). Dein Fortschritt geht beim Schliessen verloren.</div>Name: <input id="name"><span id="optRow" style="display:none;margin-left:18px">Kategorie: <select id="topicOpt" style="font-size:15px;padding:4px"></select></span><p id="level"></p><div class="progress"><div id="fill" class="fill"></div><div id="loss" class="loss"></div></div><p>Richtig gelöst: <span id="correct">0</span></p><div id="examBar" class="racebar exbar">📝 Prüfung &nbsp;|&nbsp; Aufgabe <span id="examNo">1</span> / <span id="examTotal">20</span></div><div id="raceBar" class="racebar">⏱️ Noch <span id="raceTime">60</span> s &nbsp;|&nbsp; Richtig: <span id="raceCount">0</span></div><div id="task" class="task"></div><input id="answer" class="answer"><div class="keypad num" id="keypad"><button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="del" class="kdel">⌫</button><button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k=",">,</button><button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="ok" class="kok">Prüfen</button><button data-k="0" class="kzero">0</button></div><button class="btn check" onclick="checkAnswer()">Prüfen</button><div id="feedback"></div></div><div class="ach"><div class="cookies" title="Cookies">🍪 <b id="cookieShow">0</b></div><h3>🏆 Achievements</h3><div class="achwrap"><ul id="achSizer" aria-hidden="true"></ul><ul id="achievements"></ul></div><div id="recordBox"><h3>🏅 Rekorde</h3><ul id="recordList"></ul></div></div></div><div class="footer"><select id="lvlJump" class="btn small" title="Test: XP der gewählten Kategorie auf ein Level setzen" onchange="jumpLevel(this)"></select><select id="lvlSel" class="btn small" onchange="lvlSelChange()"></select><button id="gameBtn" class="btn small" onclick="openGame()"></button><button id="raceBtn" class="btn small" onclick="startRace()">⏱️ Zeitrennen</button><button id="examBtn" class="btn small" onclick="examBtnClick()">📝 Prüfungsmodus</button><button id="examHistBtn" class="btn small" onclick="examHistory()" disabled>📋 Prüfungsergebnisse</button></div></div><div id="popup" class="popup"><div class="box"><h2 id="popupTitle"></h2><p id="popupText"></p><button onclick="closePopup()">Weiter</button></div></div><div id="examSetup" class="popup"><div class="box" style="max-width:420px;text-align:left"><h2 style="text-align:center;margin-top:0">📝 Prüfungsmodus</h2><p style="font-size:14px">20 Aufgaben aus allen Schwierigkeitsstufen (Level 2 bis 5), jede Aufgabe nur <b>ein</b> Versuch, ohne Hilfe. Kein XP und keine Cookies. Am Ende siehst du, wie du in jeder Kategorie abgeschnitten hast.</p><b>Welche Kategorien möchtest du prüfen?</b><div class="exlinks"><a onclick="examSetupAll(true)">alle</a><a onclick="examSetupAll(false)">keine</a></div><div id="examCats"></div><div id="examHint" style="color:#c62828;font-size:14px;min-height:18px"></div><div style="display:flex;gap:10px;justify-content:center;margin-top:8px"><button id="examStartBtn" class="btn" onclick="examStart()">Starten</button><button class="btn" onclick="examSetupClose()">Abbrechen</button></div></div></div><div id="gameOverlay" class="gameov"><div class="gamebox"><h2 id="gameTitle"></h2><div id="gameRoot"></div><div class="gamehint" id="gameHint">Leertaste (oder Klick / Tippen) = fliegen · Esc = beenden</div><div id="gameResult"></div><div class="gamebtns"><button id="gameAgain" class="btn" onclick="gameAgainClick(this)"></button><button id="gameSwitch" class="btn" onclick="showGamePicker()" style="display:none">🎮 Anderes Spiel</button><button class="btn" onclick="closeGame(this)">Schliessen</button></div></div></div>
+
+<!-- ╔══════════════════════════════════════════════════════════════════════╗
+     ║  1) THEMEN-BLOCK  –  hier steht ALLES, was zum Thema gehört          ║
+     ║  (Aufgaben, Schwierigkeit pro Level, Antwortprüfung, Hilfestellung)  ║
+     ╚══════════════════════════════════════════════════════════════════════╝ -->
+<script>
+/* =========================================================================
+   THEMA: Kopfrechnen Trainer – Grundoperationen (+ − · :) mit 8 Levels
+   Nur dieser Block gehört zum Thema, die ENGINE weiter unten ist für alle Trainer gleich.
+   ========================================================================= */
+const TOPIC=(function(){
+
+  /* ---------- 8 Levels ---------- */
+  const LEVELS=[
+    {name:'Starter',icon:'🐣'},{name:'Anfänger',icon:'👶'},{name:'Lehrling',icon:'🛹'},{name:'Fortgeschritten',icon:'🚴'},
+    {name:'Profi',icon:'😎'},{name:'Experte',icon:'🚀'},{name:'Meister',icon:'👑'},{name:'Rechengenie',icon:'🧠'}
+  ];
+  const CATS={   /* Reihenfolge = Reihenfolge im Menü */
+    add:{icon:'➕',name:'Addition'},
+    sub:{icon:'➖',name:'Subtraktion'},
+    mul:{icon:'✖️',name:'Multiplikation'},
+    div:{icon:'➗',name:'Division'}
+  };
+  const CAT_KEYS=Object.keys(CATS);
+  const OP={add:' + ',sub:' − ',mul:' · ',div:' : '};
+  function ri(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+  function pick(a){return a[Math.floor(Math.random()*a.length)];}
+  function fmt(n){let s=String(n);return s.length<5?s:s.replace(/\B(?=(\d{3})+(?!\d))/g,'’');}
+  function zeros(n){let z=0;while(n>0&&n%10===0){n/=10;z++;}return z;}
+  function ten(k){return Math.pow(10,k);}
+
+  /* ---------- Aufgaben: Zahlen pro Level ----------
+     Addition/Subtraktion: bis 20 mit Zehnerübergang · bis 100 ohne/mit Übertrag · 3-stellig ± 2-stellig (höchstens 1 Übertrag, dann 1–2 Überträge) · 3-stellig ± 3-stellig (eine Zahl endet auf 0) · 3-stellig ± 3-stellig (zufällig, höchstens 2 Überträge) · 4-stellig ± 4-stellig
+     Multiplikation: Zahlen 0–5 · kleines Einmaleins (0–10, eine Zahl 6–10) · 11er/12er/15er-Reihe · glatte Zahlen · 2-stellig·1-stellig (13–49 · 2–9) · 2-stellig (11–99)·1-stellig (3–9) · 2-stellig·(5–12, 15, 20, 25, 50, 100, 1000) · 2-stellig·2-stellig
+     Division (immer ohne Rest): Umkehr 2/5/10 · Einmaleins · grosses Einmaleins · 2-stellig:1-stellig · glatte Zahlen · 3-stellig:1-stellig · durch 11/12/15/20/25 · durch 13–35 */
+  function carries(a,b){let c=0,k=0;while(a>0||b>0||k){let t=a%10+b%10+k;k=t>=10?1:0;c+=k;a=Math.floor(a/10);b=Math.floor(b/10);}return c;}   /* Anzahl Überträge beim Addieren */
+  function borrows(a,b){let c=0,k=0;while(a>0||b>0){let t=a%10-k-b%10;k=t<0?1:0;c+=k;a=Math.floor(a/10);b=Math.floor(b/10);}return c;}   /* Anzahl Überträge (Borgen) beim Subtrahieren */
+  function genAdd(l){
+    for(let it=0;it<800;it++){
+      let a,b;
+      switch(l){
+        case 0:a=ri(6,9);b=ri(11-a,9);break;
+        case 1:a=ri(11,89);if(Math.random()<0.5){b=ri(1,9);if(a%10+b>9)continue;}else{b=ri(1,8)*10;if(a+b>99)continue;}break;
+        case 2:a=ri(12,89);b=ri(12,89);if(a%10+b%10<10||a+b>99)continue;break;
+        case 3:a=ri(100,999);b=ri(10,99);if(carries(a,b)>1)continue;break;   /* 3-stellig + 2-stellig, höchstens 1 Übertrag */
+        case 4:a=ri(100,999);b=ri(10,99);{let c=carries(a,b);if(c<1||c>2||a+b>999)continue;}break;   /* 3-stellig + 2-stellig, 1–2 Überträge */
+        case 5:a=ri(100,999);b=ri(100,999);if(a%10!==0&&b%10!==0)continue;break;   /* 3-stellig + 3-stellig, mindestens eine Zahl endet auf 0 */
+        case 6:a=ri(100,999);b=ri(100,999);if(carries(a,b)>2)continue;break;   /* 3-stellig + 3-stellig, zufällig, höchstens 2 Überträge */
+        default:a=ri(1000,9999);b=ri(1000,9999);   /* 4-stellig + 4-stellig, beliebig viele Überträge */
+      }
+      if(Math.random()<0.5&&l>=3){let t=a;a=b;b=t;}
+      return {cat:'add',level:l,nums:[a,b],res:a+b};
+    }
+  }
+  function genSub(l){
+    for(let it=0;it<800;it++){
+      let a,b;
+      switch(l){
+        case 0:a=ri(12,18);b=ri(a%10+1,9);if(b>=a)continue;break;
+        case 1:a=ri(21,99);if(Math.random()<0.5){if(a%10<1)continue;b=ri(1,a%10);}else{b=ri(1,Math.floor(a/10)-1)*10;}break;
+        case 2:a=ri(31,99);b=ri(11,a-1);if(a%10>=b%10||b%10===0)continue;break;
+        case 3:a=ri(100,999);b=ri(10,99);if(borrows(a,b)>1)continue;break;   /* 3-stellig − 2-stellig, höchstens 1 Übertrag */
+        case 4:a=ri(100,999);b=ri(10,99);{let c=borrows(a,b);if(c<1||c>2)continue;}break;   /* 3-stellig − 2-stellig, 1–2 Überträge */
+        case 5:a=ri(200,999);b=ri(100,a-1);if(a%10!==0&&b%10!==0)continue;break;   /* 3-stellig − 3-stellig, mindestens eine Zahl endet auf 0 */
+        case 6:a=ri(200,999);b=ri(100,a-1);if(borrows(a,b)>2)continue;break;   /* 3-stellig − 3-stellig, zufällig, höchstens 2 Überträge */
+        default:a=ri(2000,9999);b=ri(1000,a-1);   /* 4-stellig − 4-stellig, beliebig viele Überträge */
+      }
+      if(b<1||b>=a)continue;
+      return {cat:'sub',level:l,nums:[a,b],res:a-b};
+    }
+  }
+  function genMul(l){
+    for(let it=0;it<500;it++){
+      let a,b;
+      switch(l){
+        case 0:a=ri(0,5);b=ri(0,5);break;   /* beide Zahlen von 0 bis 5 */
+        case 1:a=ri(6,10);b=ri(0,10);break;   /* kleines Einmaleins (0–10): eine Zahl ist immer 6 bis 10 */
+        case 2:a=pick([11,12,15]);b=ri(2,9);break;   /* 11er-, 12er-, 15er-Reihe */
+        case 3:{let k=ri(0,2),m=ri(0,2);if(k+m<1||k+m>2)continue;a=ri(2,9)*ten(k);b=ri(2,9)*ten(m);break;}   /* glatte Zahlen */
+        case 4:a=ri(13,49);b=ri(2,9);break;   /* zweistellig · einstellig */
+        case 5:a=ri(11,99);b=ri(3,9);if(a%10===0)continue;break;   /* zweistellig (11–99) · einstellig (3–9), keine glatte Zehnerzahl */
+        case 6:a=ri(11,99);b=pick([5,6,7,8,9,10,11,12,15,20,25,50,100,1000]);break;   /* zweistellig · (5–12, 15, 20, 25, 50, 100, 1000) */
+        default:a=ri(11,99);b=ri(11,99);   /* zweistellig · zweistellig, zufällig */
+      }
+      if(Math.random()<0.5){let t=a;a=b;b=t;}
+      return {cat:'mul',level:l,nums:[a,b],res:a*b};
+    }
+  }
+  function genDiv(l){
+    for(let it=0;it<500;it++){
+      let b,q;
+      switch(l){
+        case 0:b=pick([2,5,10]);q=ri(1,10);break;
+        case 1:b=ri(2,9);q=ri(2,10);break;
+        case 2:b=ri(3,12);q=ri(3,12);if(b<=9&&q<=10)continue;break;
+        case 3:b=ri(2,9);q=ri(10,Math.floor(99/b));break;
+        case 4:{let p=pick([[0,1],[0,2],[1,0],[1,1]]);b=ri(2,9)*ten(p[0]);q=ri(2,9)*ten(p[1]);break;}
+        case 5:b=ri(3,9);q=ri(20,Math.floor(999/b));break;
+        case 6:b=pick([11,12,15,20,25]);q=ri(3,30);break;
+        default:b=ri(13,35);q=ri(11,40);
+      }
+      return {cat:'div',level:l,nums:[b*q,b],res:q};
+    }
+  }
+  const GEN={add:genAdd,sub:genSub,mul:genMul,div:genDiv};
+  function same(x,y){return y&&x.nums.join()===y.nums.join();}
+  function gen(cat,l,ref){
+    let t;
+    for(let k=0;k<30;k++){t=GEN[cat](l);if(!same(t,ref))break;}
+    t.text=t.nums.map(fmt).join(OP[cat])+' = ?';
+    t.answer=String(t.res);
+    return t;
+  }
+  /* Aufgabenmischung ab Level 4: 80 % aus dem eigenen Level, je 10 % aus den beiden Levels davor */
+  const MIX_OWN=0.8,MIX_PREV=0.1;
+  function mixLevel(l,cat){
+    let r=Math.random();
+    if(cat==='mul'||cat==='div'){   /* Multiplikation und Division haben dieselbe Mischung */
+      if(l===0)return 0;
+      if(l===1)return r<0.2?0:1;                                  /* Level 2: 80 % eigenes, 20 % Level 1 */
+      if(l<=4)return r<0.8?l:(r<0.9?l-1:l-2);                     /* Level 3–5: 80 % eigenes, je 10 % aus den 2 Levels davor */
+      return r<0.5?l:(r<0.75?l-1:(r<0.875?l-2:l-3));              /* ab Level 6: 50 % eigenes, 25 % davor, je 12.5 % aus dem 3. und 4. */
+    }
+    if(l<3)return l;
+    return r<MIX_OWN?l:(r<MIX_OWN+MIX_PREV?l-1:l-2);
+  }
+  function makeTask(l,opt){
+    let cat=CATS[opt]?opt:pick(CAT_KEYS);
+    return gen(cat,mixLevel(l,cat));
+  }
+
+  /* ---------- Prüfen: nur ganze Zahlen (Leerzeichen und ’ erlaubt) ---------- */
+  function normalizeInput(raw){
+    let s=String(raw).replace(/[\s'’]/g,'');
+    if(!/^\d+$/.test(s))return null;
+    return String(parseInt(s,10));
+  }
+  function check(raw,t){let v=normalizeInput(raw);return v!==null&&v===String(parseInt(t.answer,10));}
+
+  /* ---------- Hilfe ----------
+     Das Hilfsbeispiel rechnet mit den Zahlen der Aufgabe selbst. Jedes Zwischenergebnis ist ein Eingabefeld (wird grün, wenn es stimmt).
+     Im Lösungsweg der Prüfungsauswertung (HX) stehen die Ergebnisse fest. */
+  let HX=false;
+  function helpExact(t){HX=true;try{return String(help(t)).split('Hilfsbeispiel:').join('Lösungsweg:');}finally{HX=false;}}
+  function places(n){let p=[],k=0;while(n>0){let d=n%10;if(d)p.push(d*ten(k));n=Math.floor(n/10);k++;}return p.reverse();}   /* 4825 -> [4000,800,20,5] */
+  function F(v){
+    if(HX)return '<b>'+fmt(v)+'</b>';
+    return '<input class="hs" inputmode="numeric" autocomplete="off" size="'+(String(v).length+1)+'" data-v="'+v+'" oninput="var v=this.value.replace(/[\\s’\\x27]/g,\'\');this.style.background=v===this.dataset.v?\'#c8e6c9\':\'\';this.style.borderColor=(v&&v!==this.dataset.v&&v.length>=this.dataset.v.length)?\'#e57373\':\'\'">';
+  }
+  function box(t,body){return '<b>Hilfsbeispiel:</b><div class="ex">'+t.text.replace(' = ?','')+'</div><div class="helpline">'+body+(HX?'':'<br><i>Fülle die Felder aus und schreibe dann das Ergebnis oben ins Antwortfeld.</i>')+'</div>';}
+  function helpAdd(x){
+    let a=x.nums[0],b=x.nums[1],ps=places(b).reverse(),cur=a,out;   /* von hinten starten: erst Einer, dann Zehner, dann Hunderter */
+    if(b<10&&a%10+b>=10){
+      let up=10-a%10;
+      return box(x,'<b>Zehner auffüllen:</b> Zerlege '+b+' in '+up+' + '+(b-up)+'.<br>'+a+' + '+up+' = '+F(a+up)+'<br>'+(a+up)+' + '+(b-up)+' = '+F(x.res));
+    }
+    out='<b>Schrittweise:</b> '+(ps.length>1?'Zerlege '+fmt(b)+' in '+ps.slice().reverse().map(fmt).join(' + ')+' und starte von hinten.':'Addiere '+fmt(b)+'.')+'<br>';
+    ps.forEach(p=>{out+=fmt(cur)+' + '+fmt(p)+' = '+F(cur+p)+'<br>';cur+=p;});
+    return box(x,out);
+  }
+  function helpSub(x){
+    let a=x.nums[0],b=x.nums[1],ps=places(b).reverse(),cur=a,out='<b>Weg 1 – schrittweise:</b> '+(ps.length>1?'Zerlege '+fmt(b)+' in '+ps.slice().reverse().map(fmt).join(' + ')+' und starte von hinten.':'Ziehe '+fmt(b)+' ab.')+'<br>';
+    ps.forEach(p=>{out+=fmt(cur)+' − '+fmt(p)+' = '+F(cur-p)+'<br>';cur-=p;});
+    /* Weg 2: ergänzen (von der kleineren zur grösseren Zahl springen) */
+    let pts=[b],c=b;
+    [10,100,1000].forEach(u=>{if(c%u!==0){let nx=Math.ceil(c/u)*u;if(nx<=a){pts.push(nx);c=nx;}}});
+    [1000,100,10,1].forEach(u=>{let nx=Math.floor(a/u)*u;if(nx>c){pts.push(nx);c=nx;}});
+    if(pts.length>2){
+      let gaps=[];for(let i=1;i<pts.length;i++)gaps.push(pts[i]-pts[i-1]);
+      out+='<br><b>Weg 2 – ergänzen:</b> Wie weit ist es von '+fmt(b)+' bis '+fmt(a)+'?<br>'
+        +pts.slice(0,-1).map((p,i)=>fmt(p)+' + '+fmt(gaps[i])+' = '+fmt(pts[i+1])).join('<br>')+'<br>'
+        +gaps.map(fmt).join(' + ')+' = '+F(x.res);
+    }
+    return box(x,out);
+  }
+  function helpMul(x){
+    let a=x.nums[0],b=x.nums[1],big=Math.max(a,b),small=Math.min(a,b),out;
+    let za=zeros(a),zb=zeros(b),ca=a/ten(za),cb=b/ten(zb);
+    if([10,100,1000].indexOf(small)>=0){let n=zeros(small);return box(x,'<b>Mal '+small+':</b> Hänge '+n+' Null'+(n>1?'en':'')+' an die Zahl '+fmt(big)+' an: '+F(x.res));}
+    if(za+zb>0&&ca>1&&cb>1){
+      let z=za+zb;
+      return box(x,'<b>Nullen weglassen:</b> Rechne ohne die Nullen: '+ca+' · '+cb+' = '+F(ca*cb)+'<br>Zusammen hast du '+z+' Null'+(z>1?'en':'')+'. Hänge sie wieder an: '+F(x.res));
+    }
+    if(small===0)return box(x,'<b>Mal 0:</b> Null mal eine Zahl ist immer 0: '+F(0));
+    if(small===1)return box(x,'<b>Mal 1:</b> Eine Zahl mal 1 bleibt gleich: '+big+' · 1 = '+F(x.res));
+    if(small===5&&big<=10)return box(x,'<b>Mal 5:</b> Rechne mal 10 und halbiere.<br>'+big+' · 10 = '+F(big*10)+'<br>Die Hälfte davon: '+F(x.res));
+    if(small===2)return box(x,'<b>Mal 2:</b> Verdopple die Zahl.<br>'+big+' + '+big+' = '+F(x.res));
+    let split,other;
+    if(small>=10){split=small;other=big;}else{split=big;other=small;}
+    let ps=split>=10?places(split):(split>5?[5,split-5]:[split]);
+    if(ps.length===1)return box(x,'<b>Einmaleins:</b> '+a+' · '+b+' = '+F(x.res));
+    out='<b>Zerlegen:</b> Zerlege '+fmt(split)+' in '+ps.map(fmt).join(' + ')+'.<br>'
+      +ps.map(p=>fmt(p)+' · '+fmt(other)+' = '+F(p*other)).join('<br>')+'<br>'
+      +ps.map(p=>fmt(p*other)).join(' + ')+' = '+F(x.res);
+    return box(x,out);
+  }
+  function umkehr(a,b,q){return '<b>Umkehraufgabe:</b> '+b+' mal wie viel gibt '+fmt(a)+'?<br>'+b+' · '+F(q)+' = '+fmt(a);}
+  function helpDiv(x){
+    let a=x.nums[0],b=x.nums[1],q=x.res;
+    let k=Math.min(zeros(a),zeros(b));
+    if(k>0){
+      let a1=a/ten(k),b1=b/ten(k),z=zeros(a1);
+      if(b1%10!==0&&a1%10===0&&z>0&&(a1/ten(z))%b1===0){
+        let a2=a1/ten(z);
+        return box(x,'<b>Nullen weglassen:</b> Streiche bei beiden Zahlen '+k+' Null'+(k>1?'en':'')+': '+fmt(a1)+' : '+b1+'.<br>'
+          +'Rechne '+a2+' : '+b1+' = '+F(a2/b1)+'<br>Hänge die '+z+' Null'+(z>1?'en':'')+' wieder an: '+F(q));
+      }
+      if(b1%10!==0)return box(x,'<b>Nullen weglassen:</b> Streiche bei beiden Zahlen '+k+' Null'+(k>1?'en':'')+'.<br>'+fmt(a1)+' : '+b1+' = '+F(q));
+    }
+    let za=zeros(a);
+    if(zeros(b)===0&&za>0&&b<10&&(a/ten(za))%b===0&&q>=10){
+      let a2=a/ten(za);
+      return box(x,'<b>Nullen weglassen:</b> Rechne '+a2+' : '+b+' = '+F(a2/b)+'<br>Hänge die '+za+' Null'+(za>1?'en':'')+' wieder an: '+F(q));
+    }
+    let ps=places(q);
+    if(q<=10||ps.length===1)return box(x,umkehr(a,b,q));
+    return box(x,'<b>Zerlegen:</b> Zerlege '+fmt(a)+' in Teile, die du leicht teilen kannst. Denke an die Reihe von '+b+':<br>'
+      +ps.map(p=>b+' · '+fmt(p)+' = '+F(b*p)).join('<br>')+'<br>'
+      +fmt(a)+' = '+ps.map(p=>fmt(b*p)).join(' + ')+'<br>'
+      +ps.map(p=>fmt(b*p)+' : '+b+' = '+F(p)).join('<br>')+'<br>'
+      +ps.map(fmt).join(' + ')+' = '+F(q));
+  }
+  const HELP={add:helpAdd,sub:helpSub,mul:helpMul,div:helpDiv};
+  function help(t){return HELP[t.cat](t);}
+
+  return {
+    id:'kopfrechnen',   /* NIE ändern: sonst gehen gespeicherte Lernstände verloren */
+    title:'Kopfrechnen Trainer',
+    subtitle:'Plus, minus, mal und geteilt im Kopf rechnen',
+    subtitles:{
+      add:'Zahlen im Kopf addieren',
+      sub:'Zahlen im Kopf subtrahieren',
+      mul:'Zahlen im Kopf multiplizieren',
+      div:'Zahlen im Kopf dividieren (ohne Rest)',
+      mix:'Plus, minus, mal und geteilt gemischt'
+    },
+    levels:LEVELS,
+    raceLevel:3,
+    raceRating:[{min:24,icon:'🤖',name:'Maschine'},{min:16,icon:'🏃',name:'Sprinter'},{min:9,icon:'🚶',name:'Spaziergänger'},{min:1,icon:'🐌',name:'Schnecke'}],
+    examLevels:[[7,8],[6,8],[4,12],[2,12]],
+    medals:['🥉 Bronze-Kopfrechner','🥈 Silber-Kopfrechner','🥇 Gold-Kopfrechner','💠 Platin-Kopfrechner'],
+    options:{
+      choices:CAT_KEYS.map(k=>({v:k,label:CATS[k].icon+' '+CATS[k].name})).concat([{v:'mix',label:'🎲 Gemischt'}]),
+      default:'add'
+    },
+    css:'.ex{font-size:30px;font-weight:bold;margin:10px 0}.helpline{font-size:18px;line-height:1.9;text-align:left}.hs{width:auto;min-width:3.2em;max-width:6.5em;font-size:18px;font-weight:bold;text-align:center;padding:2px 4px;border:2px solid #90a4ae;border-radius:6px;box-sizing:content-box}',
+    makeTask:makeTask,
+    check:check,
+    help:help,
+    helpExact:helpExact
+  };
+})();
+</script>
+
+<!-- ╔══════════════════════════════════════════════════════════════════════╗
+     ║  2) SPIEL-BLOCK  –  themenunabhängig (Belohnung für Cookies)         ║
+     ║  Schnittstelle: GAME.name, GAME.cost (Cookies pro Runde),            ║
+     ║  GAME.start(container, onEnd(punkte)), GAME.stop()                   ║
+     ║  Zum Austauschen des Spiels nur diesen Block ersetzen.               ║
+     ╚══════════════════════════════════════════════════════════════════════╝ -->
+<script>
+const GAME=(function(){
+  /* Flappy Bird (einfache Version): Leertaste = flattern, durch die Lücken fliegen */
+  const W=360,H=520,GROUND=60,BX=90,R=13,GAP=150,PW=56,SPACING=210,SPEED=150,GRAV=1500,FLAP=-400,MAXSTEP=0.05,SCALE=1.2,TRIES=3,SPEED_UP=1.2,SPEED_EVERY=10,SPEED_MAX=3;   /* alle 10 Röhren 20 % schneller, höchstens Faktor 3 */
+  function speedFactor(score){return Math.min(SPEED_MAX,Math.pow(SPEED_UP,Math.floor(score/SPEED_EVERY)));}
+  function rnd(a,b){return a+Math.random()*(b-a);}
+
+  function addPipe(s){
+    let lo=GAP/2+40,hi=H-GROUND-GAP/2-40;
+    let c=Math.max(lo,Math.min(hi,s.lastCenter+rnd(-140,140)));   /* nie zu weit auseinander: immer machbar */
+    s.lastCenter=c;
+    s.pipes.push({x:s.nextX,c:c,passed:false});
+    s.nextX+=SPACING;
+  }
+  function newState(){
+    let s={bird:{y:H/2-30,v:0},pipes:[],score:0,time:0,deadTime:0,phase:'ready',lastCenter:(H-GROUND)/2,nextX:W+60};
+    addPipe(s);
+    return s;
+  }
+  function flap(s){
+    if(s.phase==='ready')s.phase='play';
+    if(s.phase==='play')s.bird.v=FLAP;
+  }
+  function hitRect(cx,cy,r,rx,ry,rw,rh){
+    let nx=Math.max(rx,Math.min(cx,rx+rw)),ny=Math.max(ry,Math.min(cy,ry+rh));
+    let dx=cx-nx,dy=cy-ny;
+    return dx*dx+dy*dy<r*r;
+  }
+  function die(s){s.phase='dead';s.deadTime=0;}
+  function step(s,dt){
+    s.time+=dt;
+    let b=s.bird;
+    if(s.phase==='ready'){b.y=H/2-30+Math.sin(s.time*4)*6;return;}
+    if(s.phase==='dead'){
+      s.deadTime+=dt;
+      b.v+=GRAV*dt;b.y=Math.min(H-GROUND-R,b.y+b.v*dt);
+      return;
+    }
+    b.v+=GRAV*dt;b.y+=b.v*dt;
+    if(b.y<R){b.y=R;if(b.v<0)b.v=0;}                  /* Decke bremst nur, tötet nicht */
+    let v=SPEED*speedFactor(s.score);
+    s.pipes.forEach(p=>{p.x-=v*dt;});
+    s.nextX-=v*dt;
+    while(s.nextX<=W+20)addPipe(s);
+    s.pipes=s.pipes.filter(p=>p.x>-PW-10);
+    let r=R-2;                                          /* etwas nachsichtig */
+    for(const p of s.pipes){
+      if(hitRect(BX,b.y,r,p.x,0,PW,p.c-GAP/2)||hitRect(BX,b.y,r,p.x,p.c+GAP/2,PW,H-GROUND-(p.c+GAP/2))){die(s);return;}
+      if(!p.passed&&p.x+PW<BX-R){p.passed=true;s.score++;}
+    }
+    if(b.y+R>=H-GROUND){b.y=H-GROUND-R;die(s);}
+  }
+
+  function draw(ctx,s){
+    let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#7ec8f2');g.addColorStop(1,'#d8f0ff');
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    s.pipes.forEach(p=>{
+      ctx.fillStyle='#4caf50';
+      ctx.fillRect(p.x,0,PW,p.c-GAP/2);
+      ctx.fillRect(p.x,p.c+GAP/2,PW,H-GROUND-(p.c+GAP/2));
+      ctx.fillStyle='#388e3c';
+      ctx.fillRect(p.x-4,p.c-GAP/2-18,PW+8,18);
+      ctx.fillRect(p.x-4,p.c+GAP/2,PW+8,18);
+    });
+    ctx.fillStyle='#d7b46a';ctx.fillRect(0,H-GROUND,W,GROUND);
+    ctx.fillStyle='#8bc34a';ctx.fillRect(0,H-GROUND,W,8);
+    let b=s.bird;
+    ctx.save();ctx.translate(BX,b.y);ctx.rotate(Math.max(-0.5,Math.min(1.1,b.v/600)));
+    ctx.fillStyle='#ffd54f';ctx.beginPath();ctx.arc(0,0,R,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ff9800';ctx.beginPath();ctx.moveTo(R-2,-2);ctx.lineTo(R+9,2);ctx.lineTo(R-2,6);ctx.fill();
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(4,-4,4,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#000';ctx.beginPath();ctx.arc(5,-4,2,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+    ctx.fillStyle='#fff';ctx.strokeStyle='#333';ctx.lineWidth=4;ctx.font='bold 40px Arial';ctx.textAlign='center';
+    ctx.strokeText(s.score,W/2,60);ctx.fillText(s.score,W/2,60);
+    if(s.phase==='ready'){
+      ctx.font='bold 22px Arial';ctx.lineWidth=3;
+      ctx.strokeText('Leertaste zum Starten',W/2,H/2+60);ctx.fillText('Leertaste zum Starten',W/2,H/2+60);
+    }
+  }
+
+  let run=null;
+  function stop(){
+    if(!run)return;
+    cancelAnimationFrame(run.raf);
+    document.removeEventListener('keydown',run.onKey);
+    run=null;
+  }
+  function start(root,onEnd){
+    stop();
+    root.innerHTML='';
+    let K=Math.max(0.7,Math.min(SCALE,(window.innerHeight-190)/H,(window.innerWidth-60)/W));   /* Darstellung 1.2x gross, auf kleinen Bildschirmen angepasst */
+    let canvas=document.createElement('canvas');canvas.width=Math.round(W*K);canvas.height=Math.round(H*K);
+    root.appendChild(canvas);
+    let ctx=canvas.getContext('2d');
+    if(ctx)ctx.setTransform(K,0,0,K,0,0);
+    let s=newState();
+    let r={raf:0,ended:false,last:0};
+    r.onKey=e=>{if(e.code==='Space'&&!e.repeat){e.preventDefault();flap(s);}};
+    document.addEventListener('keydown',r.onKey);
+    canvas.addEventListener('pointerdown',e=>{e.preventDefault();flap(s);});
+    run=r;
+    function loop(t){
+      if(run!==r)return;
+      let dt=r.last?Math.min(MAXSTEP,(t-r.last)/1000):0;r.last=t;
+      step(s,dt);
+      if(ctx)draw(ctx,s);
+      if(s.phase==='dead'&&s.deadTime>0.7&&!r.ended){r.ended=true;onEnd(s.score);return;}
+      r.raf=requestAnimationFrame(loop);
+    }
+    r.raf=requestAnimationFrame(loop);
+  }
+  return {name:'Flappy Bird',cost:1,tries:TRIES,start:start,stop:stop,sim:{speedFactor:speedFactor,newState:newState,flap:flap,step:step,W:W,H:H,GAP:GAP,GROUND:GROUND,BX:BX}};
+})();
+</script>
+
+<!-- ╔════════════════════════════════════════════════════════════════
+     ║  2b) ZUSATZSPIELE (Shop)  –  Snake und Stapelturm                    ║
+     ║  Gleiche Schnittstelle wie GAME: name, cost, tries, start, stop.     ║
+     ║  GAMES ist die Liste aller Spiele; Flappy Bird ist immer freigeschaltet. ║
+     ╚════════════════════════════════════════════════════════════════╝ -->
+<script>
+const SNAKE=(function(){
+  const N=18,C=20,W=N*C,H=N*C,TRIES=3,SCALE=1.2;
+  function newState(){return {phase:'ready',dir:{x:1,y:0},q:[],snake:[{x:5,y:9},{x:4,y:9},{x:3,y:9}],apple:null,score:0,acc:0,deadTime:0};}
+  function placeApple(s){
+    let free=[];
+    for(let x=0;x<N;x++)for(let y=0;y<N;y++){if(!s.snake.some(p=>p.x===x&&p.y===y))free.push({x:x,y:y});}
+    s.apple=free.length?free[Math.floor(Math.random()*free.length)]:null;
+  }
+  function turn(s,dx,dy){
+    if(s.phase==='dead')return;
+    let last=s.q.length?s.q[s.q.length-1]:s.dir;
+    if((dx===-last.x&&dy===-last.y)||(dx===last.x&&dy===last.y))return;   /* keine Umkehr, kein Doppeltes */
+    if(s.q.length<2)s.q.push({x:dx,y:dy});
+    if(s.phase==='ready')s.phase='run';
+  }
+  function interval(score){return Math.max(0.075,0.16-0.004*score);}
+  function step(s,dt){
+    if(s.phase==='dead'){s.deadTime+=dt;return;}
+    if(s.phase!=='run')return;
+    s.acc+=dt;
+    while(s.phase==='run'&&s.acc>=interval(s.score)){
+      s.acc-=interval(s.score);
+      if(s.q.length)s.dir=s.q.shift();
+      let h=s.snake[0],nx=h.x+s.dir.x,ny=h.y+s.dir.y;
+      let eat=!!s.apple&&nx===s.apple.x&&ny===s.apple.y;
+      let body=eat?s.snake:s.snake.slice(0,-1);   /* die Schwanzspitze wird frei, wenn nichts gefressen wird */
+      if(nx<0||ny<0||nx>=N||ny>=N||body.some(p=>p.x===nx&&p.y===ny)){s.phase='dead';s.deadTime=0;return;}
+      s.snake.unshift({x:nx,y:ny});
+      if(eat){s.score++;placeApple(s);if(!s.apple){s.phase='dead';s.deadTime=0;}}
+      else s.snake.pop();
+    }
+  }
+  function outline(ctx,t,x,y){ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,0,.55)';ctx.strokeText(t,x,y);ctx.fillStyle='#fff';ctx.fillText(t,x,y);}
+  function draw(ctx,s){
+    for(let x=0;x<N;x++)for(let y=0;y<N;y++){ctx.fillStyle=(x+y)%2?'#a8d86a':'#b9e07a';ctx.fillRect(x*C,y*C,C,C);}
+    if(s.apple){
+      let a=s.apple;
+      ctx.fillStyle='#e53935';ctx.beginPath();ctx.arc(a.x*C+C/2,a.y*C+C/2+1,C*0.38,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#2e7d32';ctx.fillRect(a.x*C+C/2-1,a.y*C+1,3,5);
+    }
+    s.snake.forEach(function(p,i){
+      ctx.fillStyle=i===0?'#1b5e20':(i%2?'#2e7d32':'#388e3c');
+      ctx.fillRect(p.x*C+1,p.y*C+1,C-2,C-2);
+    });
+    let h=s.snake[0],d=s.dir,ex=h.x*C+C/2,ey=h.y*C+C/2,px=-d.y,py=d.x;
+    ctx.fillStyle='#fff';
+    [-1,1].forEach(function(k){ctx.beginPath();ctx.arc(ex+d.x*3+px*k*4,ey+d.y*3+py*k*4,2.6,0,Math.PI*2);ctx.fill();});
+    ctx.fillStyle='#111';
+    [-1,1].forEach(function(k){ctx.beginPath();ctx.arc(ex+d.x*4+px*k*4,ey+d.y*4+py*k*4,1.3,0,Math.PI*2);ctx.fill();});
+    ctx.textAlign='center';ctx.font='bold 26px Arial';outline(ctx,String(s.score),W/2,34);
+    if(s.phase==='ready'){ctx.font='bold 20px Arial';outline(ctx,'Pfeiltasten oder Wischen',W/2,H/2-20);outline(ctx,'zum Starten',W/2,H/2+8);}
+    if(s.phase==='dead'){ctx.font='bold 30px Arial';outline(ctx,'Aus!',W/2,H/2);}
+  }
+  let run=null;
+  function stop(){
+    if(!run)return;
+    cancelAnimationFrame(run.raf);
+    document.removeEventListener('keydown',run.onKey);
+    run=null;
+  }
+  function start(root,onEnd){
+    stop();root.innerHTML='';
+    let K=Math.max(0.7,Math.min(SCALE,(window.innerHeight-190)/H,(window.innerWidth-60)/W));
+    let canvas=document.createElement('canvas');canvas.width=Math.round(W*K);canvas.height=Math.round(H*K);
+    canvas.style.touchAction='none';
+    root.appendChild(canvas);
+    let ctx=canvas.getContext('2d');if(ctx)ctx.setTransform(K,0,0,K,0,0);
+    let s=newState();placeApple(s);
+    let r={raf:0,ended:false,last:0};
+    const KEYS={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1],a:[-1,0],d:[1,0],w:[0,-1],s:[0,1],A:[-1,0],D:[1,0],W:[0,-1],S:[0,1]};
+    r.onKey=function(e){let v=KEYS[e.key];if(v){e.preventDefault();turn(s,v[0],v[1]);}};
+    document.addEventListener('keydown',r.onKey);
+    let sx=0,sy=0,sw=false;   /* Wischen: Richtung aus der Fingerbewegung */
+    canvas.addEventListener('pointerdown',function(e){e.preventDefault();sx=e.clientX;sy=e.clientY;sw=true;});
+    canvas.addEventListener('pointermove',function(e){
+      if(!sw)return;
+      let dx=e.clientX-sx,dy=e.clientY-sy;
+      if(Math.max(Math.abs(dx),Math.abs(dy))<22)return;
+      if(Math.abs(dx)>Math.abs(dy))turn(s,dx>0?1:-1,0);else turn(s,0,dy>0?1:-1);
+      sx=e.clientX;sy=e.clientY;
+    });
+    ['pointerup','pointercancel','pointerleave'].forEach(function(t){canvas.addEventListener(t,function(){sw=false;});});
+    run=r;
+    function loop(t){
+      if(run!==r)return;
+      let dt=r.last?Math.min(0.05,(t-r.last)/1000):0;r.last=t;
+      step(s,dt);
+      if(ctx)draw(ctx,s);
+      if(s.phase==='dead'&&s.deadTime>0.7&&!r.ended){r.ended=true;onEnd(s.score);return;}
+      r.raf=requestAnimationFrame(loop);
+    }
+    r.raf=requestAnimationFrame(loop);
+  }
+  return {id:'snake',icon:'🐍',name:'Snake',hint:'Pfeiltasten oder Wischen = lenken · Esc = beenden',cost:1,tries:TRIES,start:start,stop:stop,sim:{newState:newState,placeApple:placeApple,turn:turn,step:step,N:N}};
+})();
+
+const TOWER=(function(){
+  const W=360,H=520,BH=24,GROUND=H-50,W0=190,HOVER=90,TRIES=3,SCALE=1.2,SHRINK=0.85,SHRINK_MIN=14;
+  function landY(s){return GROUND-(s.blocks.length+1)*BH;}
+  function speed(score){return Math.min(380,130+9*score);}
+  function spawn(s){
+    let w=s.blocks[s.blocks.length-1].w;
+    s.cur={x:s.fromLeft?0:W-w,w:w,y:landY(s)-HOVER,vy:0,dir:s.fromLeft?1:-1};
+    s.fromLeft=!s.fromLeft;s.mode='hover';
+  }
+  function newState(){
+    let s={phase:'ready',mode:'hover',blocks:[{x:(W-W0)/2,w:W0}],cur:null,pieces:[],score:0,cam:0,deadTime:0,msg:'',msgT:0,fromLeft:true};
+    spawn(s);return s;
+  }
+  function drop(s){if(s.phase!=='dead'&&s.mode==='hover'){s.mode='fall';s.phase='run';s.cur.vy=0;}}
+  function land(s){
+    let p=s.blocks[s.blocks.length-1],c=s.cur;
+    let left=Math.max(c.x,p.x),right=Math.min(c.x+c.w,p.x+p.w),ov=right-left;
+    if(ov<=0){s.phase='dead';s.deadTime=0;s.msg='Daneben!';s.msgT=9;return;}   /* der Stein verfehlt den Turm und fällt weiter */
+    if(Math.abs(c.x-p.x)<=4){s.blocks.push({x:p.x,w:p.w});s.msg='Perfekt!';s.msgT=0.8;}
+    else{
+      s.blocks.push({x:left,w:ov});
+      if(c.x<p.x)s.pieces.push({x:c.x,w:p.x-c.x,y:c.y,vy:0,i:s.blocks.length});
+      else s.pieces.push({x:p.x+p.w,w:c.x+c.w-(p.x+p.w),y:c.y,vy:0,i:s.blocks.length});
+    }
+    s.score++;
+    spawn(s);
+  }
+  function step(s,dt){
+    let target=Math.max(0,s.blocks.length*BH-(GROUND-230));
+    s.cam+=(target-s.cam)*Math.min(1,dt*4);
+    s.pieces.forEach(function(q){q.vy+=1500*dt;q.y+=q.vy*dt;});
+    s.pieces=s.pieces.filter(function(q){return q.y<H+s.cam+60;});
+    if(s.msgT>0)s.msgT-=dt;
+    if(s.phase==='dead'){s.deadTime+=dt;if(s.cur){s.cur.vy+=1800*dt;s.cur.y+=s.cur.vy*dt;}return;}
+    let c=s.cur;
+    if(s.mode==='hover'){
+      c.x+=c.dir*speed(s.score)*dt;
+      let hit=0;
+      if(c.x<=0){c.x=0;c.dir=1;hit=1;}else if(c.x+c.w>=W){c.x=W-c.w;c.dir=-1;hit=1;}
+      if(hit){
+        c.bounces=(c.bounces||0)+1;
+        /* nach einmal hin und her (2 Wandberührungen) schrumpft der Stein bei jeder weiteren Berührung */
+        if(c.bounces>=2&&c.w>SHRINK_MIN){
+          let nw=Math.max(SHRINK_MIN,Math.round(c.w*SHRINK));
+          if(c.dir===-1)c.x+=c.w-nw;   /* rechte Wand: rechte Kante bleibt */
+          c.w=nw;s.msg='Schneller!';s.msgT=0.6;
+        }
+      }
+    }else{
+      c.vy+=2400*dt;c.y+=c.vy*dt;
+      let ly=landY(s);
+      if(c.y>=ly){c.y=ly;land(s);}
+    }
+  }
+  function outline(ctx,t,x,y){ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,0,.55)';ctx.strokeText(t,x,y);ctx.fillStyle='#fff';ctx.fillText(t,x,y);}
+  function color(i){return 'hsl('+((i*27+8)%360)+',55%,60%)';}
+  function brick(ctx,x,y,w,i){
+    ctx.fillStyle=color(i);ctx.fillRect(x,y,w,BH);
+    ctx.strokeStyle='rgba(0,0,0,.35)';ctx.lineWidth=1.5;ctx.strokeRect(x+0.75,y+0.75,w-1.5,BH-1.5);
+    if(w>=40){
+      ctx.fillStyle='#fff6bf';
+      for(let wx=x+12;wx+8<=x+w-8;wx+=24)ctx.fillRect(wx,y+8,8,9);
+    }
+  }
+  function draw(ctx,s){
+    let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#8fd3f4');g.addColorStop(1,'#e8f6ff');
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#7cb342';ctx.fillRect(0,GROUND+s.cam,W,H);
+    ctx.fillStyle='#a1887f';ctx.fillRect(0,GROUND+s.cam+BH*0.0,W,6);
+    s.blocks.forEach(function(b,i){brick(ctx,b.x,GROUND-(i+1)*BH+s.cam,b.w,i);});
+    s.pieces.forEach(function(q){brick(ctx,q.x,q.y+s.cam,q.w,q.i);});
+    if(s.cur)brick(ctx,s.cur.x,s.cur.y+s.cam,s.cur.w,s.blocks.length);
+    ctx.textAlign='center';ctx.font='bold 30px Arial';outline(ctx,String(s.score),W/2,44);
+    if(s.msgT>0&&s.msg){ctx.font='bold 24px Arial';outline(ctx,s.msg,W/2,H/2-40);}
+    if(s.phase==='ready'){ctx.font='bold 18px Arial';outline(ctx,'Leertaste oder Tippen:',W/2,H-18);}
+  }
+  let run=null;
+  function stop(){
+    if(!run)return;
+    cancelAnimationFrame(run.raf);
+    document.removeEventListener('keydown',run.onKey);
+    run=null;
+  }
+  function start(root,onEnd){
+    stop();root.innerHTML='';
+    let K=Math.max(0.7,Math.min(SCALE,(window.innerHeight-190)/H,(window.innerWidth-60)/W));
+    let canvas=document.createElement('canvas');canvas.width=Math.round(W*K);canvas.height=Math.round(H*K);
+    canvas.style.touchAction='none';
+    root.appendChild(canvas);
+    let ctx=canvas.getContext('2d');if(ctx)ctx.setTransform(K,0,0,K,0,0);
+    let s=newState();
+    let r={raf:0,ended:false,last:0};
+    r.onKey=function(e){if((e.code==='Space'||e.key==='ArrowDown')&&!e.repeat){e.preventDefault();drop(s);}};
+    document.addEventListener('keydown',r.onKey);
+    canvas.addEventListener('pointerdown',function(e){e.preventDefault();drop(s);});
+    run=r;
+    function loop(t){
+      if(run!==r)return;
+      let dt=r.last?Math.min(0.05,(t-r.last)/1000):0;r.last=t;
+      step(s,dt);
+      if(ctx)draw(ctx,s);
+      if(s.phase==='dead'&&s.deadTime>0.9&&!r.ended){r.ended=true;onEnd(s.score);return;}
+      r.raf=requestAnimationFrame(loop);
+    }
+    r.raf=requestAnimationFrame(loop);
+  }
+  return {id:'tower',icon:'🏠',name:'Stapelturm',hint:'Leertaste oder Tippen = Stein fallen lassen · Esc = beenden',cost:1,tries:TRIES,start:start,stop:stop,sim:{newState:newState,drop:drop,step:step,W:W,BH:BH,GROUND:GROUND}};
+})();
+
+const GAMES={
+  flappy:{id:'flappy',icon:'🐦',name:GAME.name,hint:'Leertaste (oder Klick / Tippen) = fliegen · Esc = beenden',cost:GAME.cost,tries:GAME.tries,start:function(r,e){GAME.start(r,e);},stop:function(){GAME.stop();}},
+  snake:SNAKE,
+  tower:TOWER
+};
+const GAMES_ORDER=['flappy','snake','tower'];
+</script>
+
+<!-- ╔══════════════════════════════════════════════════════════════════════╗
+     ║  3) ENGINE  –  themenunabhängig, beim Themenwechsel NICHT ändern      ║
+     ║  (Oberfläche, Levels/XP, Cookies, Achievements, Zeitrennen, Speichern)║
+     ╚══════════════════════════════════════════════════════════════════════╝ -->
+<script>
+const LEVELS=TOPIC.levels;
+const LAST=LEVELS.length-1;                 /* Index des höchsten Levels */
+function lvlName(l){return LEVELS[l].icon+' '+LEVELS[l].name;}
+
+/* Titel und Styles aus dem Themen-Block übernehmen */
+document.title=TOPIC.title;
+document.getElementById('topicTitle').textContent=TOPIC.title;
+document.getElementById('topicSubtitle').textContent=TOPIC.subtitle;
+document.getElementById('themeCss').textContent=TOPIC.css;
+
+let lossActive=false,lossFrom=0,lossTo=0;   /* roter Verlust-Abschnitt im XP-Balken */
+let solved=0,streak=0,xp=0,schutz=0,cookies=0,gameBest=0,current={},achs=[];
+/* Smartphone: eigene Zahlentasten (statt der Bildschirmtastatur) und einklappbare Achievements */
+(function(){
+  const kp=document.getElementById('keypad');
+  const mq=window.matchMedia('(max-width:700px), (pointer:coarse)');   /* Smartphone und iPad */
+  function sync(){if(mq.matches)answer.setAttribute('inputmode','none');else answer.removeAttribute('inputmode');}
+  sync();if(mq.addEventListener)mq.addEventListener('change',sync);else mq.addListener(sync);
+  kp.addEventListener('mousedown',function(e){e.preventDefault();});   /* Fokus bleibt im Antwortfeld */
+  kp.addEventListener('click',function(e){
+    const b=e.target.closest('button[data-k]');if(!b)return;
+    const k=b.getAttribute('data-k');
+    if(k==='ok'){checkAnswer();return;}
+    answer.focus();
+    let s=answer.selectionStart,t=answer.selectionEnd,v=answer.value;
+    if(s==null){s=t=v.length;}
+    if(k==='del'){
+      if(s!==t){v=v.slice(0,s)+v.slice(t);}
+      else if(s>0){v=v.slice(0,s-1)+v.slice(s);s--;}
+      answer.value=v;answer.setSelectionRange(s,s);
+    }else{
+      answer.value=v.slice(0,s)+k+v.slice(t);answer.setSelectionRange(s+k.length,s+k.length);
+    }
+  });
+  const ach=document.querySelector('.ach');
+  ach.querySelector('h3').addEventListener('click',function(){ach.classList.toggle('open');});
+})();
+/* ---------- Gemeinsamer Cookie-Geldbeutel ----------
+   Alle Trainer auf derselben Internetadresse teilen sich diese Cookies (localStorage-Eintrag test_mathe_wallet).
+   Verdienen und Ausgeben (Spiel) wirken direkt auf den gemeinsamen Stand. XP, Level und Rekorde bleiben pro Trainer. */
+const WALLET_KEY='test_mathe_wallet';
+let memWallet=0,walletMigrated=false;   /* memWallet: Reserve, falls der Browser-Speicher blockiert ist */
+function walletGet(){try{let w=JSON.parse(localStorage.getItem(WALLET_KEY));if(w&&typeof w.balance==='number'&&isFinite(w.balance)){memWallet=Math.max(0,Math.floor(w.balance));return memWallet;}}catch(e){}return memWallet;}
+function walletRead(){try{let w=JSON.parse(localStorage.getItem(WALLET_KEY));if(w&&typeof w==='object')return w;}catch(e){}return null;}
+function walletSet(n){memWallet=Math.max(0,Math.floor(n));try{let w=walletRead()||{};w.balance=memWallet;localStorage.setItem(WALLET_KEY,JSON.stringify(w));}catch(e){}return memWallet;}   /* behält z. B. die gekauften Spiele */
+function walletGames(){return ['snake','tower'];}   /* Testversion: alle Spiele freigeschaltet */   /* im Shop gekaufte Spiele */
+function walletRecords(){let w=walletRead();return (w&&w.records&&typeof w.records==='object')?w.records:{};}
+/* Spiel-Rekorde gelten für alle Trainer: es zählt der höhere Wert (lokal oder im gemeinsamen Speicher) */
+function mergeBests(){
+  let wr=walletRecords(),changed=false;
+  GAMES_ORDER.forEach(function(id){
+    let loc=id==='flappy'?gameBest:(gameBests[id]||0),rem=Math.max(0,parseInt(wr[id])||0),v=Math.max(loc,rem);
+    if(id==='flappy')gameBest=v;else if(v>0)gameBests[id]=v;
+    if(v>rem){wr[id]=v;changed=true;}
+  });
+  if(changed){try{let w=walletRead()||{};w.records=wr;if(typeof w.balance!=='number')w.balance=memWallet;localStorage.setItem(WALLET_KEY,JSON.stringify(w));}catch(e){}}
+}
+function walletAdd(d){return walletSet(walletGet()+d);}
+function walletRefresh(){let c=walletGet();if(c!==cookies){cookies=c;cookieShow.textContent=cookies;updateGameBtn();}renderRecords();}
+window.addEventListener('storage',function(e){if(e.key===WALLET_KEY)walletRefresh();});
+document.addEventListener('visibilitychange',function(){if(!document.hidden)walletRefresh();});
+window.addEventListener('focus',walletRefresh);
+/* Cookies aus einem Lernstand übernehmen: alte Stände (ohne cw) werden einmalig dazugezählt; eine Datei stellt höchstens den höheren Stand wieder her */
+function adoptCookies(d,fromFile){
+  let fc=Math.max(0,parseInt(d.cookies)||0);
+  if(fromFile){if(fc>walletGet())walletSet(fc);}
+  else if(!d.cw){walletAdd(fc);walletMigrated=true;}
+  return walletGet();
+}
+
+/* Cookies: 1 pro 50 gelöste Aufgaben insgesamt, 1 pro 25 richtige am Stück (wiederholbar, unabhängig von den Achievements) */
+const COOKIE_TOTAL=50,COOKIE_STREAK=25;
+/* Zeitrennen: möglichst viele Aufgaben in RACE_SECONDS; Aufgaben immer aus dem Level TOPIC.raceLevel; Rekord pro Level */
+const RACE_LEVEL=TOPIC.raceLevel;
+const RACE_SECONDS=60;
+let race={active:false,phase:'',end:0,count:0,level:0,timer:null};
+let exam={active:false};   /* Prüfungsmodus */
+let records=LEVELS.map(()=>0);
+/* Zeit-Rekorde: bei kategoriegebundenem Zeitrennen (kein raceOption) pro Kategorie, sonst ein gemeinsamer Satz */
+let recMap={};
+function recKey(){return TOPIC.raceOption?'_':curOpt;}
+const XP_RIGHT=10,XP_LOSS=5; /* richtig: +10 XP, Fehlversuch 1 und 2: je -5 XP (Hälfte) */
+/* XP-Multiplikator bei Serie: je 3 richtige am Stück +0.25, höchstens x2.5 (3 am Stück: x1.25, 6: x1.5 ... 15: x2.5).
+   Dadurch bleiben sehr gute SuS nicht zu lange bei den einfachen Aufgaben hängen. */
+const STREAK_XP_STEP=3,STREAK_XP_ADD=0.25,STREAK_XP_MAX=2.5;
+function xpMultiplier(st){return Math.min(STREAK_XP_MAX,1+Math.floor(st/STREAK_XP_STEP)*STREAK_XP_ADD);}
+const LEVEL_XP=150,MAX_XP=LEVEL_XP*(LAST+1); /* 150 XP pro Level = netto 15 richtige Antworten; das höchste Level hat auch einen Balken, bei MAX_XP ist er voll */
+/* Eigene Referenz auf das Namensfeld (window.name ist in JavaScript bereits belegt) */
+const nameInput=document.getElementById('name');
+
+function getLevel(){return Math.min(LAST,Math.floor(xp/LEVEL_XP));}
+
+function setSubtitle(){let k=TOPIC.options&&typeof topicOpt!=='undefined'?topicOpt.value:null;document.getElementById('topicSubtitle').textContent=(TOPIC.subtitles&&TOPIC.subtitles[k])||TOPIC.subtitle;}
+function update(){examUpdateBtn();setSubtitle();if(window.lvlJump)lvlJump.value=getLevel();if(lvlSelFor!==getLevel())buildLvlSel();autoSave();updateGameBtn();let l=getLevel();level.innerHTML='<b>Level '+(l+1)+' - '+lvlName(l)+'</b>'+(practiceLevel!==null?' &nbsp;·&nbsp; 📘 Üben in '+lvlName(practiceLevel)+' (ohne XP)':'');correct.textContent=solved;cookieShow.textContent=cookies;let start=l*LEVEL_XP;fill.style.width=((xp-start)/LEVEL_XP*100)+'%';
+  /* roter Abschnitt: so viel XP wurde bei Fehlern verloren (bleibt bis zur nächsten richtigen Antwort) */
+  if(lossActive){
+    let a=Math.max(0,Math.min(1,(lossFrom-start)/LEVEL_XP)),b=Math.max(0,Math.min(1,(lossTo-start)/LEVEL_XP));
+    if(b>a){loss.style.left=(a*100)+'%';loss.style.width=((b-a)*100)+'%';loss.style.display='block';}else loss.style.display='none';
+  }else loss.style.display='none';
+}
+
+/* Neue Aufgabe vom Themen-Block holen (forcedLevel: z. B. im Zeitrennen) */
+/* Optionale Auswahlliste des Themas (z. B. Kategorie): Wahl wird gespeichert und an makeTask übergeben */
+function getOpt(){return TOPIC.options?topicOpt.value:undefined;}
+/* Eigene XP/Levels pro Auswahl (z. B. pro Kategorie): xp gehört immer zur aktuell gewählten Auswahl, die anderen liegen in xpMap */
+let xpMap={},curOpt=(TOPIC.options?TOPIC.options.default:'_');
+/* Übungslevel: tieferes Level freiwillig wählen; dort gibt es keine XP (weder Gewinn noch Verlust) */
+let practiceLevel=null,lvlSelFor=-1;
+function playLevel(){return practiceLevel!==null?practiceLevel:getLevel();}
+function buildLvlSel(){
+  let cur=getLevel();
+  if(practiceLevel!==null&&practiceLevel>=cur)practiceLevel=null;
+  lvlSel.innerHTML='';
+  for(let i=0;i<=cur;i++){
+    let o=document.createElement('option');o.value=i;
+    o.textContent='Level '+(i+1)+' – '+lvlName(i)+(i===cur?' (aktuell)':' (üben, ohne XP)');
+    lvlSel.appendChild(o);
+  }
+  lvlSel.value=(practiceLevel!==null)?practiceLevel:cur;
+  lvlSel.disabled=(cur===0);
+  lvlSel.title=cur===0?'Noch kein tieferes Level vorhanden':'Level zum Üben wählen (tiefere Level geben keine XP)';
+  lvlSelFor=cur;
+}
+function lvlSelChange(){
+  let v=parseInt(lvlSel.value);
+  practiceLevel=(v===getLevel())?null:v;
+  lvlSel.blur();
+  if(race.active||exam.active)return;
+  update();newTask();answer.focus();
+}
+if(TOPIC.options){
+  TOPIC.options.choices.forEach(c=>{let o=document.createElement('option');o.value=c.v;o.textContent=c.label;topicOpt.appendChild(o);});
+  topicOpt.value=TOPIC.options.default;
+  optRow.style.display='inline';
+  topicOpt.addEventListener('change',()=>{
+    topicOpt.blur();
+    if(race.active||exam.active){topicOpt.value=curOpt;return;}
+    xpMap[curOpt]=xp;recMap[recKey()]=records;curOpt=topicOpt.value;xp=xpMap[curOpt]||0;
+    records=recMap[recKey()]||(recMap[recKey()]=LEVELS.map(()=>0));
+    schutz=0;lossActive=false;practiceLevel=null;
+    buildLvlSel();renderRecords();update();newTask();answer.focus();
+  });
+}
+let lastSig=null;
+function newTask(forcedLevel){
+  update();
+  let l=(forcedLevel===undefined)?playLevel():forcedLevel;
+  const opt=(forcedLevel!==undefined&&TOPIC.raceOption)?TOPIC.raceOption:getOpt();   /* Zeitrennen: festgelegte Auswahl des Themas */
+  /* nie zweimal hintereinander genau dieselbe Aufgabe */
+  const sig=t=>[t.cat,t.mode,t.kind,t.shape,t.answer,t.text].join('|');
+  let tries=0;
+  do{current=TOPIC.makeTask(l,opt);tries++;}while(lastSig!==null&&sig(current)===lastSig&&tries<30);
+  lastSig=sig(current);
+  current.wrong=0;
+  let taskEl=document.getElementById('task');
+  if(current.html)taskEl.innerHTML=current.html;   /* optional: Aufgabe mit Grafik / gestapelten Brüchen */
+  else taskEl.textContent=current.text;
+  answer.value='';
+  answer.style.display=current.noInput?'none':'';   /* Aufgaben zum Anklicken brauchen keine Antwortzeile */
+  if(current.interactive&&TOPIC.mount)TOPIC.mount(taskEl,current);
+}
+
+/* Pop-ups kommen nacheinander (Warteschlange); jedes Enter / jeder Klick auf Weiter zeigt das nächste */
+let popupQueue=[];
+function nextPopup(){
+  let p=popupQueue.shift();
+  if(!p){popup.style.display='none';return false;}
+  popupTitle.textContent=p[0];popupText.innerHTML=p[1];popup.style.display='flex';
+  return true;
+}
+function showPopup(t,txt){popupQueue.push([t,txt]);if(popup.style.display!=='flex')nextPopup();}
+
+/* Pop-up schliessen und Cursor zurück ins Antwortfeld */
+function closePopup(){if(nextPopup())return;answer.focus();}
+
+/* Solange ein Pop-up offen ist: Enter schliesst es und löst NICHT die Aufgabe aus.
+   Capture-Phase, damit die Taste das Antwortfeld gar nicht mehr erreicht.
+   Gedrückt gehaltenes Enter (Wiederholung) wird ignoriert. */
+document.addEventListener('keydown',e=>{
+  if(popup.style.display==='flex'&&e.key==='Enter'){
+    e.preventDefault();
+    e.stopPropagation();
+    if(!e.repeat)closePopup();
+  }
+},true);
+
+/* Achievements in zwei Gruppen:
+   1) Medaillen des Themas (TOPIC.medals) bei MEDAL_AT gelösten Aufgaben insgesamt
+   2) Serien: richtige Antworten am Stück (STREAK_ACHS)
+   Angezeigt werden sie immer gruppiert und in fester Reihenfolge, unabhängig davon, wann sie freigeschaltet wurden. */
+const MEDAL_AT=[10,25,50,100];
+const STREAK_ACHS=[[5,'🔥 5 Aufgaben fehlerfrei'],[10,'🚀 10 Aufgaben fehlerfrei'],[25,'💎 25 Aufgaben fehlerfrei'],[50,'🌋 50 Aufgaben fehlerfrei']];
+const MEDAL_NAMES=TOPIC.medals;
+const STREAK_NAMES=STREAK_ACHS.map(x=>x[1]);
+const ALL_ACHS=MEDAL_NAMES.concat(STREAK_NAMES);
+/* Platzhalter-Liste: reserviert unter dem Titel immer den Platz für alle Achievements (neue hier ergänzen) */
+achSizer.innerHTML=MEDAL_NAMES.map(x=>'<li>'+x+'</li>').join('')+STREAK_NAMES.map((x,i)=>'<li'+(i===0?' class="gap"':'')+'>'+x+'</li>').join('');
+function renderAchs(){
+  let m=MEDAL_NAMES.filter(x=>achs.includes(x));
+  let st=STREAK_NAMES.filter(x=>achs.includes(x));
+  achievements.innerHTML=m.map(x=>'<li>'+x+'</li>').join('')+st.map((x,i)=>'<li'+(i===0&&m.length?' class="gap"':'')+'>'+x+'</li>').join('');
+}
+function addAch(a){if(!achs.includes(a)){achs.push(a);renderAchs();showPopup('🏆 Achievement freigeschaltet!',a);}}
+
+/* XP abziehen (nie unter 0). Dabei kann man ein Level absteigen.
+   Auf dem Levelanfang (0 XP im Level) wird der erste Fehler abgefangen (Schutz):
+   erst bei der 2. falschen Antwort in Folge steigt man ab
+   und landet im tieferen Level bei ca. 75 %. */
+const SCHUTZ_MAX=2;
+const ABSTIEG_XP=Math.floor(LEVEL_XP*0.75/XP_LOSS)*XP_LOSS; /* 110 von 150 = ca. 75 % */
+function loseXP(){
+  if(xp===0)return;
+  if(xp===getLevel()*LEVEL_XP){   /* genau am Levelanfang (im höchsten Level ist ein voller Balken kein Levelanfang) */
+    schutz++;
+    if(schutz<SCHUTZ_MAX)return;
+    schutz=0;
+    xp=xp-LEVEL_XP+ABSTIEG_XP;   /* Abstieg: im tieferen Level bei ca. 75 % landen */
+    return;
+  }
+  xp-=XP_LOSS;
+}
+
+/* Einmalige Cookies (insgesamt, nicht pro Kategorie): beim ersten Erreichen von Level 5 und beim ersten vollen Balken im höchsten Level */
+let cookieFlags={lv:false,max:false};
+const LEVEL_COOKIE_AT=4;   /* Index von Level 5 */
+function levelCookies(){
+  let f=cookieFlags;
+  if(!f.lv&&getLevel()>=LEVEL_COOKIE_AT){f.lv=true;giveCookie('Du hast zum ersten Mal <b>Level '+(LEVEL_COOKIE_AT+1)+'</b> erreicht.');}
+  if(!f.max&&xp>=MAX_XP){f.max=true;giveCookie('Du hast das <b>höchste Level</b> voll geschafft!');}
+}
+function giveCookie(why){
+  cookies=walletAdd(1);
+  cookieShow.textContent=cookies;
+  showPopup('🍪 Cookie verdient!',why+'<br><br>Du hast jetzt <b>'+cookies+'</b> Cookie'+(cookies===1?'':'s')+'.');
+}
+
+function checkAnswer(){
+  if(exam.active){examAnswer();return;}
+  if(race.active){if(race.phase==='run')raceAnswer();return;}
+  let before=getLevel();
+  if(TOPIC.check(answer.value,current)){
+    /* Ab der Hilfestellung (2. Fehlversuch) gibt es keine XP mehr */
+    let gain=(practiceLevel!==null||current.wrong>=2)?0:Math.round(XP_RIGHT*xpMultiplier(streak));   /* streak = Serie VOR dieser Aufgabe */
+    let practice=(practiceLevel!==null);   /* Übungslevel: XP, Zähler (gelöst/Serie), Achievements und Cookies pausieren */
+    xp=Math.min(MAX_XP,xp+gain);schutz=0;lossActive=false;
+    if(!practice){solved++;streak++;}
+    feedback.innerHTML='✅ Richtig!';
+    if(!practice){
+      MEDAL_AT.forEach((n,i)=>{if(solved===n&&MEDAL_NAMES[i])addAch(MEDAL_NAMES[i]);});
+      STREAK_ACHS.forEach(x=>{if(streak===x[0])addAch(x[1]);});
+      if(solved%COOKIE_TOTAL===0)giveCookie('Du hast insgesamt <b>'+solved+'</b> Aufgaben gelöst.');
+      if(streak%COOKIE_STREAK===0)giveCookie('Du hast <b>'+streak+'</b> Aufgaben am Stück richtig gelöst.');
+    }
+    let after=getLevel();
+    if(!practice)levelCookies();
+    newTask();
+    if(after>before){showPopup('🎉 Levelaufstieg!','Du hast das Level <b>'+lvlName(after)+'</b> erreicht.');}
+  }else{
+    if(practiceLevel===null)streak=0;   /* im Übungslevel pausiert auch die Serie */
+    current.wrong++;
+    /* 1. und 2. Fehlversuch: je die Hälfte der XP einer richtigen Antwort weg; danach nichts mehr */
+    if(current.wrong<=2&&practiceLevel===null){
+      let xpBefore=xp;loseXP();
+      if(xp<xpBefore){if(!lossActive){lossTo=xpBefore;lossActive=true;}lossFrom=xp;}
+    }
+    let xpText='';
+    if(getLevel()<before)xpText='<br>⬇️ Du bist ein Level abgestiegen: <b>'+lvlName(getLevel())+'</b>';
+    update();
+    if(current.wrong<2){
+      feedback.innerHTML='❌ Noch nicht korrekt.'+xpText+'<br><br>Überdenke deine Lösung und versuche es nochmals.';
+    }else{
+      feedback.innerHTML='❌ Noch nicht korrekt.'+xpText+'<br><br>'+TOPIC.help(current);
+    }
+  }
+}
+
+/* ---------- Zeitrennen ---------- */
+/* Bewertung des Rekords (Anzahl gelöster Aufgaben in der Rennzeit); pro Thema mit TOPIC.raceRating anpassbar */
+const RACE_RATING=TOPIC.raceRating||[
+  {min:10,icon:'🤖',name:'Maschine'},
+  {min:6,icon:'🏃',name:'Sprinter'},
+  {min:3,icon:'🚶',name:'Spaziergänger'},
+  {min:1,icon:'🐌',name:'Schnecke'}
+];
+function rating(n){for(const r of RACE_RATING){if(n>=r.min)return r;}return null;}
+
+/* Zeit-Rekord anzeigen: Rang-Emoji, Name und Anzahl, z. B. "🐌 Schnecke: 2 Aufgaben".
+   Das Zeitrennen läuft immer im Level RACE_LEVEL, darum gibt es nur diesen einen Rekord. */
+function renderRecords(){
+  mergeBests();
+  let n=records[RACE_LEVEL]||0;
+  let rows=[];
+  if(n>0){
+    let r=rating(n);
+    rows.push('<li>'+(r?r.icon+' '+r.name+': ':'')+'<b>'+n+'</b> Aufgabe'+(n===1?'':'n')+'</li>');
+  }
+  if(gameBest>0)rows.push('<li>🐦 Flappy Bird: <b>'+gameBest+'</b> Punkt'+(gameBest===1?'':'e')+'</li>');
+  GAMES_ORDER.forEach(function(id){let b=gameBests[id]||0;if(id!=='flappy'&&b>0)rows.push('<li>'+GAMES[id].icon+' '+GAMES[id].name+': <b>'+b+'</b> Punkt'+(b===1?'':'e')+'</li>');});
+  recordList.innerHTML=rows.join('');
+  recordBox.style.display=rows.length?'block':'none';
+  autoSave();
+}
+
+function startRace(){
+  if(exam.active)return;
+  if(race.active){endRaceUI();return;}   /* Button ist während des Rennens "Abbrechen" */
+  race={active:true,phase:'count',end:0,count:0,level:RACE_LEVEL,timer:null};
+  raceCount.textContent=0;
+  raceTime.textContent=RACE_SECONDS;
+  raceBar.style.display='block';
+  raceBtn.textContent='✖ Abbrechen';
+  updateGameBtn();
+  feedback.innerHTML='';
+  answer.value='';
+  answer.disabled=true;                  /* während der Vorbereitung nicht tippen */
+  let n=3;
+  const showCount=()=>{document.getElementById('task').textContent='Los geht’s in '+n+' …';};
+  showCount();
+  race.timer=setInterval(()=>{
+    n--;
+    if(n>0){showCount();return;}
+    clearInterval(race.timer);
+    beginRace();
+  },1000);
+}
+
+/* Nach den 3 Sekunden Vorbereitung: erste Aufgabe zeigen, dann läuft die Zeit */
+function beginRace(){
+  race.phase='run';
+  race.end=Date.now()+RACE_SECONDS*1000;
+  answer.disabled=false;
+  newTask(RACE_LEVEL);
+  answer.focus();
+  raceTick();
+  race.timer=setInterval(raceTick,200);
+}
+
+function raceTick(){
+  let left=Math.max(0,Math.ceil((race.end-Date.now())/1000));
+  raceTime.textContent=left;
+  raceBar.classList.toggle('low',left<=10);
+  if(Date.now()>=race.end)finishRace();
+}
+
+/* Im Zeitrennen: kein XP, keine Hilfe, keine Achievements. Bei Fehler bleibt die Aufgabe stehen. */
+function raceAnswer(){
+  if(TOPIC.check(answer.value,current)){
+    race.count++;
+    raceCount.textContent=race.count;
+    feedback.innerHTML='✅';
+    newTask(RACE_LEVEL);
+  }else{
+    feedback.innerHTML='❌ Nochmals versuchen';
+    answer.value='';
+  }
+  answer.focus();
+}
+
+function endRaceUI(){
+  clearInterval(race.timer);
+  race.active=false;race.phase='';
+  answer.disabled=false;
+  raceBar.style.display='none';
+  raceBar.classList.remove('low');
+  raceBtn.textContent='⏱️ Zeitrennen';
+  feedback.innerHTML='';
+  newTask();
+}
+
+function finishRace(){
+  let n=race.count,l=race.level;
+  let isRecord=n>(records[l]||0);
+  if(isRecord)records[l]=n;
+  endRaceUI();
+  renderRecords();
+  let txt='Du hast <b>'+n+'</b> Aufgabe'+(n===1?'':'n')+' in '+RACE_SECONDS+' Sekunden gelöst.<br><br>';
+  if(isRecord)txt+='🏆 <b>Neuer Rekord!</b>';
+  else txt+='Dein Rekord: <b>'+records[l]+'</b>';
+  showPopup(isRecord?'🏆 Neuer Zeit-Rekord!':'⏱️ Zeit abgelaufen!',txt);
+}
+
+/* ---------- Prüfungsmodus ----------
+   20 Aufgaben, nur ein Versuch, keine Hilfe, kein XP, keine Cookies. Schwierigkeit: 20 % Level 5, 20 % Level 4, 30 % Level 3, 30 % Level 2.
+   Die Schüler wählen die Kategorien. Die Level werden so auf die Kategorien verteilt, dass jede Kategorie etwa gleich schwer geprüft wird. */
+const EXAM_LEVELS=TOPIC.examLevels||[[4,4],[3,4],[2,6],[1,6]];   /* [Level-Index, Anzahl]: Level 5 ×4, Level 4 ×4, Level 3 ×6, Level 2 ×6 */
+function examCats(){return TOPIC.options.choices.filter(c=>c.v!=='mix');}
+function examPlan(cats){
+  let levels=[];EXAM_LEVELS.forEach(x=>{for(let i=0;i<x[1];i++)levels.push(x[0]);});   /* absteigend sortiert */
+  let N=levels.length,cnt={},sum={};cats.forEach(c=>{cnt[c]=0;sum[c]=0;});
+  /* 1) verteilen: immer an die Kategorie mit den wenigsten Aufgaben, bei Gleichstand an die mit der kleinsten Level-Summe (Rest zufällig) */
+  let slots=levels.map(l=>{
+    let best=Math.min.apply(null,cats.map(c=>cnt[c]));
+    let cand=cats.filter(c=>cnt[c]===best);
+    let ms=Math.min.apply(null,cand.map(c=>sum[c]));
+    cand=cand.filter(c=>sum[c]===ms);
+    let c=cand[Math.floor(Math.random()*cand.length)];
+    cnt[c]++;sum[c]+=l;return {cat:c,l:l};
+  });
+  /* 2) feinschleifen: Level zwischen Aufgaben verschiedener Kategorien tauschen, solange die Durchschnitte näher zusammenrücken */
+  let avg=levels.reduce((a,b)=>a+b,0)/N;
+  const cost=()=>cats.reduce((a,c)=>a+Math.pow(sum[c]-cnt[c]*avg,2),0);
+  let improved=true,guard=0;
+  while(improved&&guard++<50){
+    improved=false;
+    for(let i=0;i<N;i++)for(let j=i+1;j<N;j++){
+      let a=slots[i],b=slots[j];
+      if(a.cat===b.cat||a.l===b.l)continue;
+      let before=cost();
+      sum[a.cat]+=b.l-a.l;sum[b.cat]+=a.l-b.l;
+      if(cost()<before-1e-9){let t=a.l;a.l=b.l;b.l=t;improved=true;}
+      else{sum[a.cat]-=b.l-a.l;sum[b.cat]-=a.l-b.l;}
+    }
+  }
+  /* Reihenfolge mischen, dazu: nie zwei Aufgaben derselben Kategorie und desselben Levels direkt hintereinander ist nicht nötig – einfach mischen */
+  for(let i=slots.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));let t=slots[i];slots[i]=slots[j];slots[j]=t;}
+  return slots;
+}
+function examBtnClick(){
+  if(exam.active){
+    if(confirm('Prüfung wirklich abbrechen? Das Ergebnis geht verloren.'))examEnd();
+    return;
+  }
+  if(race.active||gameOpen)return;
+  let box=document.getElementById('examCats');
+  box.innerHTML=examCats().map(c=>'<label class="exrow"><input type="checkbox" value="'+c.v+'" checked onchange="examSetupCheck()"> '+c.label+'</label>').join('');
+  examSetupCheck();
+  examSetup.style.display='flex';
+}
+function examSetupSel(){return Array.prototype.slice.call(document.querySelectorAll('#examCats input:checked')).map(i=>i.value);}
+function examSetupCheck(){let n=examSetupSel().length;examStartBtn.disabled=!n;examHint.textContent=n?'':'Wähle mindestens eine Kategorie.';}
+function examSetupAll(on){document.querySelectorAll('#examCats input').forEach(i=>{i.checked=on;});examSetupCheck();}
+function examSetupClose(){examSetup.style.display='none';}
+function examStart(){
+  let cats=examSetupSel();
+  if(!cats.length)return;
+  examSetup.style.display='none';
+  exam={active:true,cats:cats,plan:examPlan(cats),idx:0,res:[],seen:{}};
+  examBtn.textContent='✖ Prüfung abbrechen';
+  raceBtn.disabled=true;
+  examBar.style.display='block';
+  updateGameBtn();
+  examShow();
+}
+function examShow(){
+  let p=exam.plan[exam.idx];
+  examNo.textContent=exam.idx+1;examTotal.textContent=exam.plan.length;
+  const sig=t=>[t.cat,t.mode,t.kind,t.shape,t.answer,t.text].join('|');
+  let t,tries=0;
+  do{t=TOPIC.makeTask(p.l,p.cat);tries++;}while(exam.seen[sig(t)]&&tries<40);
+  exam.seen[sig(t)]=1;
+  current=t;current.wrong=0;
+  let taskEl=document.getElementById('task');
+  if(current.html)taskEl.innerHTML=current.html;else taskEl.textContent=current.text;
+  feedback.innerHTML='';
+  answer.value='';
+  answer.style.display=current.noInput?'none':'';
+  if(current.interactive&&TOPIC.mount)TOPIC.mount(taskEl,current);
+  if(!current.noInput)answer.focus();
+}
+function examAnswer(){
+  if(!current.noInput&&!answer.value.trim())return;   /* leere Eingabe (z. B. versehentliches Enter) überspringt nichts */
+  let ok=false;try{ok=!!TOPIC.check(answer.value,current);}catch(e){}
+  let p=exam.plan[exam.idx],r={cat:p.cat,l:p.l,ok:ok};
+  if(!ok){   /* falsche Aufgabe samt Erklärung merken, damit man sie später ansehen kann */
+    r.html=current.html||null;r.text=current.text||'';
+    r.ans=current.noInput?'':answer.value.trim().replace(/[<>&]/g,'');
+    r.sol=(current.noInput||current.answer==null)?'':String(current.answer).replace(/[<>&]/g,'').replace(/^(-?\d+)\.(\d+)$/,'$1,$2');   /* richtige Antwort */
+    try{r.help=(TOPIC.helpExact?TOPIC.helpExact(current):TOPIC.help(current))||'';}catch(e){r.help='';}
+  }
+  exam.res.push(r);
+  exam.idx++;
+  if(exam.idx>=exam.plan.length){examFinish();return;}
+  examShow();
+}
+function examEnd(){
+  exam={active:false};
+  examBar.style.display='none';
+  examBtn.textContent='📝 Prüfungsmodus';
+  raceBtn.disabled=false;
+  answer.disabled=false;
+  feedback.innerHTML='';
+  updateGameBtn();
+  newTask();
+}
+/* ---------- gespeicherte Prüfungsergebnisse (pro Trainer, die letzten EXAM_KEEP) ---------- */
+const EXAM_KEEP=12;
+let examList=null;
+function examKey(){return AUTO_KEY+'_exams';}
+function examsGet(){
+  try{
+    if(examList)return examList;
+    let a=null;try{a=JSON.parse(localStorage.getItem(examKey()));}catch(e){if(e instanceof ReferenceError)throw e;}
+    examList=Array.isArray(a)?a:[];
+    return examList;
+  }catch(e){return [];}   /* ReferenceError: Skript noch nicht fertig geladen (AUTO_KEY / examList) -> später nochmals */
+}
+function examsSave(){
+  let a=examsGet();
+  for(;;){
+    try{localStorage.setItem(examKey(),JSON.stringify(a));return;}
+    catch(e){if(a.length<=1)return;a.pop();}   /* Speicher voll: älteste Prüfung weglassen */
+  }
+}
+function examUpdateBtn(){
+  let n=examsGet().length;
+  if(typeof examHistBtn==='undefined'||!examHistBtn)return;
+  examHistBtn.textContent='📋 Prüfungsergebnisse'+(n?' ('+n+')':'');
+  examHistBtn.disabled=!n;
+}
+function examPct(a,b){return b?Math.round(a/b*100):0;}
+function examCol(pc){return pc>=80?'#2e7d32':pc>=50?'#f9a825':'#c62828';}
+function examDate(ts){let d=new Date(ts);return d.toLocaleDateString('de-CH')+', '+d.toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});}
+const EX_WRAP='<div style="max-height:64vh;overflow-y:auto;text-align:left;font-size:15px;padding-right:4px">';
+/* Pop-up-Inhalt ersetzen (wenn schon offen) oder öffnen */
+function examPopup(title,html){
+  if(popup.style.display==='flex'){popupTitle.textContent=title;popupText.innerHTML=html;popupText.scrollTop=0;}
+  else showPopup(title,html);
+}
+/* view: 'list' | 'detail' (i) | 'cat' (i, Kategorie) */
+function examGo(view,i,c){
+  let L=examsGet();
+  if(view==='list'){
+    examPopup('📋 Meine Prüfungen',EX_WRAP+L.map((e,k)=>{
+      let pc=examPct(e.right,e.total);
+      return '<div class="exc" onclick="examGo(\'detail\','+k+')"><div style="display:flex;justify-content:space-between;gap:10px"><span>'+examDate(e.t)+'</span><b style="color:'+examCol(pc)+'">'+e.right+' / '+e.total+' ('+pc+' %)</b></div>'
+        +'<div style="font-size:12px;color:#666">'+e.cats.length+' Kategorie'+(e.cats.length===1?'':'n')+' ›</div></div>';
+    }).join('')+'</div>');
+    return;
+  }
+  let e=L[i];if(!e)return;
+  if(view==='detail'){
+    let pc=examPct(e.right,e.total);
+    examPopup('📝 Prüfung',EX_WRAP
+      +'<div class="exlinks"><a onclick="examGo(\'list\')">← Alle Prüfungen</a></div>'
+      +'<div style="text-align:center;margin-bottom:10px">'+(e.name?('<b>'+e.name+'</b> · '):'')+examDate(e.t)+'</div>'
+      +'<div style="text-align:center;font-size:28px;font-weight:bold;margin-bottom:12px;color:'+examCol(pc)+'">'+e.right+' / '+e.total+' richtig ('+pc+' %)</div>'
+      +e.cats.map(r=>{
+        let p=examPct(r.ok,r.n),wrong=r.n-r.ok;
+        return '<div class="exc'+(wrong?'':' exdone')+'"'+(wrong?' data-c="'+r.c+'" onclick="examGo(\'cat\','+i+',this.dataset.c)"':'')+'><div style="display:flex;justify-content:space-between;gap:10px"><span>'+r.label+'</span><b>'+r.ok+' / '+r.n+'</b></div>'
+          +'<div style="background:#e0e6eb;border-radius:6px;height:12px;overflow:hidden"><div style="width:'+p+'%;height:100%;background:'+examCol(p)+'"></div></div>'
+          +'<div style="font-size:12px;color:#666;display:flex;justify-content:space-between"><span>Schwierigkeit: Level '+(r.lo===r.hi?r.lo:r.lo+'–'+r.hi)+' (Ø '+r.avg.toFixed(1).replace('.',',')+')</span><span>'+(wrong?wrong+' falsch – ansehen ›':'✅ alles richtig')+'</span></div></div>';
+      }).join('')
+      +(e.weak?'<p style="margin-top:12px;text-align:center">📘 Am meisten Übung brauchst du bei: <b>'+e.weak+'</b></p>':'')
+      +'</div>');
+    return;
+  }
+  if(view==='cat'){
+    let r=e.cats.filter(x=>x.c===c)[0],w=e.wrong.filter(x=>x.c===c);
+    examPopup(r?r.label:'Falsche Aufgaben',EX_WRAP
+      +'<div class="exlinks"><a onclick="examGo(\'detail\','+i+')">← Zurück zur Übersicht</a></div>'
+      +w.map((x,k)=>'<div class="exwrong"><div style="font-size:12px;color:#666;margin-bottom:4px">Aufgabe '+(k+1)+' von '+w.length+' · Level '+(x.l+1)+'</div>'
+        +'<div class="task" style="font-size:19px;margin:6px 0">'+(x.html||String(x.text||'').replace(/[<>&]/g,''))+'</div>'
+        +(x.ans?'<div style="margin:6px 0">Deine Antwort: <b style="color:#c62828">'+x.ans+'</b></div>':'')
+        +(x.sol?'<div style="margin:6px 0">Richtig wäre: <b style="color:#2e7d32">'+x.sol+'</b></div>':'')
+        +(x.help?'<div class="exhelp">'+x.help+'</div>':'')+'</div>').join('')
+      +'</div>');
+  }
+}
+function examHistory(){if(!examsGet().length)return;examGo('list');}
+function examFinish(){
+  let res=exam.res,cats=exam.cats,labels={};
+  examCats().forEach(c=>{labels[c.v]=c.label;});
+  let total=res.length,right=res.filter(r=>r.ok).length;
+  let rows=cats.map(c=>{
+    let r=res.filter(x=>x.cat===c),ok=r.filter(x=>x.ok).length;
+    let lv=r.map(x=>x.l+1),lo=Math.min.apply(null,lv),hi=Math.max.apply(null,lv);
+    return {c:c,label:labels[c],n:r.length,ok:ok,lo:lo,hi:hi,avg:lv.reduce((a,b)=>a+b,0)/lv.length};
+  });
+  let weak=rows.filter(r=>r.ok<r.n).sort((a,b)=>examPct(a.ok,a.n)-examPct(b.ok,b.n));
+  let rec={t:Date.now(),name:nameInput.value.replace(/[<>&]/g,''),right:right,total:total,cats:rows,
+    weak:(rows.length>1&&weak.length&&examPct(weak[0].ok,weak[0].n)<80)?weak[0].label:'',
+    wrong:res.filter(r=>!r.ok).map(r=>({c:r.cat,l:r.l,html:r.html,text:r.text,ans:r.ans,sol:r.sol,help:r.help}))};
+  let L=examsGet();L.unshift(rec);if(L.length>EXAM_KEEP)L.length=EXAM_KEEP;examsSave();
+  examEnd();
+  examUpdateBtn();
+  examGo('detail',0);
+}
+
+answer.addEventListener('keydown',e=>{if(e.key==='Enter')checkAnswer();});
+/* Aufgaben zum Anklicken: Enter prüft auch ohne Antwortzeile (nicht, wenn ein Pop-up oder das Spiel offen ist oder ein Knopf fokussiert ist) */
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter'||e.repeat||gameOpen||!current||!current.noInput)return;
+  if(popup.style.display==='flex'||(e.target&&(e.target===answer||e.target.tagName==='BUTTON')))return;   /* Enter in der Antwortzeile hat schon geprüft (sonst würde die neue Klick-Aufgabe sofort mitgeprüft) */
+  checkAnswer();
+});
+
+/* ---------- Spiel (Belohnung für Cookies) ---------- */
+let gameOpen=false,triesLeft=0,curGame=GAMES.flappy,gameBests={};
+function ownedGames(){let own=walletGames();return GAMES_ORDER.filter(function(id){return id==='flappy'||own.indexOf(id)>=0;}).map(function(id){return GAMES[id];});}   /* 1 Cookie = GAME.tries Versuche; übrige Versuche bleiben bis zum Neuladen erhalten */
+function triesText(){return triesLeft>0?'noch '+triesLeft+' Versuch'+(triesLeft===1?'':'e'):GAME.cost+' 🍪 = '+GAME.tries+' Versuche';}
+function updateGameBtn(){
+  gameBtn.textContent='🎮 Spielen ('+(triesLeft>0?'noch '+triesLeft+' Versuch'+(triesLeft===1?'':'e'):GAME.cost+' 🍪')+')';
+  let ok=(triesLeft>0||cookies>=GAME.cost)&&!race.active&&!exam.active;
+  gameBtn.disabled=!ok;
+  gameBtn.title=ok?'Spiel starten':((race.active||exam.active)?'Nicht während Zeitrennen oder Prüfung':'Du brauchst '+GAME.cost+' Cookie'+(GAME.cost===1?'':'s'));
+}
+function beginRound(){   /* zieht bei Bedarf 1 Cookie ab (= neue Versuche) und startet einen Versuch */
+  if(triesLeft<=0){
+    cookies=walletGet();
+    if(cookies<GAME.cost)return false;
+    cookies=walletAdd(-GAME.cost);triesLeft=GAME.tries;
+  }
+  triesLeft--;
+  gameTitle.textContent=curGame.name+' – Versuch '+(GAME.tries-triesLeft)+' von '+GAME.tries;
+  gameHint.textContent=curGame.hint;
+  gameResult.innerHTML='';gameAgain.style.display='none';gameSwitch.style.display='none';
+  update();
+  curGame.start(gameRoot,onGameEnd);
+  return true;
+}
+function openGame(){
+  if(gameOpen||race.active||exam.active)return;
+  cookies=walletGet();
+  if(triesLeft<=0&&cookies<GAME.cost)return;
+  gameOpen=true;
+  answer.blur();
+  gameOverlay.style.display='flex';
+  if(ownedGames().length>1)showGamePicker();else{curGame=GAMES.flappy;beginRound();}
+}
+function onGameEnd(score){
+  let id=curGame.id,best=id==='flappy'?gameBest:(gameBests[id]||0);
+  let rec=score>best;
+  if(rec){best=score;if(id==='flappy')gameBest=score;else gameBests[id]=score;}
+  renderRecords();   /* zeigt den Rekord an und speichert automatisch */
+  gameResult.innerHTML='Punkte: <b>'+score+'</b>'+(rec?' 🏆 Neuer Rekord!':'')+' &nbsp;·&nbsp; Rekord: <b>'+best+'</b>';
+  gameAgain.textContent='🔄 Nochmal ('+triesText()+')';
+  gameAgain.disabled=triesLeft<=0&&cookies<GAME.cost;
+  gameAgain.style.display='inline-block';
+  gameSwitch.style.display=ownedGames().length>1?'inline-block':'none';
+}
+/* Spielauswahl (nur wenn im Shop weitere Spiele gekauft wurden) */
+function showGamePicker(){
+  curGame.stop();
+  gameTitle.textContent='Spiel wählen';gameHint.textContent='';
+  gameResult.innerHTML='';gameAgain.style.display='none';gameSwitch.style.display='none';
+  gameRoot.innerHTML='<div class="gpick">'+ownedGames().map(function(g){
+    return '<button class="btn gpbtn" onclick="pickGame(\''+g.id+'\')"><span class="gpi">'+g.icon+'</span><span><b>'+g.name+'</b><small>'+g.hint.split(' · ')[0]+'</small></span></button>';
+  }).join('')+'</div><div class="gshop"><a href="../#shop">🛒 Weitere Spiele im Shop</a></div>';
+}
+function pickGame(id){
+  if(!GAMES[id])return;
+  let prev=curGame;curGame=GAMES[id];
+  if(!beginRound()){curGame=prev;gameResult.textContent='Du brauchst 1 🍪 für neue Versuche.';}
+}
+function gameAgainClick(btn){
+  if(btn)btn.blur();
+  if(!gameOpen)return;
+  beginRound();
+}
+function closeGame(btn){
+  if(btn)btn.blur();
+  curGame.stop();
+  gameOpen=false;
+  gameOverlay.style.display='none';
+  gameRoot.innerHTML='';
+  update();
+  answer.focus();
+}
+/* Solange das Spiel offen ist: Leertaste scrollt/aktiviert nichts; Esc beendet */
+['keydown','keyup'].forEach(t=>document.addEventListener(t,e=>{
+  if(!gameOpen)return;
+  if(e.code==='Space')e.preventDefault();
+  if(t==='keydown'&&e.key==='Escape')closeGame();
+},true));
+
+/* Lernstand aus einem Objekt übernehmen (aus Datei oder aus dem Browser-Speicher) */
+function applyData(d,fromFile){
+  nameInput.value=d.name||'';
+  solved=d.solved||0;xp=Math.max(0,Math.min(MAX_XP,(typeof d.xp==="number")?d.xp:solved*10));streak=d.streak||0;schutz=0;cookies=adoptCookies(d,fromFile);gameBest=Math.max(0,parseInt(d.gameBest)||0);gameBests={};if(d.gb&&typeof d.gb==='object')for(const k in d.gb){if(GAMES[k])gameBests[k]=Math.max(0,parseInt(d.gb[k])||0);}popupQueue=[];lossActive=false;achs=d.achs||[];
+  if(TOPIC.options&&d.opt&&[...topicOpt.options].some(o=>o.value===d.opt))topicOpt.value=d.opt;
+  /* XP pro Auswahl: neue Dateien haben xps; ältere Dateien nur ein einzelnes xp (gilt dann für die gewählte Auswahl) */
+  curOpt=TOPIC.options?topicOpt.value:'_';practiceLevel=null;
+  /* cf: neu {lv,max}; ältere Dateien hatten es pro Kategorie ({laenge:{lv,max},…}) -> zusammenfassen */
+  cookieFlags={lv:false,max:false};
+  if(d.cf&&typeof d.cf==='object'){
+    if('lv' in d.cf||'max' in d.cf){cookieFlags.lv=!!d.cf.lv;cookieFlags.max=!!d.cf.max;}
+    else for(const k in d.cf){if(d.cf[k]&&d.cf[k].lv)cookieFlags.lv=true;if(d.cf[k]&&d.cf[k].max)cookieFlags.max=true;}
+  }
+  if(d.xps&&typeof d.xps==='object'){
+    xpMap={};for(const k in d.xps)xpMap[k]=Math.max(0,Math.min(MAX_XP,parseInt(d.xps[k])||0));
+    xp=xpMap[curOpt]||0;
+  }else{xpMap={};xpMap[curOpt]=xp;}
+  recMap={};
+  if(d.recs&&typeof d.recs==='object'){for(const k in d.recs)recMap[k]=LEVELS.map((_,i)=>Math.max(0,parseInt(d.recs[k]&&d.recs[k][i])||0));}
+  else{   /* älterer Stand: ein gemeinsamer Satz (aus dem gemischten Rennen) -> zur Auswahl "mix", sonst zur aktuellen */
+    let k=(!TOPIC.raceOption&&TOPIC.options&&TOPIC.options.choices.some(c=>c.v==='mix'))?'mix':recKey();
+    recMap[k]=LEVELS.map((_,i)=>Math.max(0,parseInt(d.records&&d.records[i])||0));
+  }
+  if(recMap['_']){   /* früher: ein gemeinsamer Rekord-Satz fürs gemischte Rennen -> jetzt Kategorie "mix" */
+    let o=recMap['_'],m=recMap.mix||(recMap.mix=LEVELS.map(()=>0));
+    LEVELS.forEach((_,i)=>{m[i]=Math.max(m[i]||0,o[i]||0);});
+    delete recMap['_'];
+  }
+  records=recMap[recKey()]||(recMap[recKey()]=LEVELS.map(()=>0));
+}
+
+/* ---------- Automatisches Speichern im Browser (localStorage) ----------
+   Der Schlüssel enthält die Themen-Kennung, damit mehrere Trainer sich nicht überschreiben.
+   (Speichern/Laden per Datei gibt es nicht mehr.) */
+const AUTO_KEY='test_trainer_'+TOPIC.id;   /* TESTVERSION: eigener Speicher, überschreibt keinen echten Lernstand */
+function autoSave(){
+  cookies=walletGet();
+  try{
+    localStorage.setItem(AUTO_KEY,JSON.stringify({name:nameInput.value,solved,xp,xps:(xpMap[curOpt]=xp,xpMap),cf:cookieFlags,cw:1,gb:gameBests,streak,cookies,gameBest,achs,records,recs:(recMap[recKey()]=records,recMap),opt:getOpt()}));
+  }catch(e){}   /* z. B. InPrivate-Fenster oder blockierter Speicher: still ignorieren */
+}
+function autoLoad(){
+  cookies=walletGet();
+  try{
+    let t=localStorage.getItem(AUTO_KEY);
+    if(t){applyData(JSON.parse(t),false);if(walletMigrated){walletMigrated=false;autoSave();}return true;}
+  }catch(e){}
+  return false;
+}
+nameInput.addEventListener('input',autoSave);
+try{localStorage.setItem('__test','1');localStorage.removeItem('__test');}catch(e){storeWarn.style.display='block';}
+
+LEVELS.forEach((l,i)=>{let o=document.createElement('option');o.value=i;o.textContent='🧪 XP-Sprung: Level '+(i+1)+' – '+l.name;lvlJump.appendChild(o);});
+function jumpLevel(sel){xp=sel.value*LEVEL_XP;schutz=0;streak=0;lossActive=false;practiceLevel=null;sel.blur();update();newTask();answer.focus();}
+autoLoad();
+/* TESTVERSION: bei jedem Start mindestens 50 Cookies und alle Achievements; XP-Sprung gilt für die gewählte Kategorie */
+cookies=walletSet(Math.max(cookies,50));solved=Math.max(solved,1000);
+achs=[...new Set([...achs,...MEDAL_NAMES,...STREAK_NAMES])];
+update();
+renderRecords();
+renderAchs();
+newTask();
+</script></body></html>
