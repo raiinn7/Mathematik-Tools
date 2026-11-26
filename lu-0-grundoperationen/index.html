@@ -738,7 +738,7 @@ function adoptCookies(d,fromFile){
 }
 
 /* Cookies: 1 pro 50 gelöste Aufgaben insgesamt, 1 pro 25 richtige am Stück (wiederholbar, unabhängig von den Achievements) */
-const COOKIE_TOTAL=50,COOKIE_STREAK=25;
+const COOKIE_TOTAL=100,COOKIE_STREAK=50;
 /* Zeitrennen: möglichst viele Aufgaben in RACE_SECONDS; Aufgaben immer aus dem Level TOPIC.raceLevel; Rekord pro Level */
 const RACE_LEVEL=TOPIC.raceLevel;
 const RACE_SECONDS=60;
@@ -918,12 +918,10 @@ function checkAnswer(){
       MEDAL_AT.forEach((n,i)=>{if(solved===n&&MEDAL_NAMES[i])addAch(MEDAL_NAMES[i]);});
       STREAK_ACHS.forEach(x=>{if(streak===x[0])addAch(x[1]);});
       if(solved%COOKIE_TOTAL===0)giveCookie('Du hast insgesamt <b>'+solved+'</b> Aufgaben gelöst.');
-      if(streak%COOKIE_STREAK===0)giveCookie('Du hast <b>'+streak+'</b> Aufgaben am Stück richtig gelöst.');
+      else if(streak%COOKIE_STREAK===0)giveCookie('Du hast <b>'+streak+'</b> Aufgaben am Stück richtig gelöst.');
     }
     let after=getLevel();
-    if(!practice)levelCookies();
     newTask();
-    if(after>before){showPopup('🎉 Levelaufstieg!','Du hast das Level <b>'+lvlName(after)+'</b> erreicht.');}
   }else{
     if(practiceLevel===null)streak=0;   /* im Übungslevel pausiert auch die Serie */
     current.wrong++;
