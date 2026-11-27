@@ -291,7 +291,7 @@ const TOPIC=(function(){
     raceLevel:3,
     raceRating:[{min:24,icon:'🤖',name:'Maschine'},{min:16,icon:'🏃',name:'Sprinter'},{min:9,icon:'🚶',name:'Spaziergänger'},{min:1,icon:'🐌',name:'Schnecke'}],
     examLevels:[[7,8],[6,8],[4,12],[2,12]],
-    medals:['🥉 Bronze-Kopfrechner','🥈 Silber-Kopfrechner','🥇 Gold-Kopfrechner','💠 Platin-Kopfrechner'],
+    medals:['🥉 Bronze-Kopfrechner','🥈 Silber-Kopfrechner','🥇 Gold-Kopfrechner','💠 Platin-Kopfrechner','💎 Diamant-Kopfrechner'],
     options:{
       choices:CAT_KEYS.map(k=>({v:k,label:CATS[k].icon+' '+CATS[k].name})).concat([{v:'mix',label:'🎲 Gemischt'}]),
       default:'add'
@@ -857,7 +857,7 @@ document.addEventListener('keydown',e=>{
    1) Medaillen des Themas (TOPIC.medals) bei MEDAL_AT gelösten Aufgaben insgesamt
    2) Serien: richtige Antworten am Stück (STREAK_ACHS)
    Angezeigt werden sie immer gruppiert und in fester Reihenfolge, unabhängig davon, wann sie freigeschaltet wurden. */
-const MEDAL_AT=[10,25,50,100];
+const MEDAL_AT=[10,25,50,100,250];
 const STREAK_ACHS=[[5,'🔥 5 Aufgaben fehlerfrei'],[10,'🚀 10 Aufgaben fehlerfrei'],[25,'💎 25 Aufgaben fehlerfrei'],[50,'🌋 50 Aufgaben fehlerfrei']];
 const MEDAL_NAMES=TOPIC.medals;
 const STREAK_NAMES=STREAK_ACHS.map(x=>x[1]);
@@ -915,7 +915,7 @@ function checkAnswer(){
     if(!practice){solved++;streak++;}
     feedback.innerHTML='✅ Richtig!';
     if(!practice){
-      MEDAL_AT.forEach((n,i)=>{if(solved===n&&MEDAL_NAMES[i])addAch(MEDAL_NAMES[i]);});
+      MEDAL_AT.forEach((n,i)=>{if(solved>=n&&MEDAL_NAMES[i])addAch(MEDAL_NAMES[i]);});
       STREAK_ACHS.forEach(x=>{if(streak===x[0])addAch(x[1]);});
       if(solved%COOKIE_TOTAL===0)giveCookie('Du hast insgesamt <b>'+solved+'</b> Aufgaben gelöst.');
       else if(streak%COOKIE_STREAK===0)giveCookie('Du hast <b>'+streak+'</b> Aufgaben am Stück richtig gelöst.');
